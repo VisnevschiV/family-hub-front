@@ -1,0 +1,80 @@
+.todoList {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    overflow: hidden; /* keeps header/rows clipped to rounded corners */
+}
+
+.todoList__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 10px 12px;
+    background: #eff6ff; /* light blue like the screenshot */
+    border-bottom: 1px solid #dbeafe;
+}
+
+.todoList__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.todoList__meta {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d4ed8;
+
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+    padding: 2px 10px;
+    border-radius: 999px;
+}
+
+.todoList__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.todoList__item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.todoList__item:last-child {
+    border-bottom: none;
+}
+
+.todoList__label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.todoList__checkbox {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: #2563eb; /* modern checkbox tint */
+}
+
+.todoList__text {
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.todoList__text--done {
+    color: #94a3b8;
+    text-decoration: line-through;
+}

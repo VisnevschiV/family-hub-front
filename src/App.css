@@ -12,6 +12,11 @@
     sans-serif;
 }
 
+/* Make the routed page fill the available width (prevents flex shrink-to-content) */
+#root > * {
+    width: 100%;
+}
+
 .auth-page {
     display: flex;
     align-items: center;
