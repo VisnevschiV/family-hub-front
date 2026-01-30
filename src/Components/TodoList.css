@@ -117,11 +117,63 @@
 .todoList__item {
     padding: 8px 12px;
     border-bottom: 1px solid #e5e7eb;
+    cursor: grab;
+    position: relative;
+    background-color: #ffffff;
+    transition:
+        transform 0.3s ease-out,
+        opacity 0.3s ease-out,
+        background-color 0.3s ease-out;
 }
 
 .todoList__item:last-child {
     border-bottom: none;
 }
+
+/* While dragging vertically / normally */
+.todoList__item--dragging {
+    opacity: 0.9;
+    background-color: #eff6ff;
+    cursor: grabbing;
+}
+
+/* Soft red preview when close to delete */
+.todoList__item--deletePreview {
+    background-color: #fee2e2; /* light red */
+    transform: translateX(12px);
+}
+
+/* Red bar behind item on preview */
+.todoList__item--deletePreview::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    left: 0;
+    width: 8px;
+    background: linear-gradient(to bottom, #ef4444, #b91c1c);
+    border-radius: 8px 0 0 8px;
+}
+
+/* Actual delete animation: slide out & fade */
+.todoList__item--deleting {
+    background-color: #fee2e2;
+    transform: translateX(140%);
+    opacity: 0;
+}
+
+/* You can keep or remove this small hint */
+.todoList__item::after {
+    content: " ";
+    float: right;
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+/* Example if you want visible hint:
+.todoList__item::after {
+    content: "⇅ drag • drag → to delete";
+}
+*/
 
 .todoList__label {
     display: flex;
