@@ -147,3 +147,92 @@
 }
 
 /* Modal (keep your existing modal styles below this if you already have them) */
+/* Modal backdrop: dim the background */
+.todoList__modalBackdrop {
+    position: fixed;
+    inset: 0; /* top:0, right:0, bottom:0, left:0 */
+    background: rgba(15, 23, 42, 0.35); /* semi‑transparent dark */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+/* Actual popup */
+.todoList__modal {
+    width: 100%;
+    max-width: 320px;       /* makes it small */
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+    border: 1px solid #e5e7eb;
+}
+
+/* Title text */
+.todoList__modalTitle {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #0f172a;
+}
+
+/* Form layout */
+.todoList__modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Text input */
+.todoList__modalInput {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5f5;
+    font-size: 13px;
+    outline: none;
+}
+
+.todoList__modalInput:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px #2563eb33;
+}
+
+/* Buttons row */
+.todoList__modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Base button style */
+.todoList__modalBtn {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+/* Cancel */
+.todoList__modalBtn--ghost {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    color: #4b5563;
+}
+
+.todoList__modalBtn--ghost:hover {
+    background: #f9fafb;
+}
+
+/* Add / primary */
+.todoList__modalBtn--primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.todoList__modalBtn--primary:hover {
+    background: #1d4ed8;
+}
