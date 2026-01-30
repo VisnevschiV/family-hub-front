@@ -1,3 +1,4 @@
+/* Panel */
 .todoList {
     width: 100%;
     max-width: 560px;
@@ -9,9 +10,10 @@
     color: #0f172a;
 
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-    overflow: hidden; /* keeps header/rows clipped to rounded corners */
+    overflow: hidden;
 }
 
+/* Header */
 .todoList__header {
     display: flex;
     align-items: center;
@@ -19,8 +21,23 @@
     gap: 12px;
 
     padding: 10px 12px;
-    background: #eff6ff; /* light blue like the screenshot */
+    background: #eff6ff;
     border-bottom: 1px solid #dbeafe;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.todoList__header:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+}
+
+.todoList__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
 .todoList__title {
@@ -28,11 +45,14 @@
     font-size: 14px;
     font-weight: 700;
     color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .todoList__meta {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     color: #1d4ed8;
 
     background: #dbeafe;
@@ -41,10 +61,57 @@
     border-radius: 999px;
 }
 
+.todoList__headerActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* “Hide done” button */
+.todoList__toggleDoneBtn {
+    border-radius: 999px;
+    padding: 6px 10px;
+    border: 1px solid #bfdbfe;
+    background: #ffffff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.todoList__toggleDoneBtn:hover {
+    background: #dbeafe;
+}
+
+.todoList__toggleDoneBtn[aria-pressed="true"] {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+/* + button */
+.todoList__iconBtn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    background: #ffffff;
+    color: #1d4ed8;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.todoList__iconBtn:hover {
+    background: #dbeafe;
+}
+
+/* Tasks list (this fixes the extra space under the last task) */
 .todoList__items {
     list-style: none;
-    padding: 0;
-    margin: 0;
+    margin: 0;   /* kills the default bottom margin */
+    padding: 0;  /* kills the default left padding */
 }
 
 .todoList__item {
@@ -66,7 +133,7 @@
     width: 14px;
     height: 14px;
     margin: 0;
-    accent-color: #2563eb; /* modern checkbox tint */
+    accent-color: #2563eb;
 }
 
 .todoList__text {
@@ -78,3 +145,5 @@
     color: #94a3b8;
     text-decoration: line-through;
 }
+
+/* Modal (keep your existing modal styles below this if you already have them) */
