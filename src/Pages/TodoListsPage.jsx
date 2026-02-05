@@ -1,4 +1,5 @@
 import TodoList from "../Components/TodoList.jsx";
+import { fetchProtectedData } from "../api/fetchProtectedDataService.js";
 
 export default function TodoListsPage() {
     const lists = [
@@ -20,11 +21,24 @@ export default function TodoListsPage() {
         },
     ];
 
+    // Optional: quick smoke test that your token works on a protected endpoint
+    // useEffect(() => {
+    //     fetchProtectedData()
+    //         .then((data) => console.log("Protected data:", data))
+    //         .catch((err) => console.error("Protected call failed:", err));
+    // }, []);
+
     return (
         <div style={{ padding: 24, display: "grid", gap: 16 }}>
             <h1 style={{ margin: 0 }}>To‑Do Lists</h1>
 
-            <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+            <div
+                style={{
+                    display: "grid",
+                    gap: 16,
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                }}
+            >
                 {lists.map((list) => (
                     <TodoList
                         key={list.id}
