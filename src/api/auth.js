@@ -9,6 +9,12 @@ const TOKEN_KEY = "authToken";
 const TOKEN_EXP_KEY = "authTokenExpiresAt";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const REFRESH_EXP_KEY = "refreshTokenExpiresAt";
+const DEBUG_AUTH = true;
+
+function logAuthError(context, details) {
+    if (!DEBUG_AUTH) return;
+    console.error("[auth]", context, details);
+}
 
 export function getStoredToken() {
     return localStorage.getItem(TOKEN_KEY);
@@ -86,14 +92,28 @@ export async function tryRegister(email, password, name, role) {
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
                 const errorData = await response.json();
+                logAuthError("register:response-json", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData,
+                });
                 errorMessage = errorData.error || errorData.message || "Registration failed";
             } else {
                 const text = await response.text();
+                logAuthError("register:response-text", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    text,
+                });
                 if (text) {
                     errorMessage = text;
                 }
             }
         } catch {
+            logAuthError("register:parse-error", {
+                status: response.status,
+                statusText: response.statusText,
+            });
             // ignore parse error, keep generic
         }
         throw new Error(errorMessage);
@@ -103,6 +123,10 @@ export async function tryRegister(email, password, name, role) {
     try {
         data = await response.json(); // { token, ttlSeconds }
     } catch (err) {
+        logAuthError("register:invalid-json", {
+            status: response.status,
+            statusText: response.statusText,
+        });
         throw new Error("Invalid response from server - expected JSON");
     }
 
@@ -134,17 +158,37 @@ export async function tryLogin(email, password) {
     if (!response.ok) {
         let errorMessage = "Invalid email or password";
         try {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorData.message || "Invalid email or password";
-            } else {
-                const text = await response.text();
-                if (text) {
-                    errorMessage = text;
+            const text = await response.text();
+            let parsed = null;
+
+            if (text) {
+                try {
+                    parsed = JSON.parse(text);
+                } catch {
+                    parsed = null;
                 }
             }
+
+            if (parsed && typeof parsed === "object") {
+                logAuthError("login:response-json", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData: parsed,
+                });
+                errorMessage = parsed.error || parsed.message || errorMessage;
+            } else if (text) {
+                logAuthError("login:response-text", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    text,
+                });
+                errorMessage = text;
+            }
         } catch {
+            logAuthError("login:parse-error", {
+                status: response.status,
+                statusText: response.statusText,
+            });
             // ignore parse error, keep generic
         }
         throw new Error(errorMessage);
@@ -154,6 +198,10 @@ export async function tryLogin(email, password) {
     try {
         data = await response.json(); // { token, ttlSeconds }
     } catch (err) {
+        logAuthError("login:invalid-json", {
+            status: response.status,
+            statusText: response.statusText,
+        });
         throw new Error("Invalid response from server - expected JSON");
     }
 
@@ -185,12 +233,20 @@ export async function fetchCurrentUser() {
         if (response.status === 401 || response.status === 403) {
             clearStoredToken();
         }
+        logAuthError("me:response-error", {
+            status: response.status,
+            statusText: response.statusText,
+        });
         throw new Error(`Failed to load user: ${response.status}`);
     }
 
     try {
         return await response.json(); // depends on your backend DTO
     } catch (err) {
+        logAuthError("me:invalid-json", {
+            status: response.status,
+            statusText: response.statusText,
+        });
         throw new Error("Invalid response from server - expected JSON");
     }
 }

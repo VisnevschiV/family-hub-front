@@ -22,14 +22,15 @@ function LoginForm({ onLoginSuccess }) {
                 setError("Passwords do not match");
                 return;
             }
-            if (password.length < 8) {
-                setError("Password must be at least 8 characters");
-                return;
-            }
             if (!name.trim()) {
                 setError("Name is required");
                 return;
             }
+        }
+
+        if (password.length < 8) {
+            setError("Password must be at least 8 characters");
+            return;
         }
 
         setLoading(true);
