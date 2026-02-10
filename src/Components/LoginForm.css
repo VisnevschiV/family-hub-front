@@ -71,6 +71,44 @@
     color: #a0aec0;
 }
 
+.loginForm__dateWrapper {
+    position: relative;
+}
+
+.loginForm__dateTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background-color: #f7fafc;
+    text-align: left;
+}
+
+.loginForm__dateTrigger::after {
+    content: "v";
+    font-size: 12px;
+    color: #718096;
+    margin-left: 8px;
+}
+
+.loginForm__datePopover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 10;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+}
+
+.rdp {
+    --rdp-accent-color: #667eea;
+    --rdp-background-color: #eef2ff;
+    font-family: inherit;
+}
+
 /* Style option items in select */
 .loginForm__input option {
     background-color: white;
@@ -86,6 +124,16 @@
     margin-bottom: 24px;
     font-size: 14px;
     border-left: 4px solid #c53030;
+}
+
+.loginForm__success {
+    background-color: #c6f6d5;
+    color: #2f855a;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border-left: 4px solid #2f855a;
 }
 
 .loginForm__submitBtn {

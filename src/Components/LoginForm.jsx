@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { DayPicker } from "react-day-picker";
+import { format } from "date-fns";
 import { tryLogin, tryRegister } from "../api/auth.js";
+import "react-day-picker/style.css";
 import "./LoginForm.css";
 
 function LoginForm({ onLoginSuccess }) {
@@ -7,14 +10,18 @@ function LoginForm({ onLoginSuccess }) {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [name, setName] = useState("");
-    const [role, setRole] = useState("USER");
+    const [birthdayDate, setBirthdayDate] = useState(null);
+    const [isBirthdayOpen, setIsBirthdayOpen] = useState(false);
+    const [gender, setGender] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [isRegister, setIsRegister] = useState(false);
 
     async function handleSubmit(e) {
         e.preventDefault();
         setError("");
+        setSuccessMessage("");
 
         // Validate for register mode
         if (isRegister) {
@@ -24,6 +31,14 @@ function LoginForm({ onLoginSuccess }) {
             }
             if (!name.trim()) {
                 setError("Name is required");
+                return;
+            }
+            if (!birthdayDate) {
+                setError("Birthday is required");
+                return;
+            }
+            if (!gender) {
+                setError("Gender is required");
                 return;
             }
         }
@@ -37,12 +52,15 @@ function LoginForm({ onLoginSuccess }) {
 
         try {
             if (isRegister) {
-                await tryRegister(email, password, name, role);
+                const formattedBirthday = birthdayDate ? format(birthdayDate, "yyyy-MM-dd") : "";
+                await tryRegister(email, password, name, formattedBirthday, gender);
+                setSuccessMessage("Account created successfully. Please log in.");
+                setIsRegister(false);
+                setConfirmPassword("");
             } else {
                 await tryLogin(email, password);
+                onLoginSuccess();
             }
-            // Token + expiry are stored in tryLogin() or tryRegister()
-            onLoginSuccess();
         } catch (err) {
             console.error(err);
             setError(err.message || (isRegister ? "Registration failed" : "Invalid email or password"));
@@ -71,6 +89,41 @@ function LoginForm({ onLoginSuccess }) {
                                 required
                                 disabled={loading}
                             />
+                        </label>
+                    </div>
+                )}
+
+                {isRegister && (
+                    <div className="loginForm__fieldGroup">
+                        <label className="loginForm__label">
+                            <span className="loginForm__labelText">Birthday</span>
+                            <div className="loginForm__dateWrapper">
+                                <button
+                                    type="button"
+                                    className="loginForm__input loginForm__dateTrigger"
+                                    onClick={() => setIsBirthdayOpen((open) => !open)}
+                                    disabled={loading}
+                                    aria-haspopup="dialog"
+                                    aria-expanded={isBirthdayOpen}
+                                >
+                                    {birthdayDate ? format(birthdayDate, "yyyy-MM-dd") : "Select birthday"}
+                                </button>
+                                {isBirthdayOpen && (
+                                    <div className="loginForm__datePopover" role="dialog" aria-label="Choose birthday">
+                                        <DayPicker
+                                            mode="single"
+                                            selected={birthdayDate}
+                                            onSelect={(date) => {
+                                                setBirthdayDate(date ?? null);
+                                                setIsBirthdayOpen(false);
+                                            }}
+                                            captionLayout="dropdown"
+                                            fromYear={new Date().getFullYear() - 120}
+                                            toYear={new Date().getFullYear()}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </label>
                     </div>
                 )}
@@ -127,16 +180,20 @@ function LoginForm({ onLoginSuccess }) {
 
                         <div className="loginForm__fieldGroup">
                             <label className="loginForm__label">
-                                <span className="loginForm__labelText">Role</span>
+                                <span className="loginForm__labelText">Gender</span>
                                 <select
                                     className="loginForm__input"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
+                                    value={gender}
+                                    onChange={(e) => setGender(e.target.value)}
                                     required
                                     disabled={loading}
                                 >
-                                    <option value="USER">User</option>
-                                    <option value="ADMIN">Admin</option>
+                                    <option value="" disabled>
+                                        Select gender
+                                    </option>
+                                    <option value="MALE">Male</option>
+                                    <option value="FEMALE">Female</option>
+                                    <option value="OTHER">Other</option>
                                 </select>
                             </label>
                         </div>
@@ -144,6 +201,7 @@ function LoginForm({ onLoginSuccess }) {
                 )}
 
                 {error && <div className="loginForm__error">{error}</div>}
+                {successMessage && <div className="loginForm__success">{successMessage}</div>}
 
                 <button
                     type="submit"
@@ -161,9 +219,12 @@ function LoginForm({ onLoginSuccess }) {
                         onClick={() => {
                             setIsRegister(!isRegister);
                             setError("");
+                            setSuccessMessage("");
                             setConfirmPassword("");
                             setName("");
-                            setRole("USER");
+                            setBirthdayDate(null);
+                            setIsBirthdayOpen(false);
+                            setGender("");
                         }}
                         disabled={loading}
                     >

@@ -74,17 +74,23 @@ export function getAuthHeader() {
 /**
  * REGISTER
  * POST /auth/register
- * Body: { email, password, name, role }
- * Success: { token, ttlSeconds } (auto-login on registration)
+ * Body: { email, password, name, birthday, gender }
+ * Success: account created (login happens separately)
  */
-export async function tryRegister(email, password, name, role) {
+export async function tryRegister(email, password, name, birthday, gender) {
+    console.log("[auth] register body", { email, password, name, birthday, gender });
     const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, name, role }),
+        body: JSON.stringify({ email, password, name, birthday, gender }),
     });
+
+    const text = await response.text();
+    console.log("status", response.status);
+    console.log("body", text);
+
 
     if (!response.ok) {
         let errorMessage = "Registration failed";
@@ -119,25 +125,12 @@ export async function tryRegister(email, password, name, role) {
         throw new Error(errorMessage);
     }
 
-    let data;
     try {
-        data = await response.json(); // { token, ttlSeconds }
-    } catch (err) {
-        logAuthError("register:invalid-json", {
-            status: response.status,
-            statusText: response.statusText,
-        });
-        throw new Error("Invalid response from server - expected JSON");
+        return await response.json();
+    } catch {
+        // Some backends return empty body on success; allow that.
+        return null;
     }
-
-    if (!data.token || typeof data.ttlSeconds !== "number") {
-        throw new Error("Invalid registration response from server");
-    }
-
-    // Persist token + expiry (include refresh token if provided)
-    storeToken(data.token, data.ttlSeconds, data.refreshToken, data.refreshTtlSeconds);
-
-    return data;
 }
 
 /**
