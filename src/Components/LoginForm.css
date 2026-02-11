@@ -3,26 +3,29 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background:
+        radial-gradient(circle at top, #fff7eb 0%, rgba(247, 228, 203, 0.9) 40%, rgba(247, 244, 239, 0.9) 100%),
+        linear-gradient(120deg, #f7e4cb 0%, #f7f4ef 60%);
     padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
 }
 
 .loginForm__panel {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    background: var(--surface-strong);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
     padding: 40px;
     width: 100%;
     max-width: 400px;
+    border: 1px solid var(--border);
 }
 
 .loginForm__title {
     margin: 0 0 32px 0;
     font-size: 28px;
     font-weight: 600;
-    color: #1a202c;
+    color: var(--text);
     text-align: center;
+    font-family: var(--font-display);
 }
 
 .loginForm__fieldGroup {
@@ -38,37 +41,37 @@
     margin-bottom: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #2d3748;
+    color: var(--text-muted);
 }
 
 .loginForm__input {
     width: 100%;
     padding: 12px 16px;
     font-size: 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
     transition: all 0.3s ease;
     box-sizing: border-box;
-    background-color: #f7fafc;
-    color: #1a202c;
+    background-color: #fffaf3;
+    color: var(--text);
     font-family: inherit;
 }
 
 .loginForm__input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--brand);
     background-color: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(212, 131, 92, 0.18);
 }
 
 .loginForm__input:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: #edf2f7;
+    background-color: #f1e6d2;
 }
 
 .loginForm__input::placeholder {
-    color: #a0aec0;
+    color: #a08973;
 }
 
 .loginForm__dateWrapper {
@@ -87,7 +90,7 @@
 .loginForm__dateTrigger::after {
     content: "v";
     font-size: 12px;
-    color: #718096;
+    color: var(--text-muted);
     margin-left: 8px;
 }
 
@@ -96,44 +99,44 @@
     top: calc(100% + 8px);
     left: 0;
     z-index: 10;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+    box-shadow: var(--shadow);
 }
 
 .rdp {
-    --rdp-accent-color: #667eea;
-    --rdp-background-color: #eef2ff;
+    --rdp-accent-color: var(--brand);
+    --rdp-background-color: #f6dcc5;
     font-family: inherit;
 }
 
 /* Style option items in select */
 .loginForm__input option {
     background-color: white;
-    color: #1a202c;
+    color: var(--text);
     padding: 8px 12px;
 }
 
 .loginForm__error {
-    background-color: #fed7d7;
-    color: #c53030;
+    background-color: #fde2d7;
+    color: #b8543e;
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 24px;
     font-size: 14px;
-    border-left: 4px solid #c53030;
+    border-left: 4px solid #b8543e;
 }
 
 .loginForm__success {
-    background-color: #c6f6d5;
-    color: #2f855a;
+    background-color: #dff0e0;
+    color: #3a6b47;
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 24px;
     font-size: 14px;
-    border-left: 4px solid #2f855a;
+    border-left: 4px solid #3a6b47;
 }
 
 .loginForm__submitBtn {
@@ -142,9 +145,9 @@
     font-size: 16px;
     font-weight: 600;
     color: white;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-transform: uppercase;
@@ -153,7 +156,7 @@
 
 .loginForm__submitBtn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 12px 24px rgba(180, 101, 65, 0.25);
 }
 
 .loginForm__submitBtn:active:not(:disabled) {
@@ -172,13 +175,13 @@
     gap: 8px;
     margin-top: 24px;
     font-size: 14px;
-    color: #4a5568;
+    color: var(--text-muted);
 }
 
 .loginForm__toggleBtn {
     background: none;
     border: none;
-    color: #667eea;
+    color: var(--brand-strong);
     font-weight: 600;
     cursor: pointer;
     text-decoration: underline;
@@ -188,7 +191,7 @@
 }
 
 .loginForm__toggleBtn:hover:not(:disabled) {
-    color: #764ba2;
+    color: var(--brand);
 }
 
 .loginForm__toggleBtn:disabled {

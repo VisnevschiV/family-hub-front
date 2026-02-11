@@ -1,18 +1,39 @@
-import './App.css'
+import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./Pages/LoginPage.jsx";
 import TodoListsPage from "./Pages/TodoListsPage.jsx";
+import AppShell from "./Layouts/AppShell.jsx";
+import DashboardPage from "./Pages/DashboardPage.jsx";
+import ProfilePage from "./Pages/ProfilePage.jsx";
+import FamilyHubPage from "./Pages/FamilyHubPage.jsx";
+import FamilyCalendarPage from "./Pages/FamilyCalendarPage.jsx";
+import WelcomePage from "./Pages/WelcomePage.jsx";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/welcome" element={<WelcomePage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/todos" element={<TodoListsPage />} />
+                <Route
+                    path="/register"
+                    element={<LoginPage initialMode="register" />}
+                />
+
+                <Route path="/" element={<Navigate to="/welcome" replace />} />
+
+                <Route path="/app" element={<AppShell />}>
+                    <Route index element={<FamilyHubPage />} />
+                    <Route path="dashboard" element={<Navigate to="/app" replace />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="family" element={<FamilyHubPage />} />
+                    <Route path="family/todo" element={<TodoListsPage />} />
+                    <Route path="family/calendar" element={<FamilyCalendarPage />} />
+                    <Route path="todos" element={<TodoListsPage />} />
+                </Route>
 
                 {/* default */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/welcome" replace />} />
             </Routes>
         </BrowserRouter>
     );

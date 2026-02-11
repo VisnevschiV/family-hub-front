@@ -5,7 +5,7 @@ import { tryLogin, tryRegister } from "../api/auth.js";
 import "react-day-picker/style.css";
 import "./LoginForm.css";
 
-function LoginForm({ onLoginSuccess }) {
+function LoginForm({ onLoginSuccess, initialMode = "login" }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,7 +16,7 @@ function LoginForm({ onLoginSuccess }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-    const [isRegister, setIsRegister] = useState(false);
+    const [isRegister, setIsRegister] = useState(initialMode === "register");
 
     async function handleSubmit(e) {
         e.preventDefault();

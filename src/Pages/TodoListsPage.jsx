@@ -29,16 +29,15 @@ export default function TodoListsPage() {
     // }, []);
 
     return (
-        <div style={{ padding: 24, display: "grid", gap: 16 }}>
-            <h1 style={{ margin: 0 }}>To‑Do Lists</h1>
+        <div className="page">
+            <header className="page__header">
+                <h1 className="page__title">Shared To-Do</h1>
+                <p className="page__subtitle">
+                    Coordinate chores, shopping, and reminders together.
+                </p>
+            </header>
 
-            <div
-                style={{
-                    display: "grid",
-                    gap: 16,
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                }}
-            >
+            <div className="page__grid">
                 {lists.map((list) => (
                     <TodoList
                         key={list.id}
