@@ -1,5 +1,5 @@
-import TodoList from "../Components/TodoList.jsx";
-import { fetchProtectedData } from "../api/fetchProtectedDataService.js";
+import TodoList from "../../Components/TodoList.jsx";
+import { fetchProtectedData } from "../../api/fetchProtectedDataService.js";
 
 export default function TodoListsPage() {
     const lists = [

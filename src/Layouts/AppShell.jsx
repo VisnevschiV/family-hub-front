@@ -51,10 +51,10 @@ function AppShell() {
                     <div className="appShell__navSection">
                         <div className="appShell__navLabel">Family</div>
                         <NavLink to="/app/family/todo" className="appShell__navLink">
-                            Shared To-Do
+                            To-Do's
                         </NavLink>
                         <NavLink to="/app/family/calendar" className="appShell__navLink">
-                            Shared Calendar
+                            Our Calendar
                         </NavLink>
                     </div>
                 </nav>

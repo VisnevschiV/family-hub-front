@@ -1,13 +1,12 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./Pages/LoginPage.jsx";
-import TodoListsPage from "./Pages/TodoListsPage.jsx";
+import LoginPage from "./Pages/Public/LoginPage.jsx";
+import WelcomePage from "./Pages/Public/WelcomePage.jsx";
+import TodoListsPage from "./Pages/Private/TodoListsPage.jsx";
 import AppShell from "./Layouts/AppShell.jsx";
-import DashboardPage from "./Pages/DashboardPage.jsx";
-import ProfilePage from "./Pages/ProfilePage.jsx";
-import FamilyHubPage from "./Pages/FamilyHubPage.jsx";
-import FamilyCalendarPage from "./Pages/FamilyCalendarPage.jsx";
-import WelcomePage from "./Pages/WelcomePage.jsx";
+import ProfileSettingsPage from "./Pages/Private/ProfileSettingsPage.jsx";
+import FamilyHubPage from "./Pages/Private/FamilyHubPage.jsx";
+import FamilyCalendarPage from "./Pages/Private/FamilyCalendarPage.jsx";
 
 function App() {
     return (
@@ -25,7 +24,7 @@ function App() {
                 <Route path="/app" element={<AppShell />}>
                     <Route index element={<FamilyHubPage />} />
                     <Route path="dashboard" element={<Navigate to="/app" replace />} />
-                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="profile" element={<ProfileSettingsPage />} />
                     <Route path="family" element={<FamilyHubPage />} />
                     <Route path="family/todo" element={<TodoListsPage />} />
                     <Route path="family/calendar" element={<FamilyCalendarPage />} />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchCurrentPersona, updatePersona } from "../api/persona.js";
+import { fetchCurrentPersona, updatePersona } from "../../api/persona.js";
 import "./ProfilePage.css";
 
 const emptyForm = {
@@ -9,7 +9,7 @@ const emptyForm = {
     avatarUrl: "",
 };
 
-function ProfilePage() {
+function ProfileSettingsPage() {
     const [form, setForm] = useState(emptyForm);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -202,4 +202,4 @@ function ProfilePage() {
     );
 }
 
-export default ProfilePage;
+export default ProfileSettingsPage;

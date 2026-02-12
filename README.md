@@ -1,16 +1,103 @@
-# React + Vite
+# Family Hub - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern family organization app that helps families manage shared tasks, calendars, and member profiles in one centralized hub.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React** 19.2.0 - UI framework
+- **Vite** 7.2.4 - Build tool & dev server with HMR
+- **React Router** 7.13.0 - Client-side routing
+- **date-fns** 4.1.0 - Date utilities
+- **react-day-picker** 9.7.0 - Calendar component
+- **ESLint** - Code linting
 
-## React Compiler
+## Project Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+ api/                    # API service layer
+    auth.js
+    persona.js
+    fetchProtectedDataService.js
+ Components/             # Reusable components
+    LoginForm.jsx
+    TodoList.jsx
+ Layouts/                # Layout wrappers
+    AppShell.jsx        # Main app layout with sidebar
+ Pages/                  # Page components
+    Public/             # Pages for unauthenticated users
+       WelcomePage.jsx
+       LoginPage.jsx
+    Private/            # Pages for authenticated users
+        FamilyHubPage.jsx
+        ProfileSettingsPage.jsx
+        TodoListsPage.jsx
+        FamilyCalendarPage.jsx
+ assets/                 # Static assets
+ App.jsx                 # Main app & routing
+ main.jsx                # Entry point
+ index.css               # Global styles
+```
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clone the repository and navigate to the project directory:
+   ```sh
+   cd family-hub-front
+   ```
+
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+
+## Development
+
+Start the development server with hot module replacement:
+```sh
+npm run dev
+```
+
+The app will be available at `localhost:5173` (or similar).
+
+## Build
+
+Create an optimized production build:
+```sh
+npm run build
+```
+
+Preview the production build:
+```sh
+npm run preview
+```
+
+## Linting
+
+Check code for linting errors:
+```sh
+npm run lint
+```
+
+## Pages
+
+- **Welcome** - Landing page for new visitors
+- **Login/Register** - Authentication pages
+- **Family Hub** - Family group management (invitation codes, members, shared spaces)
+- **Profile Settings** - Personal user profile (name, birthday, gender, avatar)
+- **To-Do Lists** - Shared family task management
+- **Family Calendar** - Shared family calendar
+
+## Routing
+
+- `/welcome` - Welcome page
+- `/login` - Login page
+- `/register` - Registration page
+- `/app` - Family Hub (requires authentication)
+  - `/app/profile` - Profile settings
+  - `/app/family/todo` - To-do lists
+  - `/app/family/calendar` - Family calendar
+
+## License
+
+Private project
