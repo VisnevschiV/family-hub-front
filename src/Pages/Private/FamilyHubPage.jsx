@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { fetchCurrentPersona } from "../../api/persona.js";
-import { createFamily } from "../../api/families.js";
+import { createFamily, joinFamily, generateJoinCode } from "../../api/families.js";
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
+import EnterFamilyModal from "../../Components/EnterFamilyModal.jsx";
+import InviteCodeModal from "../../Components/InviteCodeModal.jsx";
 
 function FamilyHubPage() {
     const [loading, setLoading] = useState(true);
@@ -9,6 +11,13 @@ function FamilyHubPage() {
     const [createOpen, setCreateOpen] = useState(false);
     const [createSaving, setCreateSaving] = useState(false);
     const [createError, setCreateError] = useState("");
+    const [enterOpen, setEnterOpen] = useState(false);
+    const [enterSaving, setEnterSaving] = useState(false);
+    const [enterError, setEnterError] = useState("");
+    const [inviteOpen, setInviteOpen] = useState(false);
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [inviteCode, setInviteCode] = useState("");
+    const [inviteExpiresAt, setInviteExpiresAt] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -48,6 +57,39 @@ function FamilyHubPage() {
         }
     }
 
+    async function handleJoinFamily(code) {
+        setEnterSaving(true);
+        setEnterError("");
+
+        try {
+            await joinFamily(code);
+            setHasFamily(true);
+            setEnterOpen(false);
+        } catch (err) {
+            setEnterError(err.message || "Failed to join family");
+        } finally {
+            setEnterSaving(false);
+        }
+    }
+
+    async function handleInviteMembers() {
+        setInviteOpen(true);
+        setInviteLoading(true);
+        setInviteCode("");
+
+        try {
+            const result = await generateJoinCode();
+            setInviteCode(result?.code ?? "");
+            setInviteExpiresAt(result?.expiresAt ?? "");
+        } catch (err) {
+            setInviteCode("");
+            setInviteOpen(false);
+            console.error(err.message || "Failed to generate invite code");
+        } finally {
+            setInviteLoading(false);
+        }
+    }
+
     return (
         <>
             <div className="page">
@@ -62,18 +104,27 @@ function FamilyHubPage() {
                     <section>
                         <div className="card ctaCard">
                             <div>
-                                <h2 className="card__title">Create your family</h2>
+                                <h2 className="card__title">Join or create family</h2>
                                 <p className="card__text">
-                                    Build your shared space for calendars, lists, and updates.
+                                    Start a new family space or join an existing one.
                                 </p>
                             </div>
-                            <button
-                                type="button"
-                                className="ctaButton"
-                                onClick={() => setCreateOpen(true)}
-                            >
-                                Create family
-                            </button>
+                            <div style={{ display: "flex", gap: "12px" }}>
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setEnterOpen(true)}
+                                >
+                                    Enter family
+                                </button>
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setCreateOpen(true)}
+                                >
+                                    Create family
+                                </button>
+                            </div>
                         </div>
                     </section>
                 )}
@@ -105,6 +156,19 @@ function FamilyHubPage() {
                 onCreate={handleCreateFamily}
                 saving={createSaving}
                 error={createError}
+            />
+            <EnterFamilyModal
+                isOpen={enterOpen}
+                onClose={() => setEnterOpen(false)}
+                onJoin={handleJoinFamily}
+                joining={enterSaving}
+                error={enterError}
+            />
+            <InviteCodeModal
+                isOpen={inviteOpen}
+                onClose={() => setInviteOpen(false)}
+                code={inviteCode}
+                expiresAt={inviteExpiresAt}
             />
         </>
     );

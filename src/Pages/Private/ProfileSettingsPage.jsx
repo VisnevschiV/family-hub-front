@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { fetchCurrentPersona, updatePersona } from "../../api/persona.js";
-import { createFamily, updateFamilyName } from "../../api/families.js";
+import { createFamily, updateFamilyName, leaveFamily, joinFamily, generateJoinCode } from "../../api/families.js";
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
+import EnterFamilyModal from "../../Components/EnterFamilyModal.jsx";
+import InviteCodeModal from "../../Components/InviteCodeModal.jsx";
 import "./ProfilePage.css";
 
 const emptyForm = {
@@ -22,9 +24,18 @@ function ProfileSettingsPage() {
     const [familySaving, setFamilySaving] = useState(false);
     const [familyError, setFamilyError] = useState("");
     const [familySuccess, setFamilySuccess] = useState("");
+    const [leaving, setLeaving] = useState(false);
+    const [leaveError, setLeaveError] = useState("");
     const [createOpen, setCreateOpen] = useState(false);
     const [createSaving, setCreateSaving] = useState(false);
     const [createError, setCreateError] = useState("");
+    const [enterOpen, setEnterOpen] = useState(false);
+    const [enterSaving, setEnterSaving] = useState(false);
+    const [enterError, setEnterError] = useState("");
+    const [inviteOpen, setInviteOpen] = useState(false);
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [inviteCode, setInviteCode] = useState("");
+    const [inviteExpiresAt, setInviteExpiresAt] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -132,6 +143,62 @@ function ProfileSettingsPage() {
         }
     }
 
+    async function handleLeaveFamily() {
+        const confirmed = window.confirm(
+            "Are you sure you want to leave this family? You will no longer have access to shared spaces."
+        );
+        if (!confirmed) return;
+
+        setLeaving(true);
+        setLeaveError("");
+
+        try {
+            await leaveFamily();
+            setHasFamily(false);
+            setFamilyName("");
+            setSuccess("You have left the family.");
+        } catch (err) {
+            setLeaveError(err.message || "Failed to leave family");
+        } finally {
+            setLeaving(false);
+        }
+    }
+
+    async function handleJoinFamily(code) {
+        setEnterSaving(true);
+        setEnterError("");
+
+        try {
+            const result = await joinFamily(code);
+            setHasFamily(true);
+            setFamilyName(result?.name ?? "");
+            setSuccess("Successfully joined family!");
+            setEnterOpen(false);
+        } catch (err) {
+            setEnterError(err.message || "Failed to join family");
+        } finally {
+            setEnterSaving(false);
+        }
+    }
+
+    async function handleInviteMembers() {
+        setInviteOpen(true);
+        setInviteLoading(true);
+        setInviteCode("");
+
+        try {
+            const result = await generateJoinCode();
+            setInviteCode(result?.code ?? "");
+            setInviteExpiresAt(result?.expiresAt ?? "");
+        } catch (err) {
+            setInviteCode("");
+            setInviteOpen(false);
+            setError(err.message || "Failed to generate invite code");
+        } finally {
+            setInviteLoading(false);
+        }
+    }
+
     return (
         <>
             <div className="page">
@@ -146,18 +213,27 @@ function ProfileSettingsPage() {
                     <section className="profileSection">
                         <div className="card ctaCard">
                             <div>
-                                <h2 className="card__title">Create your family</h2>
+                                <h2 className="card__title">Join or create family</h2>
                                 <p className="card__text">
-                                    Start a family space to share lists, calendars, and updates.
+                                    Start a new family space or join an existing one.
                                 </p>
                             </div>
-                            <button
-                                type="button"
-                                className="ctaButton"
-                                onClick={() => setCreateOpen(true)}
-                            >
-                                Create family
-                            </button>
+                            <div style={{ display: "flex", gap: "12px" }}>
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setEnterOpen(true)}
+                                >
+                                    Enter family
+                                </button>
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setCreateOpen(true)}
+                                >
+                                    Create family
+                                </button>
+                            </div>
                         </div>
                     </section>
                 )}
@@ -293,20 +369,28 @@ function ProfileSettingsPage() {
                             </form>
                         </div>
 
+                        {leaveError && (
+                            <div className="profileMessage profileMessage--error">
+                                {leaveError}
+                            </div>
+                        )}
+
                         <div className="familyActionsLarge">
                             <button
                                 type="button"
                                 className="familyActionButton familyActionButton--invite"
-                                onClick={() => console.log("Invite members")}
+                                onClick={handleInviteMembers}
+                                disabled={inviteLoading}
                             >
                                 Invite members
                             </button>
                             <button
                                 type="button"
                                 className="familyActionButton familyActionButton--danger"
-                                onClick={() => console.log("Leave family")}
+                                onClick={handleLeaveFamily}
+                                disabled={leaving}
                             >
-                                Leave family
+                                {leaving ? "Leaving..." : "Leave family"}
                             </button>
                         </div>
                     </section>
@@ -327,6 +411,19 @@ function ProfileSettingsPage() {
                 onCreate={handleCreateFamily}
                 saving={createSaving}
                 error={createError}
+            />
+            <EnterFamilyModal
+                isOpen={enterOpen}
+                onClose={() => setEnterOpen(false)}
+                onJoin={handleJoinFamily}
+                joining={enterSaving}
+                error={enterError}
+            />
+            <InviteCodeModal
+                isOpen={inviteOpen}
+                onClose={() => setInviteOpen(false)}
+                code={inviteCode}
+                expiresAt={inviteExpiresAt}
             />
         </>
     );

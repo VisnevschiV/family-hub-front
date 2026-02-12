@@ -172,6 +172,22 @@
     color: var(--text-muted);
 }
 
+.appShell__logoutButton {
+    width: 100%;
+    background: transparent;
+    color: #b8543e;
+    border: 1px solid #e9b7a4;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.appShell__logoutButton:hover {
+    background: #fde2d7;
+}
+
 .appShell__content {
     padding: 12px 36px 40px;
 }

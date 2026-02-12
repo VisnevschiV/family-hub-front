@@ -1,4 +1,5 @@
 import "./App.css";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./Pages/Public/LoginPage.jsx";
 import WelcomePage from "./Pages/Public/WelcomePage.jsx";
@@ -7,8 +8,34 @@ import AppShell from "./Layouts/AppShell.jsx";
 import ProfileSettingsPage from "./Pages/Private/ProfileSettingsPage.jsx";
 import FamilyHubPage from "./Pages/Private/FamilyHubPage.jsx";
 import FamilyCalendarPage from "./Pages/Private/FamilyCalendarPage.jsx";
+import { fetchCurrentPersona } from "./api/persona.js";
 
 function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+    useEffect(() => {
+        // Check if user is authenticated by trying to fetch their persona
+        const checkAuth = async () => {
+            try {
+                await fetchCurrentPersona();
+                setIsAuthenticated(true);
+            } catch {
+                setIsAuthenticated(false);
+            }
+        };
+
+        checkAuth();
+    }, []);
+
+    if (isAuthenticated === null) {
+        // Loading
+        return (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+                <div>Loading...</div>
+            </div>
+        );
+    }
+
     return (
         <BrowserRouter>
             <Routes>
@@ -19,7 +46,7 @@ function App() {
                     element={<LoginPage initialMode="register" />}
                 />
 
-                <Route path="/" element={<Navigate to="/welcome" replace />} />
+                <Route path="/" element={<Navigate to={isAuthenticated ? "/app" : "/welcome"} replace />} />
 
                 <Route path="/app" element={<AppShell />}>
                     <Route index element={<FamilyHubPage />} />
@@ -32,7 +59,7 @@ function App() {
                 </Route>
 
                 {/* default */}
-                <Route path="*" element={<Navigate to="/welcome" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     );

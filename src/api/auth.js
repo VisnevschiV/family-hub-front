@@ -165,4 +165,19 @@ export async function fetchCurrentUser() {
     }
 }
 
+/**
+ * LOGOUT
+ * POST /auth/logout
+ * Clears the auth token cookie
+ */
+export async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
+    } catch (err) {
+        logAuthError("logout:error", err);
+    }
+}
 

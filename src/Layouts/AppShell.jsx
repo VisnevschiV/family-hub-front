@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { fetchCurrentPersona } from "../api/persona.js";
+import { logout } from "../api/auth.js";
 import "./AppShell.css";
 
 function AppShell() {
+    const navigate = useNavigate();
     const [persona, setPersona] = useState(null);
     const [personaLoading, setPersonaLoading] = useState(true);
 
@@ -37,6 +39,11 @@ function AppShell() {
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }, [persona]);
+
+    async function handleLogout() {
+        await logout();
+        navigate("/welcome", { replace: true });
+    }
 
     return (
         <div className="appShell">
@@ -78,6 +85,14 @@ function AppShell() {
                         <div className="appShell__userMeta">Account</div>
                     </div>
                 </NavLink>
+
+                <button
+                    type="button"
+                    className="appShell__logoutButton"
+                    onClick={handleLogout}
+                >
+                    Log out
+                </button>
             </aside>
 
             <div className="appShell__main">
