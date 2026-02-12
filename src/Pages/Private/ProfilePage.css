@@ -101,3 +101,50 @@
     opacity: 0.7;
     cursor: not-allowed;
 }
+
+.familySave {
+    grid-column: 1 / -1;
+    justify-self: start;
+    background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+    color: #fffaf3;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(180, 101, 65, 0.25);
+}
+
+.familySave:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.familyActionsLarge {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.familyActionButton {
+    padding: 18px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--surface-strong);
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+.familyActionButton--invite {
+    border-color: #b6d4bb;
+    color: #3a6b47;
+    background: #dff0e0;
+}
+
+.familyActionButton--danger {
+    border-color: #e9b7a4;
+    color: #b8543e;
+    background: #fde2d7;
+}

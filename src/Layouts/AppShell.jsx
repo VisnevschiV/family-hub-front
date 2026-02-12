@@ -26,7 +26,9 @@ function AppShell() {
 
     const displayName = personaLoading
         ? "Loading..."
-        : persona?.name || "Family Member";
+        : persona?.family?.name
+            ? `${persona?.name || "Family Member"} ${persona.family.name}`
+            : persona?.name || "Family Member";
 
     const initials = useMemo(() => {
         if (!persona?.name) return "FH";
