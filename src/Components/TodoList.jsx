@@ -1,8 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./TodoList.css";
 
-export default function TodoList({ title, initialItems = [] }) {
-    const [items, setItems] = useState(initialItems);
+export default function TodoList({
+    listId,
+    title,
+    items = [],
+    onItemsChange,
+    onRequestRename,
+    onDeleteList,
+    onEditTask,
+}) {
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [hideCompleted, setHideCompleted] = useState(false);
@@ -15,6 +22,8 @@ export default function TodoList({ title, initialItems = [] }) {
     const [dragStartX, setDragStartX] = useState(null);
     const [deletePreviewId, setDeletePreviewId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef(null);
 
     const totalCount = items.length;
     const doneCount = useMemo(() => items.filter((i) => i.done).length, [items]);
@@ -23,8 +32,17 @@ export default function TodoList({ title, initialItems = [] }) {
         return hideCompleted ? items.filter((i) => !i.done) : items;
     }, [items, hideCompleted]);
 
+    function updateItems(nextItemsOrUpdater) {
+        const nextItems =
+            typeof nextItemsOrUpdater === "function"
+                ? nextItemsOrUpdater(items)
+                : nextItemsOrUpdater;
+
+        onItemsChange(listId, nextItems);
+    }
+
     function toggleItem(id) {
-        setItems((prev) =>
+        updateItems((prev) =>
             prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i))
         );
     }
@@ -50,11 +68,40 @@ export default function TodoList({ title, initialItems = [] }) {
         const value = newText.trim();
         if (!value) return;
 
-        setItems((prev) => [
+        updateItems((prev) => [
             ...prev,
             { id: crypto.randomUUID(), text: value, done: false },
         ]);
         closeAdd();
+    }
+
+    useEffect(() => {
+        function handleOutsideClick(e) {
+            if (!menuRef.current) return;
+            if (menuRef.current.contains(e.target)) return;
+            setIsMenuOpen(false);
+        }
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
+
+    function handleRenameList() {
+        onRequestRename(listId);
+    }
+
+    function handleDeleteList() {
+        const confirmed = window.confirm(
+            `Delete to-do list \"${title}\"? This cannot be undone.`
+        );
+        if (!confirmed) return;
+        onDeleteList(listId);
+    }
+
+    function handleEditTask(item) {
+        const nextText = window.prompt("Edit task:", item.text);
+        if (nextText === null) return;
+        onEditTask(listId, item.id, nextText);
     }
 
     // ----- Drag & drop logic -----
@@ -74,7 +121,7 @@ export default function TodoList({ title, initialItems = [] }) {
         e.preventDefault();
         if (!draggingId || draggingId === overId || deletingId) return;
 
-        setItems((prev) => {
+        updateItems((prev) => {
             const fromIndex = prev.findIndex((i) => i.id === draggingId);
             const toIndex = prev.findIndex((i) => i.id === overId);
             if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
@@ -120,7 +167,7 @@ export default function TodoList({ title, initialItems = [] }) {
             setDragStartX(null);
 
             setTimeout(() => {
-                setItems((prev) => prev.filter((i) => i.id !== id));
+                updateItems((prev) => prev.filter((i) => i.id !== id));
                 setDeletingId(null);
             }, 300); // match CSS duration below
         } else {
@@ -131,151 +178,203 @@ export default function TodoList({ title, initialItems = [] }) {
     }
 
     return (
-           <section className="todoList">
-               <header
-                   className="todoList__header"
-                   role="button"
-                   tabIndex={0}
-                   aria-expanded={!isCollapsed}
-                   onClick={toggleCollapsed}
-                   onKeyDown={(e) => {
-                       if (e.key === "Enter" || e.key === " ") {
-                           e.preventDefault();
-                           toggleCollapsed();
-                       }
-                   }}
-               >
-                   <div className="todoList__heading">
-                       <h2 className="todoList__title">{title}</h2>
-                       <div className="todoList__meta">
-                           {doneCount}/{totalCount}
-                       </div>
-                   </div>
+        <section className="todoList">
+            <header
+                className="todoList__header"
+                role="button"
+                tabIndex={0}
+                aria-expanded={!isCollapsed}
+                onClick={toggleCollapsed}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleCollapsed();
+                    }
+                }}
+            >
+                <div className="todoList__heading">
+                    <h2 className="todoList__title">{title}</h2>
+                    <div className="todoList__meta">
+                        {doneCount}/{totalCount}
+                    </div>
+                </div>
 
-                   <div className="todoList__headerActions">
-                       <button
-                           type="button"
-                           className="todoList__toggleDoneBtn"
-                           aria-pressed={hideCompleted}
-                           onClick={(e) => {
-                               e.stopPropagation();
-                               setHideCompleted((prev) => !prev);
-                           }}
-                           onKeyDown={(e) => e.stopPropagation()}
-                           title={
-                               hideCompleted
-                                   ? "Show completed items"
-                                   : "Hide completed items"
-                           }
-                       >
-                           {hideCompleted ? "Show done" : "Hide done"}
-                       </button>
+                <div className="todoList__headerActions">
+                    <button
+                        type="button"
+                        className="todoList__iconBtn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openAdd();
+                        }}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-label={`Add a task to ${title}`}
+                        title="Add task"
+                    >
+                        +
+                    </button>
 
-                       <button
-                           type="button"
-                           className="todoList__iconBtn"
-                           onClick={(e) => {
-                               e.stopPropagation();
-                               openAdd();
-                           }}
-                           onKeyDown={(e) => e.stopPropagation()}
-                           aria-label={`Add a task to ${title}`}
-                           title="Add task"
-                       >
-                           +
-                       </button>
-                   </div>
-               </header>
+                    <div className="todoList__menuWrap" ref={menuRef}>
+                        <button
+                            type="button"
+                            className="todoList__menuBtn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsMenuOpen((prev) => !prev);
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            aria-haspopup="menu"
+                            aria-expanded={isMenuOpen}
+                            aria-label={`More actions for ${title}`}
+                            title="More actions"
+                        >
+                            ...
+                        </button>
 
-               {!isCollapsed && (
-                   <ul className="todoList__items">
-                       {visibleItems.map((item) => {
-                           const classes = ["todoList__item"];
-                           if (item.id === draggingId)
-                               classes.push("todoList__item--dragging");
-                           if (item.id === deletePreviewId)
-                               classes.push("todoList__item--deletePreview");
-                           if (item.id === deletingId)
-                               classes.push("todoList__item--deleting");
+                        {isMenuOpen && (
+                            <div
+                                className="todoList__menu"
+                                role="menu"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button
+                                    type="button"
+                                    className="todoList__menuItem"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setHideCompleted((prev) => !prev);
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    {hideCompleted ? "Show done" : "Hide done"}
+                                </button>
 
-                           return (
-                               <li
-                                   key={item.id}
-                                   className={classes.join(" ")}
-                                   draggable
-                                   onDragStart={(e) =>
-                                       handleDragStart(e, item.id)
-                                   }
-                                   onDragOver={(e) => handleDragOver(e, item.id)}
-                                   onDrag={(e) => handleDrag(e, item.id)}
-                                   onDragEnd={(e) => handleDragEnd(e, item.id)}
-                               >
-                                   <label className="todoList__label">
-                                       <input
-                                           className="todoList__checkbox"
-                                           type="checkbox"
-                                           checked={item.done}
-                                           onChange={() => toggleItem(item.id)}
-                                       />
-                                       <span
-                                           className={
-                                               item.done
-                                                   ? "todoList__text todoList__text--done"
-                                                   : "todoList__text"
-                                           }
-                                       >
-                                           {item.text}
-                                       </span>
-                                   </label>
-                               </li>
-                           );
-                       })}
-                   </ul>
-               )}
+                                <button
+                                    type="button"
+                                    className="todoList__menuItem"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        handleRenameList();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    Rename
+                                </button>
 
-               {isAddOpen && !isCollapsed && (
-                   <div
-                       className="todoList__modalBackdrop"
-                       role="dialog"
-                       aria-modal="true"
-                       onMouseDown={(e) => {
-                           if (e.target === e.currentTarget) closeAdd();
-                       }}
-                   >
-                       <div className="todoList__modal">
-                           <div className="todoList__modalTitle">New task</div>
+                                <button
+                                    type="button"
+                                    className="todoList__menuItem todoList__menuItem--danger"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        handleDeleteList();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </header>
 
-                           <form
-                               className="todoList__modalForm"
-                               onSubmit={submitAdd}
-                           >
-                               <input
-                                   className="todoList__modalInput"
-                                   value={newText}
-                                   onChange={(e) => setNewText(e.target.value)}
-                                   placeholder="e.g. Buy milk"
-                                   autoFocus
-                               />
+            {!isCollapsed && (
+                <ul className="todoList__items">
+                    {visibleItems.map((item) => {
+                        const classes = ["todoList__item"];
+                        if (item.id === draggingId)
+                            classes.push("todoList__item--dragging");
+                        if (item.id === deletePreviewId)
+                            classes.push("todoList__item--deletePreview");
+                        if (item.id === deletingId)
+                            classes.push("todoList__item--deleting");
 
-                               <div className="todoList__modalActions">
-                                   <button
-                                       type="button"
-                                       className="todoList__modalBtn todoList__modalBtn--ghost"
-                                       onClick={closeAdd}
-                                   >
-                                       Cancel
-                                   </button>
-                                   <button
-                                       type="submit"
-                                       className="todoList__modalBtn todoList__modalBtn--primary"
-                                   >
-                                       Add
-                                   </button>
-                               </div>
-                           </form>
-                       </div>
-                   </div>
-               )}
-           </section>
-        );
-    }
+                        return (
+                            <li
+                                key={item.id}
+                                className={classes.join(" ")}
+                                draggable
+                                onDragStart={(e) =>
+                                    handleDragStart(e, item.id)
+                                }
+                                onDragOver={(e) => handleDragOver(e, item.id)}
+                                onDrag={(e) => handleDrag(e, item.id)}
+                                onDragEnd={(e) => handleDragEnd(e, item.id)}
+                            >
+                                <label className="todoList__label">
+                                    <input
+                                        className="todoList__checkbox"
+                                        type="checkbox"
+                                        checked={item.done}
+                                        onChange={() => toggleItem(item.id)}
+                                    />
+                                    <span
+                                        className={
+                                            item.done
+                                                ? "todoList__text todoList__text--done"
+                                                : "todoList__text"
+                                        }
+                                    >
+                                        {item.text}
+                                    </span>
+                                </label>
+
+                                <button
+                                    type="button"
+                                    className="todoList__editTaskBtn"
+                                    onClick={() => handleEditTask(item)}
+                                >
+                                    Edit
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+
+            {isAddOpen && !isCollapsed && (
+                <div
+                    className="todoList__modalBackdrop"
+                    role="dialog"
+                    aria-modal="true"
+                    onMouseDown={(e) => {
+                        if (e.target === e.currentTarget) closeAdd();
+                    }}
+                >
+                    <div className="todoList__modal">
+                        <div className="todoList__modalTitle">New task</div>
+
+                        <form
+                            className="todoList__modalForm"
+                            onSubmit={submitAdd}
+                        >
+                            <input
+                                className="todoList__modalInput"
+                                value={newText}
+                                onChange={(e) => setNewText(e.target.value)}
+                                placeholder="e.g. Buy milk"
+                                autoFocus
+                            />
+
+                            <div className="todoList__modalActions">
+                                <button
+                                    type="button"
+                                    className="todoList__modalBtn todoList__modalBtn--ghost"
+                                    onClick={closeAdd}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="todoList__modalBtn todoList__modalBtn--primary"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </section>
+    );
+}

@@ -1,0 +1,20 @@
+.todoListsPage_container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    max-width: 90vw;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .todoListsPage_container {
+        max-width: 95vw;
+    }
+}
+
+@media (max-width: 700px) {
+    .todoListsPage_container {
+        max-width: 100%;
+    }
+}
