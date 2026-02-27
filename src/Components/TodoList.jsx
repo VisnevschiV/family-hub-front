@@ -6,6 +6,9 @@ export default function TodoList({
     title,
     items = [],
     onItemsChange,
+    onAddTask,
+    onDeleteTask,
+    onToggleTask,
     onRequestRename,
     onDeleteList,
     onEditTask,
@@ -41,10 +44,19 @@ export default function TodoList({
         onItemsChange(listId, nextItems);
     }
 
-    function toggleItem(id) {
-        updateItems((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i))
-        );
+    async function toggleItem(id) {
+        try {
+            if (typeof onToggleTask === "function") {
+                await onToggleTask(listId, id);
+                return;
+            }
+
+            updateItems((prev) =>
+                prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i))
+            );
+        } catch (err) {
+            console.error(err.message || "Failed to update task status");
+        }
     }
 
     function toggleCollapsed() {
@@ -63,16 +75,24 @@ export default function TodoList({
         setNewText("");
     }
 
-    function submitAdd(e) {
+    async function submitAdd(e) {
         e.preventDefault();
         const value = newText.trim();
         if (!value) return;
 
-        updateItems((prev) => [
-            ...prev,
-            { id: crypto.randomUUID(), text: value, done: false },
-        ]);
-        closeAdd();
+        try {
+            if (typeof onAddTask === "function") {
+                await onAddTask(listId, value);
+            } else {
+                updateItems((prev) => [
+                    ...prev,
+                    { id: crypto.randomUUID(), text: value, done: false },
+                ]);
+            }
+            closeAdd();
+        } catch (err) {
+            console.error(err.message || "Failed to create task");
+        }
     }
 
     useEffect(() => {
@@ -149,7 +169,7 @@ export default function TodoList({
         }
     }
 
-    function handleDragEnd(e, id) {
+    async function handleDragEnd(e, id) {
         if (!dragStartX) {
             setDraggingId(null);
             setDragStartX(null);
@@ -166,9 +186,18 @@ export default function TodoList({
             setDraggingId(null);
             setDragStartX(null);
 
-            setTimeout(() => {
-                updateItems((prev) => prev.filter((i) => i.id !== id));
-                setDeletingId(null);
+            setTimeout(async () => {
+                try {
+                    if (typeof onDeleteTask === "function") {
+                        await onDeleteTask(listId, id);
+                    } else {
+                        updateItems((prev) => prev.filter((i) => i.id !== id));
+                    }
+                } catch (err) {
+                    console.error(err.message || "Failed to delete task");
+                } finally {
+                    setDeletingId(null);
+                }
             }, 300); // match CSS duration below
         } else {
             setDraggingId(null);
