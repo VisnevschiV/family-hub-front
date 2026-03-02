@@ -2,7 +2,7 @@
 
 // Base URL of your Spring Boot backend.
 // If you change ports or host, you only change it here.
-const API_BASE_URL = "http://localhost:8080/auth";
+const API_BASE_URL = "https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net/auth";
 
 const DEBUG_AUTH = true;
 

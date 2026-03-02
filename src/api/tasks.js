@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = "https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net";
 const DEBUG_TASKS = true;
 
 function logTaskError(context, details) {

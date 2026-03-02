@@ -1,5 +1,5 @@
 export async function fetchProtectedData() {
-    const response = await fetch("http://localhost:8080/some/protected", {
+    const response = await fetch("https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net/some/protected", {
         headers: {
             "Content-Type": "application/json",
         },
