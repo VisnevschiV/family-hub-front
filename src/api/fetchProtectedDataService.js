@@ -1,5 +1,7 @@
+import { API_BASE_URL } from "./config.js";
+
 export async function fetchProtectedData() {
-    const response = await fetch("https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net/some/protected", {
+    const response = await fetch(`${API_BASE_URL}/some/protected`, {
         headers: {
             "Content-Type": "application/json",
         },

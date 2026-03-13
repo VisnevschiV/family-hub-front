@@ -5,6 +5,7 @@ import {
     getCalendarEvents,
     updateCalendarEvent,
 } from "../../api/calendar.js";
+import { getFamilyMembers } from "../../api/families.js";
 import "./FamilyCalendarPage.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -47,6 +48,8 @@ function mapBackendEvents(data) {
                 id: String(backendId),
                 title: eventItem.title || eventItem.name || "Untitled event",
                 description: eventItem.description || "",
+                participantIds: extractParticipantIds(eventItem),
+                participantNames: extractParticipantNames(eventItem),
                 timestamp: parsedDate.getTime(),
                 dateKey: toDateKey(parsedDate),
                 timeLabel: parsedDate.toLocaleTimeString([], {
@@ -56,6 +59,80 @@ function mapBackendEvents(data) {
             };
         })
         .filter(Boolean);
+}
+
+function extractParticipantIds(eventItem) {
+    const candidates =
+        eventItem.participants ||
+        eventItem.participantIds ||
+        eventItem.participantsIds ||
+        eventItem.participantIDs ||
+        eventItem.attendeeIds ||
+        eventItem.memberIds ||
+        eventItem.assigneeIds;
+
+    if (Array.isArray(candidates)) {
+        return candidates
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value));
+    }
+
+    const participantObjects =
+        eventItem.participants || eventItem.attendees || eventItem.members || eventItem.assignees;
+
+    if (Array.isArray(participantObjects)) {
+        return participantObjects
+            .map((participant) => {
+                if (participant === null || participant === undefined) return null;
+                if (typeof participant === "string" || typeof participant === "number") {
+                    const participantId = Number(participant);
+                    return Number.isInteger(participantId) ? participantId : null;
+                }
+                if (typeof participant !== "object") return null;
+
+                const participantId =
+                    participant.id ||
+                    participant.ID ||
+                    participant.personaId ||
+                    participant.userId ||
+                    participant.memberId;
+
+                const normalizedId = Number(participantId);
+                return Number.isInteger(normalizedId) ? normalizedId : null;
+            })
+            .filter(Boolean);
+    }
+
+    return [];
+}
+
+function extractParticipantNames(eventItem) {
+    const participantObjects =
+        eventItem.participants || eventItem.attendees || eventItem.members || eventItem.assignees;
+
+    if (Array.isArray(participantObjects)) {
+        return participantObjects
+            .map((participant) => {
+                if (participant === null || participant === undefined) return null;
+                if (typeof participant === "string") return participant;
+                if (typeof participant !== "object") return null;
+
+                return (
+                    participant.name ||
+                    participant.fullName ||
+                    participant.displayName ||
+                    participant.email ||
+                    null
+                );
+            })
+            .filter(Boolean);
+    }
+
+    if (Array.isArray(eventItem.participantNames)) {
+        return eventItem.participantNames.filter(Boolean);
+    }
+
+    return [];
 }
 
 function FamilyCalendarPage() {
@@ -68,6 +145,9 @@ function FamilyCalendarPage() {
     const [eventTitle, setEventTitle] = useState("");
     const [eventDescription, setEventDescription] = useState("");
     const [eventDateTime, setEventDateTime] = useState("");
+    const [familyMembers, setFamilyMembers] = useState([]);
+    const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
+    const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
     const [editingEventId, setEditingEventId] = useState(null);
     const [selectedDateKey, setSelectedDateKey] = useState(() => toDateKey(new Date()));
     const [calendarError, setCalendarError] = useState("");
@@ -80,14 +160,15 @@ function FamilyCalendarPage() {
     useEffect(() => {
         let active = true;
 
-        getCalendarEvents()
-            .then((data) => {
+        Promise.all([getCalendarEvents(), getFamilyMembers()])
+            .then(([eventsData, membersData]) => {
                 if (!active) return;
-                setEvents(mapBackendEvents(data));
+                setEvents(mapBackendEvents(eventsData));
+                setFamilyMembers(Array.isArray(membersData) ? membersData : []);
             })
             .catch((error) => {
                 if (!active) return;
-                setCalendarError(error.message || "Failed to load calendar events");
+                setCalendarError(error.message || "Failed to load calendar data");
             });
 
         return () => {
@@ -182,6 +263,8 @@ function FamilyCalendarPage() {
         setEventDateTime(localNow.toISOString().slice(0, 16));
         setEventTitle("");
         setEventDescription("");
+        setSelectedParticipantIds([]);
+        setParticipantsDropdownOpen(false);
         setEditingEventId(null);
         setCreateModalOpen(true);
     }
@@ -194,6 +277,8 @@ function FamilyCalendarPage() {
         setEventTitle(eventItem.title);
         setEventDescription(eventItem.description || "");
         setEventDateTime(localValue);
+        setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
+        setParticipantsDropdownOpen(false);
         setEditingEventId(eventItem.id);
         setCreateModalOpen(true);
     }
@@ -201,6 +286,16 @@ function FamilyCalendarPage() {
     function closeCreateModal() {
         setCreateModalOpen(false);
         setEditingEventId(null);
+        setParticipantsDropdownOpen(false);
+    }
+
+    function toggleParticipant(participantId) {
+        setSelectedParticipantIds((current) => {
+            if (current.includes(participantId)) {
+                return current.filter((id) => id !== participantId);
+            }
+            return [...current, participantId];
+        });
     }
 
     async function handleCreateEvent(event) {
@@ -219,9 +314,15 @@ function FamilyCalendarPage() {
             setCalendarError("");
 
             if (editingEventId) {
-                await updateCalendarEvent(editingEventId, title, description, isoTime);
+                await updateCalendarEvent(
+                    editingEventId,
+                    title,
+                    description,
+                    isoTime,
+                    selectedParticipantIds
+                );
             } else {
-                await createCalendarEvent(title, description, isoTime);
+                await createCalendarEvent(title, description, isoTime, selectedParticipantIds);
             }
 
             await refreshEvents();
@@ -265,6 +366,17 @@ function FamilyCalendarPage() {
                 .sort((a, b) => a.timestamp - b.timestamp),
         [events, selectedDateKey]
     );
+
+    const selectedParticipantLabels = useMemo(() => {
+        if (selectedParticipantIds.length === 0) {
+            return "No participants selected";
+        }
+
+        const membersById = new Map(familyMembers.map((member) => [member.id, member.name]));
+        return selectedParticipantIds
+            .map((participantId) => membersById.get(participantId) || participantId)
+            .join(", ");
+    }, [familyMembers, selectedParticipantIds]);
 
     return (
         <div className="page">
@@ -336,6 +448,11 @@ function FamilyCalendarPage() {
                                             >
                                                 <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
                                                 <div className="calendarView__eventTitle">{eventItem.title}</div>
+                                                {eventItem.participantNames.length > 0 ? (
+                                                    <div className="calendarView__eventDescription">
+                                                        With: {eventItem.participantNames.join(", ")}
+                                                    </div>
+                                                ) : null}
                                                 {eventItem.description ? (
                                                     <div className="calendarView__eventDescription">
                                                         {eventItem.description}
@@ -367,6 +484,11 @@ function FamilyCalendarPage() {
                                 <div className="calendarItinerary__time">{eventItem.timeLabel}</div>
                                 <div className="calendarItinerary__content">
                                     <h3 className="calendarItinerary__title">{eventItem.title}</h3>
+                                    {eventItem.participantNames.length > 0 ? (
+                                        <p className="calendarItinerary__description">
+                                            With: {eventItem.participantNames.join(", ")}
+                                        </p>
+                                    ) : null}
                                     <p className="calendarItinerary__description">{eventItem.description}</p>
                                 </div>
                                 <div className="calendarItinerary__actions">
@@ -443,6 +565,47 @@ function FamilyCalendarPage() {
                                     required
                                 />
                             </label>
+
+                            <div className="calendarModalField">
+                                <span>Participants</span>
+                                <button
+                                    type="button"
+                                    className="calendarParticipants__trigger"
+                                    onClick={() =>
+                                        setParticipantsDropdownOpen((current) => !current)
+                                    }
+                                >
+                                    {selectedParticipantLabels}
+                                </button>
+
+                                {participantsDropdownOpen ? (
+                                    <div className="calendarParticipants__menu">
+                                        {familyMembers.length === 0 ? (
+                                            <p className="calendarParticipants__empty">
+                                                No family members available
+                                            </p>
+                                        ) : (
+                                            familyMembers.map((member) => {
+                                                const isSelected = selectedParticipantIds.includes(member.id);
+
+                                                return (
+                                                    <label
+                                                        key={member.id}
+                                                        className="calendarParticipants__option"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleParticipant(member.id)}
+                                                        />
+                                                        <span>{member.name}</span>
+                                                    </label>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                ) : null}
+                            </div>
 
                             <div className="calendarModalActions">
                                 {editingEventId ? (

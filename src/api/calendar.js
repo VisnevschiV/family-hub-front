@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net";
+import { API_BASE_URL } from "./config.js";
 
 async function extractErrorMessage(response, fallback) {
     let errorMessage = fallback;
@@ -40,14 +40,18 @@ export async function getCalendarEvents() {
     }
 }
 
-export async function createCalendarEvent(title, description, time) {
+export async function createCalendarEvent(title, description, time, participantIds = []) {
+    const participants = participantIds
+        .map((id) => Number(id))
+        .filter((id) => Number.isInteger(id));
+
     const response = await fetch(`${API_BASE_URL}/calendar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ title, description, time }),
+        body: JSON.stringify({ title, description, time, participants }),
     });
 
     if (!response.ok) {
@@ -59,14 +63,18 @@ export async function createCalendarEvent(title, description, time) {
     }
 }
 
-export async function updateCalendarEvent(eventId, title, description, time) {
+export async function updateCalendarEvent(eventId, title, description, time, participantIds = []) {
+    const participants = participantIds
+        .map((id) => Number(id))
+        .filter((id) => Number.isInteger(id));
+
     const response = await fetch(`${API_BASE_URL}/calendar/${encodeURIComponent(eventId)}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ title, description, time }),
+        body: JSON.stringify({ title, description, time, participants }),
     });
 
     if (!response.ok) {

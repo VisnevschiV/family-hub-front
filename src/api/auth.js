@@ -1,8 +1,8 @@
 // src/api/auth.js
 
-// Base URL of your Spring Boot backend.
-// If you change ports or host, you only change it here.
-const API_BASE_URL = "https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net/auth";
+import { API_BASE_URL } from "./config.js";
+
+const AUTH_API_BASE_URL = `${API_BASE_URL}/auth`;
 
 const DEBUG_AUTH = true;
 
@@ -24,7 +24,7 @@ function logAuthError(context, details) {
  * Success: account created (login happens separately)
  */
 export async function tryRegister(email, password, name, birthday, gender) {
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export async function tryRegister(email, password, name, birthday, gender) {
  * Success: server sets auth cookies
  */
 export async function tryLogin(email, password) {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -141,7 +141,7 @@ export async function tryLogin(email, password) {
  * GET /auth/me with cookies
  */
 export async function fetchCurrentUser() {
-    const response = await fetch(`${API_BASE_URL}/me`, {
+    const response = await fetch(`${AUTH_API_BASE_URL}/me`, {
         method: "GET",
         credentials: "include",
     });
@@ -172,7 +172,7 @@ export async function fetchCurrentUser() {
  */
 export async function logout() {
     try {
-        await fetch(`${API_BASE_URL}/logout`, {
+        await fetch(`${AUTH_API_BASE_URL}/logout`, {
             method: "POST",
             credentials: "include",
         });

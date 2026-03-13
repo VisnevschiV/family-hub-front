@@ -1,4 +1,121 @@
-const API_BASE_URL = "https://familyhub-gte6cabtbggua6cy.spaincentral-01.azurewebsites.net";
+import { API_BASE_URL } from "./config.js";
+
+function mapMember(rawMember, fallbackIndex) {
+    if (rawMember === null || rawMember === undefined) {
+        return null;
+    }
+
+    if (typeof rawMember === "string" || typeof rawMember === "number") {
+        const numericId = Number(rawMember);
+        const value = Number.isInteger(numericId) ? numericId : String(rawMember);
+        return {
+            id: value,
+            name: String(rawMember),
+        };
+    }
+
+    if (typeof rawMember !== "object") {
+        return null;
+    }
+
+    const id =
+        rawMember.id ||
+        rawMember.ID ||
+        rawMember.personaId ||
+        rawMember.personId ||
+        rawMember.userId ||
+        rawMember.memberId;
+
+    if (id === null || id === undefined) {
+        return null;
+    }
+
+    const numericId = Number(id);
+    const normalizedId = Number.isInteger(numericId) ? numericId : String(id);
+
+    const name =
+        rawMember.name ||
+        rawMember.fullName ||
+        rawMember.displayName ||
+        rawMember.email ||
+        `Member ${fallbackIndex + 1}`;
+
+    return {
+        id: normalizedId,
+        name,
+    };
+}
+
+function extractMembers(payload) {
+    const candidates = Array.isArray(payload)
+        ? payload
+        : payload?.members ||
+        payload?.familyMembers ||
+        payload?.personas ||
+        payload?.people ||
+        payload?.participants ||
+        payload?.family?.members ||
+        [];
+
+    const mapped = candidates
+        .map((member, index) => mapMember(member, index))
+        .filter(Boolean);
+
+    const uniqueById = new Map();
+    for (const member of mapped) {
+        if (!uniqueById.has(member.id)) {
+            uniqueById.set(member.id, member);
+        }
+    }
+
+    return Array.from(uniqueById.values());
+}
+
+export async function getFamilyMembers() {
+    const candidatePaths = [
+        "/families/me/members",
+        "/families/members",
+        "/families/me",
+    ];
+
+    for (const path of candidatePaths) {
+        const response = await fetch(`${API_BASE_URL}${path}`, {
+            method: "GET",
+            credentials: "include",
+        });
+
+        if (response.ok) {
+            try {
+                const data = await response.json();
+                return extractMembers(data);
+            } catch {
+                return [];
+            }
+        }
+
+        if (response.status === 404 || response.status === 405) {
+            continue;
+        }
+
+        let errorMessage = `Failed to load family members: ${response.status}`;
+        try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                errorMessage = data.error || data.message || errorMessage;
+            } else {
+                const text = await response.text();
+                if (text) errorMessage = text;
+            }
+        } catch {
+            // Ignore parse errors, keep fallback message.
+        }
+
+        throw new Error(errorMessage);
+    }
+
+    return [];
+}
 
 export async function createFamily(name) {
     const response = await fetch(`${API_BASE_URL}/families`, {
