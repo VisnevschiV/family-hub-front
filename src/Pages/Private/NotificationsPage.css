@@ -1,0 +1,122 @@
+.notificationsPage {
+    gap: 14px;
+}
+
+.notificationsPage__error {
+    margin: 0;
+    background: #fde2d7;
+    color: #b8543e;
+    border: 1px solid #e9b7a4;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.notificationsPage__list {
+    display: grid;
+    gap: 10px;
+}
+
+.notificationsPage__empty {
+    margin: 0;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+}
+
+.notificationsPage__item {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #e6b39a;
+    background: #fff3ea;
+    border-radius: 14px;
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.notificationsPage__item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(70, 52, 38, 0.08);
+}
+
+.notificationsPage__item:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+.notificationsPage__item--read {
+    border-color: var(--border);
+    background: var(--surface);
+}
+
+.notificationsPage__itemHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.notificationsPage__itemTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.notificationsPage__pill {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8f1f1f;
+    background: #ffd9d9;
+    border: 1px solid #efb9b9;
+    border-radius: 999px;
+    padding: 3px 9px;
+}
+
+.notificationsPage__itemMessage {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.notificationsPage__itemTime {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.notificationsPage__actions {
+    display: flex;
+    justify-content: center;
+}
+
+.notificationsPage__loadMore {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 9px 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.notificationsPage__loadMore:hover {
+    background: #f3e6d8;
+}
+
+.notificationsPage__meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .notificationsPage__itemHeader {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

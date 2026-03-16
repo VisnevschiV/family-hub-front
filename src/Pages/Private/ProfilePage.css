@@ -148,3 +148,18 @@
     color: #b8543e;
     background: #fde2d7;
 }
+
+.profileTestButton {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 9px 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profileTestButton:hover {
+    background: #f3e6d8;
+}

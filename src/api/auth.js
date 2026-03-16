@@ -129,11 +129,18 @@ export async function tryLogin(email, password) {
         throw new Error(errorMessage);
     }
 
+    let result = null;
     try {
-        return await response.json();
+        result = await response.json();
     } catch {
-        return null;
+        result = null;
     }
+
+    if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth:login"));
+    }
+
+    return result;
 }
 
 /**
@@ -178,6 +185,10 @@ export async function logout() {
         });
     } catch (err) {
         logAuthError("logout:error", err);
+    } finally {
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("auth:logout"));
+        }
     }
 }
 

@@ -37,6 +37,22 @@ function ProfileSettingsPage() {
     const [inviteCode, setInviteCode] = useState("");
     const [inviteExpiresAt, setInviteExpiresAt] = useState("");
 
+    function handleTestNotificationPopup() {
+        const nowIso = new Date().toISOString();
+
+        window.dispatchEvent(
+            new CustomEvent("notifications:incoming", {
+                detail: {
+                    id: `test-${Date.now()}`,
+                    title: "Test notification",
+                    message: "If you see this popup, live notification UI works.",
+                    createdAt: nowIso,
+                },
+            })
+        );
+        window.dispatchEvent(new Event("notifications:changed"));
+    }
+
     useEffect(() => {
         let active = true;
         setLoading(true);
@@ -402,6 +418,13 @@ function ProfileSettingsPage() {
                         <p className="card__text">
                             Change your password and manage sessions.
                         </p>
+                        <button
+                            type="button"
+                            className="profileTestButton"
+                            onClick={handleTestNotificationPopup}
+                        >
+                            Test notification popup
+                        </button>
                     </div>
                 </section>
             </div>
