@@ -1,13 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { fetchCurrentPersona } from "../api/persona.js";
 import { logout } from "../api/auth.js";
+import {
+    createNotificationsSseClient,
+    getNotifications,
+    mapIncomingNotificationPayload,
+} from "../api/notifications.js";
 import "./AppShell.css";
 
 function AppShell() {
     const navigate = useNavigate();
     const [persona, setPersona] = useState(null);
     const [personaLoading, setPersonaLoading] = useState(true);
+    const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+    const [notificationToasts, setNotificationToasts] = useState([]);
+    const toastTimersRef = useRef(new Map());
+    const sseClientRef = useRef(null);
 
     useEffect(() => {
         let active = true;
@@ -23,6 +32,151 @@ function AppShell() {
 
         return () => {
             active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        let active = true;
+
+        async function refreshUnreadState() {
+            try {
+                const data = await getNotifications({ page: 0, size: 50 });
+                if (!active) return;
+
+                const hasUnread = Array.isArray(data?.items)
+                    ? data.items.some((item) => item && (item.read === false || item.isRead === false))
+                    : false;
+
+                setHasUnreadNotifications(hasUnread);
+            } catch {
+                if (active) setHasUnreadNotifications(false);
+            }
+        }
+
+        refreshUnreadState();
+
+        function handleNotificationsChanged() {
+            refreshUnreadState();
+        }
+
+        window.addEventListener("notifications:changed", handleNotificationsChanged);
+
+        return () => {
+            active = false;
+            window.removeEventListener("notifications:changed", handleNotificationsChanged);
+        };
+    }, []);
+
+    function dismissToast(toastId) {
+        const timeoutId = toastTimersRef.current.get(toastId);
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+            toastTimersRef.current.delete(toastId);
+        }
+
+        setNotificationToasts((current) => current.filter((toast) => toast.id !== toastId));
+    }
+
+    function showIncomingToast(payload) {
+        const mappedPayload = mapIncomingNotificationPayload(payload);
+        const toastId =
+            typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+                ? crypto.randomUUID()
+                : `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+        setNotificationToasts((current) => {
+            const next = [...current, { ...mappedPayload, id: toastId }];
+            return next.slice(-3);
+        });
+
+        const timeoutId = window.setTimeout(() => {
+            dismissToast(toastId);
+        }, 4000);
+
+        toastTimersRef.current.set(toastId, timeoutId);
+    }
+
+    useEffect(() => {
+        function handleIncomingNotification(event) {
+            showIncomingToast(event?.detail || null);
+            setHasUnreadNotifications(true);
+            window.dispatchEvent(new Event("notifications:changed"));
+        }
+
+        function handleNotificationsClear() {
+            setHasUnreadNotifications(false);
+            setNotificationToasts([]);
+
+            toastTimersRef.current.forEach((timeoutId) => {
+                window.clearTimeout(timeoutId);
+            });
+            toastTimersRef.current.clear();
+        }
+
+        window.addEventListener("notifications:incoming", handleIncomingNotification);
+        window.addEventListener("notifications:clear", handleNotificationsClear);
+
+        return () => {
+            window.removeEventListener("notifications:incoming", handleIncomingNotification);
+            window.removeEventListener("notifications:clear", handleNotificationsClear);
+        };
+    }, []);
+
+    useEffect(() => {
+        function stopSseAndClear() {
+            if (sseClientRef.current) {
+                sseClientRef.current.stop();
+            }
+            sseClientRef.current = null;
+            window.dispatchEvent(new Event("notifications:clear"));
+        }
+
+        function startFreshSse() {
+            if (sseClientRef.current) {
+                sseClientRef.current.stop();
+                sseClientRef.current = null;
+            }
+
+            const client = createNotificationsSseClient({
+                onNotification: (payload) => {
+                    window.dispatchEvent(
+                        new CustomEvent("notifications:incoming", {
+                            detail: payload,
+                        })
+                    );
+                },
+            });
+
+            sseClientRef.current = client;
+            client.start();
+        }
+
+        startFreshSse();
+
+        function handleAuthLogout() {
+            stopSseAndClear();
+        }
+
+        function handleAuthLogin() {
+            startFreshSse();
+        }
+
+        window.addEventListener("auth:logout", handleAuthLogout);
+        window.addEventListener("auth:login", handleAuthLogin);
+
+        return () => {
+            window.removeEventListener("auth:logout", handleAuthLogout);
+            window.removeEventListener("auth:login", handleAuthLogin);
+
+            if (sseClientRef.current) {
+                sseClientRef.current.stop();
+                sseClientRef.current = null;
+            }
+
+            toastTimersRef.current.forEach((timeoutId) => {
+                window.clearTimeout(timeoutId);
+            });
+            toastTimersRef.current.clear();
         };
     }, []);
 
@@ -64,6 +218,10 @@ function AppShell() {
                         </NavLink>
                         <NavLink to="/app/family/calendar" className="appShell__navLink">
                             Our Calendar
+                        </NavLink>
+                        <NavLink to="/app/notifications" className="appShell__navLink appShell__navLink--withIndicator">
+                            Notifications
+                            {hasUnreadNotifications && <span className="appShell__unreadDot" aria-label="Unread notifications" />}
                         </NavLink>
                     </div>
                 </nav>
@@ -109,6 +267,25 @@ function AppShell() {
                     <Outlet />
                 </main>
             </div>
+
+            {notificationToasts.length > 0 && (
+                <div className="appShell__toastStack" aria-live="polite" aria-atomic="true">
+                    {notificationToasts.map((toast) => (
+                        <button
+                            key={toast.id}
+                            type="button"
+                            className="appShell__toast"
+                            onClick={() => {
+                                dismissToast(toast.id);
+                                navigate("/app/notifications");
+                            }}
+                        >
+                            <div className="appShell__toastTitle">{toast.title}</div>
+                            <div className="appShell__toastMessage">{toast.message}</div>
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
