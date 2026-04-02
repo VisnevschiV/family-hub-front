@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "./config.js";
 
 const NOTIFICATIONS_SSE_URL =
-    import.meta.env.VITE_NOTIFICATIONS_SSE_URL || "http://localhost:8080/notifications/stream";
+    import.meta.env.VITE_NOTIFICATIONS_SSE_URL || `${API_BASE_URL}/notifications/stream`;
 
 const SSE_RECONNECT_DELAY_MS = 2500;
 
