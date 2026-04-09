@@ -1,7 +1,7 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch, buildApiUrl } from "./client.js";
 
 const NOTIFICATIONS_SSE_URL =
-    import.meta.env.VITE_NOTIFICATIONS_SSE_URL || `${API_BASE_URL}/notifications/stream`;
+    import.meta.env.VITE_NOTIFICATIONS_SSE_URL || buildApiUrl("/notifications/stream");
 
 const SSE_RECONNECT_DELAY_MS = 2500;
 
@@ -30,9 +30,8 @@ export async function getNotifications({ page = 0, size = 20 } = {}) {
         size: String(size),
     });
 
-    const response = await fetch(`${API_BASE_URL}/notifications?${query.toString()}`, {
+    const response = await apiFetch(`/notifications?${query.toString()}`, {
         method: "GET",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -66,11 +65,10 @@ export async function getNotifications({ page = 0, size = 20 } = {}) {
 }
 
 export async function markNotificationAsRead(notificationId) {
-    const response = await fetch(
-        `${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}/read`,
+    const response = await apiFetch(
+        `/notifications/${encodeURIComponent(notificationId)}/read`,
         {
             method: "PATCH",
-            credentials: "include",
         }
     );
 

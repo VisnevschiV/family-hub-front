@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch } from "./client.js";
 
 function mapMember(rawMember, fallbackIndex) {
     if (rawMember === null || rawMember === undefined) {
@@ -79,9 +79,8 @@ export async function getFamilyMembers() {
     ];
 
     for (const path of candidatePaths) {
-        const response = await fetch(`${API_BASE_URL}${path}`, {
+        const response = await apiFetch(path, {
             method: "GET",
-            credentials: "include",
         });
 
         if (response.ok) {
@@ -118,12 +117,11 @@ export async function getFamilyMembers() {
 }
 
 export async function createFamily(name) {
-    const response = await fetch(`${API_BASE_URL}/families`, {
+    const response = await apiFetch("/families", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ name }),
     });
 
@@ -153,12 +151,11 @@ export async function createFamily(name) {
 
 export async function updateFamilyName(name) {
     console.log("updateFamilyName called with:", { name });
-    const response = await fetch(`${API_BASE_URL}/families/me`, {
+    const response = await apiFetch("/families/me", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ name }),
     });
 
@@ -193,12 +190,11 @@ export async function updateFamilyName(name) {
 }
 
 export async function leaveFamily() {
-    const response = await fetch(`${API_BASE_URL}/families/me/leave`, {
+    const response = await apiFetch("/families/me/leave", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -226,12 +222,11 @@ export async function leaveFamily() {
 }
 
 export async function joinFamily(code) {
-    const response = await fetch(`${API_BASE_URL}/families/join`, {
+    const response = await apiFetch("/families/join", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ code }),
     });
 
@@ -260,12 +255,11 @@ export async function joinFamily(code) {
 }
 
 export async function generateJoinCode() {
-    const response = await fetch(`${API_BASE_URL}/families/me/join-code`, {
+    const response = await apiFetch("/families/me/join-code", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
     });
 
     if (!response.ok) {
