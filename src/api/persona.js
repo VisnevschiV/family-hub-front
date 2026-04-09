@@ -1,9 +1,8 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch } from "./client.js";
 
 export async function fetchCurrentPersona() {
-    const response = await fetch(`${API_BASE_URL}/personas/me`, {
+    const response = await apiFetch("/personas/me", {
         method: "GET",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -14,12 +13,11 @@ export async function fetchCurrentPersona() {
 }
 
 export async function updatePersona(update) {
-    const response = await fetch(`${API_BASE_URL}/personas/me`, {
+    const response = await apiFetch("/personas/me", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(update),
     });
 

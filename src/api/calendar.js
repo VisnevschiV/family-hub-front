@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch } from "./client.js";
 
 async function extractErrorMessage(response, fallback) {
     let errorMessage = fallback;
@@ -20,9 +20,8 @@ async function extractErrorMessage(response, fallback) {
 }
 
 export async function getCalendarEvents() {
-    const response = await fetch(`${API_BASE_URL}/calendar`, {
+    const response = await apiFetch("/calendar", {
         method: "GET",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -45,12 +44,11 @@ export async function createCalendarEvent(title, description, time, participantI
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
 
-    const response = await fetch(`${API_BASE_URL}/calendar`, {
+    const response = await apiFetch("/calendar", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ title, description, time, participants }),
     });
 
@@ -68,12 +66,11 @@ export async function updateCalendarEvent(eventId, title, description, time, par
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
 
-    const response = await fetch(`${API_BASE_URL}/calendar/${encodeURIComponent(eventId)}`, {
+    const response = await apiFetch(`/calendar/${encodeURIComponent(eventId)}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ title, description, time, participants }),
     });
 
@@ -87,9 +84,8 @@ export async function updateCalendarEvent(eventId, title, description, time, par
 }
 
 export async function deleteCalendarEvent(eventId) {
-    const response = await fetch(`${API_BASE_URL}/calendar/${encodeURIComponent(eventId)}`, {
+    const response = await apiFetch(`/calendar/${encodeURIComponent(eventId)}`, {
         method: "DELETE",
-        credentials: "include",
     });
 
     if (!response.ok) {

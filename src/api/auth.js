@@ -1,8 +1,6 @@
 // src/api/auth.js
 
-import { API_BASE_URL } from "./config.js";
-
-const AUTH_API_BASE_URL = `${API_BASE_URL}/auth`;
+import { apiFetch } from "./client.js";
 
 const DEBUG_AUTH = true;
 
@@ -24,13 +22,14 @@ function logAuthError(context, details) {
  * Success: account created (login happens separately)
  */
 export async function tryRegister(email, password, name, birthday, gender) {
-    const response = await fetch(`${AUTH_API_BASE_URL}/register`, {
+    const response = await apiFetch("/auth/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ email, password, name, birthday, gender }),
+    }, {
+        skipAuthRefresh: true,
     });
 
     if (!response.ok) {
@@ -81,13 +80,14 @@ export async function tryRegister(email, password, name, birthday, gender) {
  * Success: server sets auth cookies
  */
 export async function tryLogin(email, password) {
-    const response = await fetch(`${AUTH_API_BASE_URL}/login`, {
+    const response = await apiFetch("/auth/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ email, password }),
+    }, {
+        skipAuthRefresh: true,
     });
 
     if (!response.ok) {
@@ -148,9 +148,10 @@ export async function tryLogin(email, password) {
  * GET /auth/me with cookies
  */
 export async function fetchCurrentUser() {
-    const response = await fetch(`${AUTH_API_BASE_URL}/me`, {
+    const response = await apiFetch("/auth/me", {
         method: "GET",
-        credentials: "include",
+    }, {
+        skipAuthRefresh: true,
     });
 
     if (!response.ok) {
@@ -163,7 +164,7 @@ export async function fetchCurrentUser() {
 
     try {
         return await response.json(); // depends on your backend DTO
-    } catch (err) {
+    } catch {
         logAuthError("me:invalid-json", {
             status: response.status,
             statusText: response.statusText,
@@ -179,9 +180,10 @@ export async function fetchCurrentUser() {
  */
 export async function logout() {
     try {
-        await fetch(`${AUTH_API_BASE_URL}/logout`, {
+        await apiFetch("/auth/logout", {
             method: "POST",
-            credentials: "include",
+        }, {
+            skipAuthRefresh: true,
         });
     } catch (err) {
         logAuthError("logout:error", err);

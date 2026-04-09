@@ -1,11 +1,10 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch } from "./client.js";
 
 export async function fetchProtectedData() {
-    const response = await fetch(`${API_BASE_URL}/some/protected`, {
+    const response = await apiFetch("/some/protected", {
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
     });
 
     if (!response.ok) {

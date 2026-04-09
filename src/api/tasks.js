@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config.js";
+import { apiFetch, buildApiUrl } from "./client.js";
 const DEBUG_TASKS = true;
 
 function logTaskError(context, details) {
@@ -7,10 +7,9 @@ function logTaskError(context, details) {
 }
 
 export async function getTaskLists() {
-    const requestUrl = `${API_BASE_URL}/tasks/getLists`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks/getLists");
+    const response = await apiFetch("/tasks/getLists", {
         method: "GET",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -48,13 +47,12 @@ export async function getTaskLists() {
 }
 
 export async function createTaskList(name) {
-    const requestUrl = `${API_BASE_URL}/tasks/createList`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks/createList");
+    const response = await apiFetch("/tasks/createList", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ name }),
     });
 
@@ -93,12 +91,11 @@ export async function createTaskList(name) {
 }
 
 export async function deleteTaskList(listID) {
-    const requestUrl = `${API_BASE_URL}/tasks/lists/${encodeURIComponent(listID)}`;
-    const response = await fetch(
-        requestUrl,
+    const requestUrl = buildApiUrl(`/tasks/lists/${encodeURIComponent(listID)}`);
+    const response = await apiFetch(
+        `/tasks/lists/${encodeURIComponent(listID)}`,
         {
             method: "DELETE",
-            credentials: "include",
         }
     );
 
@@ -137,13 +134,12 @@ export async function deleteTaskList(listID) {
 }
 
 export async function updateTaskListName(id, newName) {
-    const requestUrl = `${API_BASE_URL}/tasks/lists`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks/lists");
+    const response = await apiFetch("/tasks/lists", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ id, newName }),
     });
 
@@ -182,13 +178,12 @@ export async function updateTaskListName(id, newName) {
 }
 
 export async function createTask(listID, taskName) {
-    const requestUrl = `${API_BASE_URL}/tasks`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks");
+    const response = await apiFetch("/tasks", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ listID, taskName }),
     });
 
@@ -227,13 +222,12 @@ export async function createTask(listID, taskName) {
 }
 
 export async function deleteTask(listID, taskID) {
-    const requestUrl = `${API_BASE_URL}/tasks`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks");
+    const response = await apiFetch("/tasks", {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ listID, taskID }),
     });
 
@@ -272,13 +266,12 @@ export async function deleteTask(listID, taskID) {
 }
 
 export async function updateTask(listID, taskID, newName, completed) {
-    const requestUrl = `${API_BASE_URL}/tasks`;
-    const response = await fetch(requestUrl, {
+    const requestUrl = buildApiUrl("/tasks");
+    const response = await apiFetch("/tasks", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ listID, taskID, newName, completed }),
     });
 

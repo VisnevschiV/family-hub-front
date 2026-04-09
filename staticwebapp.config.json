@@ -1,15 +1,15 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      "/assets/*",
-      "/*.css",
-      "/*.js",
-      "/*.ico",
-      "/*.png",
-      "/*.jpg",
-      "/*.svg",
-      "/*.json"
-    ]
-  }
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/assets/*",
+            "/*.css",
+            "/*.js",
+            "/*.ico",
+            "/*.png",
+            "/*.jpg",
+            "/*.svg",
+            "/*.json"
+        ]
+    }
 }
