@@ -74,6 +74,14 @@
     flex-shrink: 0;
 }
 
+.welcome__logoImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+}
+
 .welcome__title {
     font-size: 16px;
     font-weight: 700;

@@ -188,9 +188,9 @@ function AppShell() {
             : persona?.name || "Family Member";
 
     const initials = useMemo(() => {
-        if (!persona?.name) return "FH";
+        if (!persona?.name) return "HW";
         const parts = persona.name.trim().split(/\s+/).filter(Boolean);
-        if (parts.length === 0) return "FH";
+        if (parts.length === 0) return "HW";
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }, [persona]);
@@ -199,9 +199,11 @@ function AppShell() {
         <div className="appShell">
             <aside className="appShell__sidebar">
                 <NavLink to="/app" end className="appShell__brand">
-                    <div className="appShell__logo">FH</div>
+                    <div className="appShell__logo">
+                        <img src="/logo.png" alt="happywifehappylife logo" className="appShell__logoImage" />
+                    </div>
                     <div>
-                        <div className="appShell__title">Family Hub</div>
+                        <div className="appShell__title">happywifehappylife</div>
                         <div className="appShell__subtitle">Shared life, organized</div>
                     </div>
                 </NavLink>

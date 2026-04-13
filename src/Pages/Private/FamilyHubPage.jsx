@@ -94,7 +94,7 @@ function FamilyHubPage() {
         <>
             <div className="page">
                 <header className="page__header">
-                    <h1 className="page__title">Family Hub</h1>
+                    <h1 className="page__title">happywifehappylife</h1>
                     <p className="page__subtitle">
                         Manage your family group and shared spaces.
                     </p>
