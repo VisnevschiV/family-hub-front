@@ -6,7 +6,9 @@ import {
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
-import "./FamilyCalendarPage.css";
+import "./FamilyCalendarPage/familyCalendarPage.css";
+import "./FamilyCalendarPage/familyCalendarPagedesktop.css";
+import "./FamilyCalendarPage/familyCalendarPagemobile.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 

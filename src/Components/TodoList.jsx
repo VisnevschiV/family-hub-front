@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import "./TodoList.css";
+import "./TodoList/todoList.css";
+import "./TodoList/todoListdesktop.css";
+import "./TodoList/todoListmobile.css";
 
 export default function TodoList({
     listId,

@@ -1,0 +1,34 @@
+/* ===================================================
+   WelcomePage — Extra small screens (max-width: 480px)
+   =================================================== */
+
+@media (max-width: 480px) {
+    .welcome__header {
+        padding: 16px 16px 0;
+    }
+
+    .welcome__main {
+        padding: 16px;
+        gap: 18px;
+    }
+
+    .welcome__headline {
+        font-size: 26px;
+    }
+
+    .welcome__heroActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .welcome__cta,
+    .welcome__ghost {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .welcome__heroCard {
+        padding: 14px;
+    }
+}

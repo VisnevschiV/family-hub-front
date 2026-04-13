@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../api/auth.js";
 import { fetchCurrentPersona, updatePersona } from "../../api/persona.js";
 import { createFamily, updateFamilyName, leaveFamily, joinFamily, generateJoinCode } from "../../api/families.js";
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
 import EnterFamilyModal from "../../Components/EnterFamilyModal.jsx";
 import InviteCodeModal from "../../Components/InviteCodeModal.jsx";
-import "./ProfilePage.css";
+import "./ProfilePage/profilePage.css";
+import "./ProfilePage/profilePagedesktop.css";
+import "./ProfilePage/profilePagemobile.css";
 
 const emptyForm = {
     name: "",
@@ -14,6 +18,7 @@ const emptyForm = {
 };
 
 function ProfileSettingsPage() {
+    const navigate = useNavigate();
     const [form, setForm] = useState(emptyForm);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -37,20 +42,9 @@ function ProfileSettingsPage() {
     const [inviteCode, setInviteCode] = useState("");
     const [inviteExpiresAt, setInviteExpiresAt] = useState("");
 
-    function handleTestNotificationPopup() {
-        const nowIso = new Date().toISOString();
-
-        window.dispatchEvent(
-            new CustomEvent("notifications:incoming", {
-                detail: {
-                    id: `test-${Date.now()}`,
-                    title: "Test notification",
-                    message: "If you see this popup, live notification UI works.",
-                    createdAt: nowIso,
-                },
-            })
-        );
-        window.dispatchEvent(new Event("notifications:changed"));
+    async function handleLogout() {
+        await logout();
+        navigate("/welcome", { replace: true });
     }
 
     useEffect(() => {
@@ -414,16 +408,16 @@ function ProfileSettingsPage() {
 
                 <section className="page__grid">
                     <div className="card">
-                        <h2 className="card__title">Security</h2>
+                        <h2 className="card__title">Account settings</h2>
                         <p className="card__text">
-                            Change your password and manage sessions.
+                            Manage your session and sign out from this device.
                         </p>
                         <button
                             type="button"
-                            className="profileTestButton"
-                            onClick={handleTestNotificationPopup}
+                            className="accountLogoutButton"
+                            onClick={handleLogout}
                         >
-                            Test notification popup
+                            Log out
                         </button>
                     </div>
                 </section>

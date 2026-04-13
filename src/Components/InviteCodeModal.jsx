@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import "./InviteCodeModal.css";
+import "./InviteCodeModal/inviteCodeModal.css";
+import "./InviteCodeModal/inviteCodeModaldesktop.css";
+import "./InviteCodeModal/inviteCodeModalmobile.css";
 
 function InviteCodeModal({ isOpen, onClose, code, expiresAt }) {
     const [timeLeft, setTimeLeft] = useState("");

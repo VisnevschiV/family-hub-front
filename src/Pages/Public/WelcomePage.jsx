@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import "./WelcomePage.css";
+import "./WelcomePage/welcomePage.css";
+import "./WelcomePage/welcomePagedesktop.css";
+import "./WelcomePage/welcomePagemobile.css";
 
 function WelcomePage() {
     return (

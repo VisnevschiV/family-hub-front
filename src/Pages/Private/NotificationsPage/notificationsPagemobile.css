@@ -1,0 +1,48 @@
+@media (max-width: 900px) {
+    .notificationsPage {
+        gap: 12px;
+    }
+
+    .notificationsPage__itemHeader {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .notificationsPage__item {
+        border-radius: 16px;
+        padding: 13px 12px;
+        gap: 8px;
+    }
+
+    .notificationsPage__itemTitle {
+        font-size: 15px;
+        line-height: 1.25;
+    }
+
+    .notificationsPage__itemMessage {
+        line-height: 1.4;
+    }
+
+    .notificationsPage__pill {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 560px) {
+
+    .notificationsPage__empty,
+    .notificationsPage__error {
+        border-radius: 14px;
+    }
+
+    .notificationsPage__loadMore {
+        width: 100%;
+        min-height: 44px;
+        border-radius: 12px;
+    }
+
+    .notificationsPage__actions {
+        width: 100%;
+    }
+}

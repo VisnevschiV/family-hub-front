@@ -1,3 +1,7 @@
+/* ===================================================
+   ListNameModal — Base styles
+   =================================================== */
+
 .listNameModal__backdrop {
     position: fixed;
     inset: 0;
@@ -6,6 +10,7 @@
     align-items: center;
     justify-content: center;
     z-index: 70;
+    padding: 16px;
 }
 
 .listNameModal {
@@ -32,11 +37,13 @@
 }
 
 .listNameModal__input {
-    padding: 8px 10px;
+    padding: 10px 10px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    font-size: 13px;
+    font-size: 14px;
     outline: none;
+    min-height: 44px;
+    font-family: inherit;
 }
 
 .listNameModal__input:focus {
@@ -52,10 +59,11 @@
 
 .listNameModal__btn {
     font-size: 13px;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 999px;
     border: 1px solid transparent;
     cursor: pointer;
+    min-height: 40px;
 }
 
 .listNameModal__btn--ghost {

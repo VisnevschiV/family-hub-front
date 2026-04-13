@@ -1,0 +1,64 @@
+/* ===================================================
+   WelcomePage — Desktop: wider layout, 2-column hero
+   =================================================== */
+
+@media (min-width: 901px) {
+    .welcome__blob--one {
+        width: 320px;
+        height: 320px;
+        top: -80px;
+        right: -120px;
+    }
+
+    .welcome__blob--two {
+        width: 260px;
+        height: 260px;
+        bottom: -90px;
+        left: -60px;
+    }
+
+    .welcome__header {
+        padding: 28px 48px 0;
+        flex-wrap: nowrap;
+    }
+
+    .welcome__logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    .welcome__title {
+        font-size: 18px;
+    }
+
+    .welcome__main {
+        padding: 48px;
+        gap: 32px;
+    }
+
+    .welcome__hero {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+        gap: 32px;
+    }
+
+    .welcome__headline {
+        font-size: 42px;
+    }
+
+    .welcome__lead {
+        font-size: 16px;
+    }
+
+    .welcome__grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    .welcome__ctaPanel {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+    }
+}

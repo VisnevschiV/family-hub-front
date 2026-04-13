@@ -1,4 +1,6 @@
-import "./App.css";
+import "./App/app.css";
+import "./App/appdesktop.css";
+import "./App/appmobile.css";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./Pages/Public/LoginPage.jsx";

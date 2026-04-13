@@ -4,7 +4,9 @@ import {
     mapIncomingNotificationPayload,
     markNotificationAsRead,
 } from "../../api/notifications.js";
-import "./NotificationsPage.css";
+import "./NotificationsPage/notificationsPage.css";
+import "./NotificationsPage/notificationsPagedesktop.css";
+import "./NotificationsPage/notificationsPagemobile.css";
 
 function resolveNotificationId(item) {
     return (

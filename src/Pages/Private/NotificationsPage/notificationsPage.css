@@ -113,10 +113,3 @@
     color: var(--text-muted);
     font-size: 13px;
 }
-
-@media (max-width: 900px) {
-    .notificationsPage__itemHeader {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}

@@ -10,7 +10,9 @@ import {
     updateTask,
     updateTaskListName,
 } from "../../api/tasks.js";
-import "./TodoListsPage.css";
+import "./TodoListsPage/todoListsPage.css";
+import "./TodoListsPage/todoListsPagedesktop.css";
+import "./TodoListsPage/todoListsPagemobile.css";
 
 export default function TodoListsPage() {
     const [lists, setLists] = useState([]);

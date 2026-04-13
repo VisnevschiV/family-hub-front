@@ -315,30 +315,6 @@
     box-shadow: none;
 }
 
-@media (max-width: 900px) {
-    .calendarView__monthLabel {
-        width: 100%;
-        order: -1;
-    }
-
-    .calendarView__cell {
-        min-height: 72px;
-    }
-
-    .calendarView__eventDescription {
-        display: none;
-    }
-
-    .calendarItinerary__item {
-        grid-template-columns: 1fr;
-        gap: 6px;
-    }
-
-    .calendarItinerary__actions {
-        justify-content: flex-start;
-    }
-}
-
 .calendarParticipants__trigger {
     padding: 10px 12px;
     border-radius: 12px;

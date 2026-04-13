@@ -1,0 +1,188 @@
+/* ===================================================
+   AppShell — Desktop layout (min-width: 901px)
+   Restores the fixed left sidebar and content margin
+   =================================================== */
+
+@media (min-width: 901px) {
+
+    /* ---- Container ---- */
+    .appShell {
+        display: block;
+    }
+
+    /* ---- Sidebar: fixed left panel ---- */
+    .appShell__sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        width: 260px;
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 28px 22px;
+        flex-direction: column;
+        gap: 24px;
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--surface) 0%, #fff5e8 100%);
+    }
+
+    /* ---- Brand ---- */
+    .appShell__brand {
+        gap: 12px;
+        padding: 6px;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .appShell__brand:hover {
+        transform: translateX(2px);
+    }
+
+    .appShell__logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        font-size: 15px;
+    }
+
+    .appShell__title {
+        font-size: 18px;
+    }
+
+    .appShell__subtitle {
+        display: block;
+    }
+
+    /* ---- Nav ---- */
+    .appShell__nav {
+        flex-direction: column;
+        flex: 1;
+        gap: 18px;
+        overflow-x: visible;
+        overflow-y: visible;
+        padding: 0;
+        scrollbar-width: auto;
+    }
+
+    .appShell__navSection {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .appShell__navLabel {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+
+    .appShell__navLink {
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        min-height: auto;
+        display: flex;
+    }
+
+    .appShell__navLink:hover {
+        transform: translateX(2px);
+    }
+
+    .appShell__navLink--withIndicator {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .appShell__unreadDot {
+        width: 10px;
+        height: 10px;
+    }
+
+    /* ---- User link: full card with name ---- */
+    .appShell__userLink {
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: 0 10px 24px rgba(110, 78, 55, 0.08);
+        border-radius: 14px;
+    }
+
+    .appShell__userLink:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(110, 78, 55, 0.12);
+        background: var(--surface);
+        border-color: var(--border);
+    }
+
+    .appShell__avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .appShell__userName {
+        display: block;
+    }
+
+    .appShell__userMeta {
+        display: block;
+    }
+
+    /* ---- Main: offset for sidebar ---- */
+    .appShell__main {
+        margin-left: 260px;
+        padding-top: 0;
+    }
+
+    .appShell__topbar {
+        padding: 28px 36px 12px;
+    }
+
+    .appShell__pageTitle {
+        font-size: 22px;
+    }
+
+    .appShell__pageSubtitle {
+        font-size: 14px;
+    }
+
+    .appShell__content {
+        padding: 12px 36px 40px;
+    }
+
+    /* ---- Toast stack: bottom-right on desktop ---- */
+    .appShell__toastStack {
+        right: 20px;
+        top: auto;
+        bottom: 20px;
+        width: min(340px, calc(100vw - 28px));
+    }
+
+    /* ---- Page & card utilities: desktop sizing ---- */
+    .page {
+        gap: 18px;
+    }
+
+    .page__title {
+        font-size: 26px;
+    }
+
+    .page__grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .card {
+        min-height: 120px;
+    }
+
+    .ctaCard {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
