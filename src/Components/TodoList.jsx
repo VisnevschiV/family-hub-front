@@ -28,7 +28,10 @@ export default function TodoList({
     const [deletePreviewId, setDeletePreviewId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editingText, setEditingText] = useState("");
     const menuRef = useRef(null);
+    const editLongPressTimerRef = useRef(null);
 
     const totalCount = items.length;
     const doneCount = useMemo(() => items.filter((i) => i.done).length, [items]);
@@ -108,6 +111,19 @@ export default function TodoList({
         return () => document.removeEventListener("mousedown", handleOutsideClick);
     }, []);
 
+    useEffect(
+        () => () => {
+            clearEditLongPressTimer();
+        },
+        []
+    );
+
+    useEffect(() => {
+        if (editingTaskId) {
+            clearEditLongPressTimer();
+        }
+    }, [editingTaskId]);
+
     function handleRenameList() {
         onRequestRename(listId);
     }
@@ -120,10 +136,66 @@ export default function TodoList({
         onDeleteList(listId);
     }
 
-    function handleEditTask(item) {
-        const nextText = window.prompt("Edit task:", item.text);
-        if (nextText === null) return;
-        onEditTask(listId, item.id, nextText);
+    const EDIT_LONG_PRESS_MS = 420;
+
+    function clearEditLongPressTimer() {
+        if (editLongPressTimerRef.current) {
+            window.clearTimeout(editLongPressTimerRef.current);
+            editLongPressTimerRef.current = null;
+        }
+    }
+
+    function startInlineEdit(item) {
+        setEditingTaskId(item.id);
+        setEditingText(item.text);
+    }
+
+    function handleInlineEditPointerDown(event, item) {
+        if (draggingId || deletingId || editingTaskId) return;
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        clearEditLongPressTimer();
+        editLongPressTimerRef.current = window.setTimeout(() => {
+            startInlineEdit(item);
+        }, EDIT_LONG_PRESS_MS);
+    }
+
+    function handleInlineEditPointerEnd() {
+        clearEditLongPressTimer();
+    }
+
+    function cancelInlineEdit() {
+        setEditingTaskId(null);
+        setEditingText("");
+    }
+
+    async function commitInlineEdit(item) {
+        const nextText = editingText.trim();
+        if (!nextText) {
+            cancelInlineEdit();
+            return;
+        }
+
+        if (nextText === item.text) {
+            cancelInlineEdit();
+            return;
+        }
+
+        try {
+            if (typeof onEditTask === "function") {
+                await onEditTask(listId, item.id, nextText);
+            } else {
+                updateItems((prev) =>
+                    prev.map((existingItem) =>
+                        existingItem.id === item.id ? { ...existingItem, text: nextText } : existingItem
+                    )
+                );
+            }
+        } catch (err) {
+            console.error(err.message || "Failed to edit task");
+        } finally {
+            cancelInlineEdit();
+        }
     }
 
     // ----- Drag & drop logic -----
@@ -131,6 +203,7 @@ export default function TodoList({
     const DELETE_THRESHOLD = 40; // px to the right
 
     function handleDragStart(e, id) {
+        if (editingTaskId) return;
         setDraggingId(id);
         setDragStartX(e.clientX);
         setDeletePreviewId(null);
@@ -141,7 +214,7 @@ export default function TodoList({
 
     function handleDragOver(e, overId) {
         e.preventDefault();
-        if (!draggingId || draggingId === overId || deletingId) return;
+        if (!draggingId || draggingId === overId || deletingId || editingTaskId) return;
 
         updateItems((prev) => {
             const fromIndex = prev.findIndex((i) => i.id === draggingId);
@@ -158,7 +231,7 @@ export default function TodoList({
     }
 
     function handleDrag(e, id) {
-        if (!dragStartX || deletingId) return;
+        if (!dragStartX || deletingId || editingTaskId) return;
         if (!e.clientX) return;
 
         const dx = e.clientX - dragStartX;
@@ -172,6 +245,7 @@ export default function TodoList({
     }
 
     async function handleDragEnd(e, id) {
+        if (editingTaskId) return;
         if (!dragStartX) {
             setDraggingId(null);
             setDragStartX(null);
@@ -209,7 +283,7 @@ export default function TodoList({
     }
 
     return (
-        <section className="todoList">
+        <section className={`todoList ${isMenuOpen ? "todoList--menuOpen" : ""}`}>
             <header
                 className="todoList__header"
                 role="button"
@@ -324,7 +398,7 @@ export default function TodoList({
                             <li
                                 key={item.id}
                                 className={classes.join(" ")}
-                                draggable
+                                draggable={editingTaskId !== item.id}
                                 onDragStart={(e) =>
                                     handleDragStart(e, item.id)
                                 }
@@ -340,23 +414,45 @@ export default function TodoList({
                                         onChange={() => toggleItem(item.id)}
                                     />
                                     <span
-                                        className={
-                                            item.done
-                                                ? "todoList__text todoList__text--done"
-                                                : "todoList__text"
-                                        }
+                                        className="todoList__textWrap"
+                                        onPointerDown={(event) => handleInlineEditPointerDown(event, item)}
+                                        onPointerUp={handleInlineEditPointerEnd}
+                                        onPointerLeave={handleInlineEditPointerEnd}
+                                        onPointerCancel={handleInlineEditPointerEnd}
                                     >
-                                        {item.text}
+                                        {editingTaskId === item.id ? (
+                                            <input
+                                                type="text"
+                                                className="todoList__inlineEditInput"
+                                                value={editingText}
+                                                onChange={(event) => setEditingText(event.target.value)}
+                                                onClick={(event) => event.stopPropagation()}
+                                                onBlur={() => commitInlineEdit(item)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === "Enter") {
+                                                        event.preventDefault();
+                                                        commitInlineEdit(item);
+                                                    }
+                                                    if (event.key === "Escape") {
+                                                        event.preventDefault();
+                                                        cancelInlineEdit();
+                                                    }
+                                                }}
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <span
+                                                className={
+                                                    item.done
+                                                        ? "todoList__text todoList__text--done"
+                                                        : "todoList__text"
+                                                }
+                                            >
+                                                {item.text}
+                                            </span>
+                                        )}
                                     </span>
                                 </label>
-
-                                <button
-                                    type="button"
-                                    className="todoList__editTaskBtn"
-                                    onClick={() => handleEditTask(item)}
-                                >
-                                    Edit
-                                </button>
                             </li>
                         );
                     })}
