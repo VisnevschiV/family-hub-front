@@ -1,1 +1,31 @@
-/* No desktop-specific overrides for FamilyCalendarPage */
+@media (min-width: 901px) {
+    .calendarView {
+        gap: 18px;
+    }
+
+    .calendarView__toolbar {
+        padding: 14px;
+    }
+
+    .calendarView__toolbarRight {
+        gap: 10px;
+    }
+
+    .calendarView__cell {
+        min-height: 118px;
+    }
+
+    .calendarView__eventItem {
+        padding: 6px 8px;
+    }
+
+    .calendarView__eventTitle {
+        font-size: 12px;
+    }
+
+    .calendarItinerary__item {
+        grid-template-columns: 94px minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+}
