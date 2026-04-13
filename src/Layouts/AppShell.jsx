@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { fetchCurrentPersona } from "../api/persona.js";
-import { logout } from "../api/auth.js";
 import {
     createNotificationsSseClient,
     getNotifications,
     mapIncomingNotificationPayload,
 } from "../api/notifications.js";
-import "./AppShell.css";
+import "./AppShell/appShell.css";
+import "./AppShell/appShelldesktop.css";
+import "./AppShell/appShellmobile.css";
 
 function AppShell() {
     const navigate = useNavigate();
@@ -187,25 +188,22 @@ function AppShell() {
             : persona?.name || "Family Member";
 
     const initials = useMemo(() => {
-        if (!persona?.name) return "FH";
+        if (!persona?.name) return "HW";
         const parts = persona.name.trim().split(/\s+/).filter(Boolean);
-        if (parts.length === 0) return "FH";
+        if (parts.length === 0) return "HW";
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }, [persona]);
-
-    async function handleLogout() {
-        await logout();
-        navigate("/welcome", { replace: true });
-    }
 
     return (
         <div className="appShell">
             <aside className="appShell__sidebar">
                 <NavLink to="/app" end className="appShell__brand">
-                    <div className="appShell__logo">FH</div>
+                    <div className="appShell__logo">
+                        <img src="/logo.png" alt="happywifehappylife logo" className="appShell__logoImage" />
+                    </div>
                     <div>
-                        <div className="appShell__title">Family Hub</div>
+                        <div className="appShell__title">happywifehappylife</div>
                         <div className="appShell__subtitle">Shared life, organized</div>
                     </div>
                 </NavLink>
@@ -243,26 +241,9 @@ function AppShell() {
                         <div className="appShell__userMeta">Account</div>
                     </div>
                 </NavLink>
-
-                <button
-                    type="button"
-                    className="appShell__logoutButton"
-                    onClick={handleLogout}
-                >
-                    Log out
-                </button>
             </aside>
 
             <div className="appShell__main">
-                <header className="appShell__topbar">
-                    <div>
-                        <div className="appShell__pageTitle">Welcome back</div>
-                        <div className="appShell__pageSubtitle">
-                            Pick up where your family left off.
-                        </div>
-                    </div>
-                </header>
-
                 <main className="appShell__content">
                     <Outlet />
                 </main>

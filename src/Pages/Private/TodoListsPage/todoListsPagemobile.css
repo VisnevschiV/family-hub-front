@@ -1,0 +1,20 @@
+@media (max-width: 900px) {
+    .todoListsPage_container {
+        max-width: 100%;
+        justify-content: stretch;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 700px) {
+    .page__header .ctaButton {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    .todoListsPage_container {
+        max-width: 100%;
+        gap: 10px;
+    }
+}

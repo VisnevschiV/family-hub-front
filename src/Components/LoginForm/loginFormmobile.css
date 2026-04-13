@@ -1,0 +1,29 @@
+/* ===================================================
+   LoginForm — Mobile adjustments (max-width: 480px)
+   =================================================== */
+
+@media (max-width: 480px) {
+    .loginForm__container {
+        padding: 16px;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+    }
+
+    .loginForm__panel {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+
+    .loginForm__title {
+        font-size: 22px;
+        margin-bottom: 22px;
+    }
+
+    .loginForm__datePopover {
+        /* Prevent date picker from going off screen */
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: calc(100vw - 40px);
+    }
+}

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import "./CreateFamilyModal.css";
+import "./CreateFamilyModal/createFamilyModal.css";
+import "./CreateFamilyModal/createFamilyModaldesktop.css";
+import "./CreateFamilyModal/createFamilyModalmobile.css";
 
 function CreateFamilyModal({ isOpen, onClose, onCreate, saving, error }) {
     const [name, setName] = useState("");

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import "./EnterFamilyModal.css";
+import "./EnterFamilyModal/enterFamilyModal.css";
+import "./EnterFamilyModal/enterFamilyModaldesktop.css";
+import "./EnterFamilyModal/enterFamilyModalmobile.css";
 
 function EnterFamilyModal({ isOpen, onClose, onJoin, joining, error }) {
     const [code, setCode] = useState("");

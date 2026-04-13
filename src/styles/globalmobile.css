@@ -1,0 +1,7 @@
+@media (max-width: 900px) {
+  /* Prevent content from overflowing viewport width */
+  img,
+  video {
+    max-width: 100%;
+  }
+}

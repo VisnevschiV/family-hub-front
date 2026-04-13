@@ -1,0 +1,104 @@
+/* ===================================================
+   AppShell — Extra small screens (max-width: 480px)
+   Fine-tunes the top navbar for very narrow phones
+   =================================================== */
+
+@media (max-width: 700px) {
+    .appShell__sidebar {
+        height: auto;
+        min-height: 64px;
+        padding: 8px 10px 6px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "brand user"
+            "nav nav";
+        gap: 6px 8px;
+        box-shadow: 0 8px 18px rgba(70, 52, 38, 0.08);
+    }
+
+    .appShell__brand {
+        grid-area: brand;
+        min-width: 0;
+        padding: 2px 6px 2px 2px;
+    }
+
+    .appShell__userLink {
+        grid-area: user;
+        justify-self: end;
+    }
+
+    .appShell__nav {
+        grid-area: nav;
+        width: 100%;
+        border-top: 1px solid var(--border);
+        padding: 6px 0 2px;
+        gap: 6px;
+        margin-top: 1px;
+    }
+
+    .appShell__navSection {
+        gap: 6px;
+    }
+
+    .appShell__navLink {
+        min-height: 38px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.55);
+    }
+
+    .appShell__navLink.active {
+        border-color: #edc9aa;
+        box-shadow: 0 6px 14px rgba(138, 79, 45, 0.14);
+    }
+
+    .appShell__main {
+        padding-top: 112px;
+    }
+
+    .appShell__topbar {
+        padding-top: 14px;
+    }
+
+    .appShell__pageSubtitle {
+        max-width: 34ch;
+    }
+}
+
+@media (max-width: 480px) {
+    .appShell__title {
+        font-size: 14px;
+    }
+
+    .appShell__logo {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+
+    .appShell__navLink {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-height: 36px;
+    }
+
+    .appShell__content {
+        padding: 8px 12px 28px;
+    }
+
+    .appShell__topbar {
+        padding: 12px 12px 6px;
+    }
+
+    .page__title {
+        font-size: 19px;
+    }
+
+    .appShell__toastStack {
+        right: 8px;
+        top: 116px;
+        width: calc(100vw - 16px);
+    }
+}

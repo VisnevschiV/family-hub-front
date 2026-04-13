@@ -1,0 +1,39 @@
+/* ===================================================
+   TodoList — Mobile adjustments
+   =================================================== */
+
+@media (max-width: 900px) {
+    /* On tablet: 2 columns when space allows */
+    .todoList {
+        flex: 0 1 calc(50% - 8px);
+    }
+}
+
+@media (max-width: 600px) {
+    /* On phone: single column, full width */
+    .todoList {
+        flex: 0 1 100%;
+    }
+
+    /* Bottom sheet modal on phone */
+    .todoList__modalBackdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .todoList__modal {
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .todoList__modal::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 999px;
+        margin: 0 auto 16px;
+    }
+}

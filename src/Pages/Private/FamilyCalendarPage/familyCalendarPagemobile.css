@@ -1,0 +1,141 @@
+@media (max-width: 900px) {
+    .calendarView {
+        gap: 12px;
+    }
+
+    .calendarView__toolbar {
+        background: linear-gradient(150deg, #fffaf3 0%, #fff2e3 100%);
+        border: 1px solid #e6d7c4;
+        border-radius: 16px;
+        padding: 10px;
+        box-shadow: 0 10px 20px rgba(70, 52, 38, 0.1);
+    }
+
+    .calendarView__monthLabel {
+        width: 100%;
+        order: -1;
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 2px;
+    }
+
+    .calendarView__toolbarRight {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+
+    .calendarView__button {
+        min-height: 42px;
+        font-size: 13px;
+        padding: 8px 11px;
+        border-radius: 10px;
+    }
+
+    .calendarView__cell {
+        min-height: 78px;
+        border-radius: 10px;
+        padding: 6px;
+    }
+
+    .calendarView__eventDescription {
+        display: none;
+    }
+
+    .calendarView__eventItem {
+        padding: 4px 5px;
+        border-radius: 7px;
+    }
+
+    .calendarView__eventTitle {
+        font-size: 11px;
+        line-height: 1.2;
+    }
+
+    .calendarItinerary__item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .calendarItinerary__detailsButton {
+        width: 100%;
+        text-align: center;
+    }
+
+    .calendarModalActions {
+        flex-wrap: wrap;
+    }
+
+    .calendarModalButton {
+        min-height: 42px;
+    }
+
+    .calendarParticipants__menu {
+        max-height: 170px;
+    }
+}
+
+@media (max-width: 640px) {
+    .calendarView__weekHeader {
+        gap: 3px;
+    }
+
+    .calendarView__grid {
+        gap: 3px;
+    }
+
+    .calendarView__weekDay {
+        font-size: 10px;
+        letter-spacing: 0.02em;
+    }
+
+    .calendarView__dayNumber {
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .calendarView__cell {
+        min-height: 72px;
+        padding: 6px 4px 4px;
+    }
+
+    .calendarView__eventTime {
+        font-size: 10px;
+    }
+
+    .calendarModalOverlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .calendarModalCard {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        padding: 18px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .calendarModalCard::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 999px;
+        margin: 0 auto 14px;
+    }
+
+    .calendarModalActions {
+        flex-direction: column-reverse;
+    }
+
+    .calendarModalButton,
+    .calendarModalButton--ghost,
+    .calendarModalButton--danger {
+        width: 100%;
+        text-align: center;
+    }
+}

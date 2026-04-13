@@ -3,7 +3,9 @@ import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import { tryLogin, tryRegister } from "../api/auth.js";
 import "react-day-picker/style.css";
-import "./LoginForm.css";
+import "./LoginForm/loginForm.css";
+import "./LoginForm/loginFormdesktop.css";
+import "./LoginForm/loginFormmobile.css";
 
 function LoginForm({ onLoginSuccess, initialMode = "login" }) {
     const [email, setEmail] = useState("");
@@ -73,7 +75,7 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
         <div className="loginForm__container">
             <form onSubmit={handleSubmit} className="loginForm__panel">
                 <h2 className="loginForm__title">
-                    {isRegister ? "Create Account" : "Welcome Back"}
+                    {isRegister ? "Create Account" : "Sign in"}
                 </h2>
 
                 {isRegister && (

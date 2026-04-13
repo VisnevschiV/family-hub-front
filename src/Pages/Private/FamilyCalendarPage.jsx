@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     createCalendarEvent,
     deleteCalendarEvent,
@@ -6,9 +6,12 @@ import {
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
-import "./FamilyCalendarPage.css";
+import "./FamilyCalendarPage/familyCalendarPage.css";
+import "./FamilyCalendarPage/familyCalendarPagedesktop.css";
+import "./FamilyCalendarPage/familyCalendarPagemobile.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const LONG_PRESS_DURATION_MS = 450;
 
 function toDateKey(date) {
     const year = date.getFullYear();
@@ -151,6 +154,23 @@ function FamilyCalendarPage() {
     const [editingEventId, setEditingEventId] = useState(null);
     const [selectedDateKey, setSelectedDateKey] = useState(() => toDateKey(new Date()));
     const [calendarError, setCalendarError] = useState("");
+    const longPressTimerRef = useRef(null);
+    const longPressTriggeredRef = useRef(false);
+    const itinerarySectionRef = useRef(null);
+
+    function clearLongPressTimer() {
+        if (longPressTimerRef.current) {
+            window.clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    }
+
+    useEffect(
+        () => () => {
+            clearLongPressTimer();
+        },
+        []
+    );
 
     async function refreshEvents() {
         const data = await getCalendarEvents();
@@ -257,16 +277,64 @@ function FamilyCalendarPage() {
         setVisibleMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     }
 
-    function openCreateModal() {
+    function openCreateModalForDate(dateKey) {
+        const targetDateKey = dateKey || selectedDateKey || toDateKey(new Date());
+        const [year, month, day] = targetDateKey.split("-").map(Number);
+        const hasValidDate =
+            Number.isInteger(year) &&
+            Number.isInteger(month) &&
+            Number.isInteger(day) &&
+            month >= 1 &&
+            month <= 12 &&
+            day >= 1 &&
+            day <= 31;
+
         const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        setEventDateTime(localNow.toISOString().slice(0, 16));
+        const defaultTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+        if (hasValidDate) {
+            setSelectedDateKey(targetDateKey);
+            setVisibleMonth(new Date(year, month - 1, 1));
+        }
+
+        setEventDateTime(defaultTime);
         setEventTitle("");
         setEventDescription("");
         setSelectedParticipantIds([]);
         setParticipantsDropdownOpen(false);
         setEditingEventId(null);
         setCreateModalOpen(true);
+    }
+
+    function handleCellPointerDown(event, cell) {
+        if (!cell?.dateKey) return;
+
+        if (event.target instanceof Element && event.target.closest(".calendarView__eventItem")) {
+            return;
+        }
+
+        longPressTriggeredRef.current = false;
+        clearLongPressTimer();
+
+        longPressTimerRef.current = window.setTimeout(() => {
+            longPressTriggeredRef.current = true;
+            openCreateModalForDate(cell.dateKey);
+        }, LONG_PRESS_DURATION_MS);
+    }
+
+    function handleCellPointerEnd() {
+        clearLongPressTimer();
+    }
+
+    function selectDateAndScroll(dateKey) {
+        setSelectedDateKey(dateKey);
+
+        window.requestAnimationFrame(() => {
+            itinerarySectionRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        });
     }
 
     function openEditModal(eventItem) {
@@ -305,7 +373,29 @@ function FamilyCalendarPage() {
         const description = eventDescription.trim();
         if (!title || !eventDateTime) return;
 
-        const parsedDate = new Date(eventDateTime);
+        let parsedDate = null;
+
+        if (editingEventId) {
+            parsedDate = new Date(eventDateTime);
+        } else {
+            const [year, month, day] = selectedDateKey.split("-").map(Number);
+            const [hoursRaw, minutesRaw] = eventDateTime.split(":");
+            const hours = Number(hoursRaw);
+            const minutes = Number(minutesRaw);
+
+            if (
+                !Number.isInteger(year) ||
+                !Number.isInteger(month) ||
+                !Number.isInteger(day) ||
+                Number.isNaN(hours) ||
+                Number.isNaN(minutes)
+            ) {
+                return;
+            }
+
+            parsedDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        }
+
         if (Number.isNaN(parsedDate.getTime())) return;
 
         const isoTime = parsedDate.toISOString();
@@ -389,40 +479,53 @@ function FamilyCalendarPage() {
 
             <section className="card calendarView">
                 <div className="calendarView__toolbar">
-                    <button type="button" className="calendarView__button" onClick={showPreviousMonth}>
-                        Previous
-                    </button>
                     <h2 className="calendarView__monthLabel">{monthLabel}</h2>
                     <div className="calendarView__toolbarRight">
-                        <button type="button" className="calendarView__button" onClick={openCreateModal}>
-                            Create event
+                        <button type="button" className="calendarView__button" onClick={showPreviousMonth} aria-label="Previous month">
+                            &lt;
                         </button>
                         <button type="button" className="calendarView__button" onClick={showCurrentMonth}>
                             Today
                         </button>
-                        <button type="button" className="calendarView__button" onClick={showNextMonth}>
-                            Next
+                        <button type="button" className="calendarView__button" onClick={showNextMonth} aria-label="Next month">
+                            &gt;
                         </button>
                     </div>
                 </div>
 
                 <div className="calendarView__weekHeader" role="row">
-                    {WEEK_DAYS.map((day) => (
-                        <div key={day} className="calendarView__weekDay" role="columnheader">
+                    {WEEK_DAYS.map((day, dayIndex) => (
+                        <div
+                            key={day}
+                            className={`calendarView__weekDay ${dayIndex === 0 || dayIndex === 6 ? "calendarView__weekDay--weekend" : ""}`}
+                            role="columnheader"
+                        >
                             {day}
                         </div>
                     ))}
                 </div>
 
                 <div className="calendarView__grid" role="grid" aria-label={monthLabel}>
-                    {dayCells.map((cell) => (
+                    {dayCells.map((cell, cellIndex) => (
                         <div
                             key={cell.key}
                             className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
                                 } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
                                 }`}
                             role="gridcell"
-                            onClick={cell.dateKey ? () => setSelectedDateKey(cell.dateKey) : undefined}
+                            onClick={cell.dateKey ? () => {
+                                if (longPressTriggeredRef.current) {
+                                    longPressTriggeredRef.current = false;
+                                    return;
+                                }
+                                selectDateAndScroll(cell.dateKey);
+                            } : undefined}
+                            onDoubleClick={cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
+                            onPointerDown={cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
+                            onPointerUp={cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerLeave={cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerCancel={cell.dateKey ? handleCellPointerEnd : undefined}
                         >
                             {cell.dayNumber ? (
                                 <>
@@ -432,19 +535,6 @@ function FamilyCalendarPage() {
                                             <div
                                                 key={eventItem.id}
                                                 className="calendarView__eventItem"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    openEditModal(eventItem);
-                                                }}
-                                                role="button"
-                                                tabIndex={0}
-                                                onKeyDown={(event) => {
-                                                    if (event.key === "Enter" || event.key === " ") {
-                                                        event.preventDefault();
-                                                        event.stopPropagation();
-                                                        openEditModal(eventItem);
-                                                    }
-                                                }}
                                             >
                                                 <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
                                                 <div className="calendarView__eventTitle">{eventItem.title}</div>
@@ -473,7 +563,7 @@ function FamilyCalendarPage() {
                 </div>
             </section>
 
-            <section className="card calendarItinerary">
+            <section ref={itinerarySectionRef} className="card calendarItinerary">
                 <h2 className="card__title">Itinerary · {selectedDateLabel}</h2>
                 {selectedDateEvents.length === 0 ? (
                     <p className="card__text">No events planned for this day yet.</p>
@@ -490,14 +580,12 @@ function FamilyCalendarPage() {
                                         </p>
                                     ) : null}
                                     <p className="calendarItinerary__description">{eventItem.description}</p>
-                                </div>
-                                <div className="calendarItinerary__actions">
                                     <button
                                         type="button"
-                                        className="calendarView__button"
+                                        className="calendarItinerary__detailsButton"
                                         onClick={() => openEditModal(eventItem)}
                                     >
-                                        Edit
+                                        View details / Modify
                                     </button>
                                 </div>
                             </article>
@@ -517,7 +605,7 @@ function FamilyCalendarPage() {
                                 <p className="calendarModalSubtitle">
                                     {editingEventId
                                         ? "Update title, description, and date/time."
-                                        : "Add title, description, and date/time."}
+                                        : "Date is set from your selected day. Add title, details, and time."}
                                 </p>
                             </div>
                             <button
@@ -556,15 +644,34 @@ function FamilyCalendarPage() {
                                 />
                             </label>
 
-                            <label className="calendarModalField">
-                                <span>Date and time</span>
-                                <input
-                                    type="datetime-local"
-                                    value={eventDateTime}
-                                    onChange={(event) => setEventDateTime(event.target.value)}
-                                    required
-                                />
-                            </label>
+                            {editingEventId ? (
+                                <label className="calendarModalField">
+                                    <span>Date and time</span>
+                                    <input
+                                        type="datetime-local"
+                                        value={eventDateTime}
+                                        onChange={(event) => setEventDateTime(event.target.value)}
+                                        required
+                                    />
+                                </label>
+                            ) : (
+                                <>
+                                    <label className="calendarModalField">
+                                        <span>Date</span>
+                                        <input type="text" value={selectedDateLabel} readOnly />
+                                    </label>
+
+                                    <label className="calendarModalField">
+                                        <span>Time</span>
+                                        <input
+                                            type="time"
+                                            value={eventDateTime}
+                                            onChange={(event) => setEventDateTime(event.target.value)}
+                                            required
+                                        />
+                                    </label>
+                                </>
+                            )}
 
                             <div className="calendarModalField">
                                 <span>Participants</span>

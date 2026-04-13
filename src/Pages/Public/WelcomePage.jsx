@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import "./WelcomePage.css";
+import "./WelcomePage/welcomePage.css";
+import "./WelcomePage/welcomePagedesktop.css";
+import "./WelcomePage/welcomePagemobile.css";
 
 function WelcomePage() {
     return (
@@ -11,9 +13,11 @@ function WelcomePage() {
 
             <header className="welcome__header">
                 <div className="welcome__brand">
-                    <div className="welcome__logo">FH</div>
+                    <div className="welcome__logo">
+                        <img src="/logo.png" alt="happywifehappylife logo" className="welcome__logoImage" />
+                    </div>
                     <div>
-                        <div className="welcome__title">Family Hub</div>
+                        <div className="welcome__title">happywifehappylife</div>
                         <div className="welcome__subtitle">Shared life, organized</div>
                     </div>
                 </div>
@@ -99,7 +103,7 @@ function WelcomePage() {
                         </p>
                     </div>
                     <Link className="welcome__cta" to="/register">
-                        Create your family hub
+                        Create your happywifehappylife
                     </Link>
                 </section>
             </main>

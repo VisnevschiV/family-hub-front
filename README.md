@@ -1,4 +1,4 @@
-# Family Hub - Frontend
+# happywifehappylife
 
 A modern family organization app that helps families manage shared tasks, calendars, and member profiles in one centralized hub.
 
@@ -43,7 +43,7 @@ src/
 
 1. Clone the repository and navigate to the project directory:
    ```sh
-   cd family-hub-front
+   cd happywifehappylife
    ```
 
 2. Install dependencies:
@@ -83,7 +83,7 @@ npm run lint
 
 - **Welcome** - Landing page for new visitors
 - **Login/Register** - Authentication pages
-- **Family Hub** - Family group management (invitation codes, members, shared spaces)
+- **happywifehappylife** - Family group management (invitation codes, members, shared spaces)
 - **Profile Settings** - Personal user profile (name, birthday, gender, avatar)
 - **To-Do Lists** - Shared family task management
 - **Family Calendar** - Shared family calendar
@@ -93,7 +93,7 @@ npm run lint
 - `/welcome` - Welcome page
 - `/login` - Login page
 - `/register` - Registration page
-- `/app` - Family Hub (requires authentication)
+- `/app` - happywifehappylife (requires authentication)
   - `/app/profile` - Profile settings
   - `/app/family/todo` - To-do lists
   - `/app/family/calendar` - Family calendar

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import "./ListNameModal.css";
+import "./ListNameModal/listNameModal.css";
+import "./ListNameModal/listNameModaldesktop.css";
+import "./ListNameModal/listNameModalmobile.css";
 
 export default function ListNameModal({
     isOpen,
