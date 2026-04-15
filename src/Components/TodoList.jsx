@@ -363,7 +363,7 @@ export default function TodoList({
                                         setIsMenuOpen(false);
                                     }}
                                 >
-                                    Rename
+                                    Modify
                                 </button>
 
                                 <button

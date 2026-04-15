@@ -51,6 +51,60 @@
     box-shadow: 0 0 0 1px rgba(212, 131, 92, 0.3);
 }
 
+.listNameModal__participants {
+    display: grid;
+    gap: 8px;
+}
+
+.listNameModal__participantsLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.listNameModalParticipants__trigger {
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fffaf3;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.listNameModalParticipants__trigger:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(212, 131, 92, 0.15);
+}
+
+.listNameModalParticipants__menu {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fffaf3;
+    padding: 10px;
+    max-height: 180px;
+    overflow: auto;
+    display: grid;
+    gap: 8px;
+}
+
+.listNameModalParticipants__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.listNameModalParticipants__empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
 .listNameModal__actions {
     display: flex;
     justify-content: flex-end;
