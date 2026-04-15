@@ -46,14 +46,25 @@ export async function getTaskLists() {
     }
 }
 
-export async function createTaskList(name) {
+export async function createTaskList(name, participantIds = []) {
+    const normalizedParticipantIds = Array.isArray(participantIds)
+        ? participantIds
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value))
+        : [];
+    const participantIdSet = [...new Set(normalizedParticipantIds)];
+
     const requestUrl = buildApiUrl("/tasks/createList");
     const response = await apiFetch("/tasks/createList", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({
+            name,
+            participants: participantIdSet,
+            participantIds: participantIdSet,
+        }),
     });
 
     if (!response.ok) {
@@ -133,14 +144,26 @@ export async function deleteTaskList(listID) {
     }
 }
 
-export async function updateTaskListName(id, newName) {
+export async function updateTaskListName(id, newName, participantIds = []) {
+    const normalizedParticipantIds = Array.isArray(participantIds)
+        ? participantIds
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value))
+        : [];
+    const participantIdSet = [...new Set(normalizedParticipantIds)];
+
     const requestUrl = buildApiUrl("/tasks/lists");
     const response = await apiFetch("/tasks/lists", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, newName }),
+        body: JSON.stringify({
+            id,
+            newName,
+            participants: participantIdSet,
+            participantIds: participantIdSet,
+        }),
     });
 
     if (!response.ok) {

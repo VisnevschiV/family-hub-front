@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ListNameModal from "../../Components/ListNameModal.jsx";
 import TodoList from "../../Components/TodoList.jsx";
+import { getFamilyMembers } from "../../api/families.js";
 import {
     createTask,
     createTaskList,
@@ -16,6 +17,9 @@ import "./TodoListsPage/todoListsPagemobile.css";
 
 export default function TodoListsPage() {
     const [lists, setLists] = useState([]);
+    const [familyMembers, setFamilyMembers] = useState([]);
+    const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
+    const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
     const [listNameModal, setListNameModal] = useState({
         isOpen: false,
         mode: "add",
@@ -24,6 +28,8 @@ export default function TodoListsPage() {
     });
 
     function openAddListModal() {
+        setSelectedParticipantIds([]);
+        setParticipantsDropdownOpen(false);
         setListNameModal({
             isOpen: true,
             mode: "add",
@@ -36,6 +42,11 @@ export default function TodoListsPage() {
         const targetList = lists.find((list) => list.id === listId);
         if (!targetList) return;
 
+        setSelectedParticipantIds(
+            Array.isArray(targetList.participantIds) ? targetList.participantIds : []
+        );
+        setParticipantsDropdownOpen(false);
+
         setListNameModal({
             isOpen: true,
             mode: "rename",
@@ -45,7 +56,17 @@ export default function TodoListsPage() {
     }
 
     function closeListNameModal() {
+        setParticipantsDropdownOpen(false);
         setListNameModal((prev) => ({ ...prev, isOpen: false }));
+    }
+
+    function toggleParticipant(participantId) {
+        setSelectedParticipantIds((current) => {
+            if (current.includes(participantId)) {
+                return current.filter((id) => id !== participantId);
+            }
+            return [...current, participantId];
+        });
     }
 
     function resolveBackendListId(list) {
@@ -182,6 +203,45 @@ export default function TodoListsPage() {
 
         return backendLists.map((list) => {
             const backendId = resolveBackendListId(list);
+            const participantCandidates =
+                list.participantIds ||
+                list.participantsIds ||
+                list.participantIDs ||
+                list.participants ||
+                list.memberIds ||
+                list.members ||
+                list.assigneeIds ||
+                list.assignees ||
+                list?.taskList?.participantIds ||
+                list?.taskList?.participants ||
+                [];
+
+            const participantIds = Array.isArray(participantCandidates)
+                ? [...new Set(
+                    participantCandidates
+                        .map((participant) => {
+                            if (participant === null || participant === undefined) return null;
+
+                            if (typeof participant === "string" || typeof participant === "number") {
+                                const value = Number(participant);
+                                return Number.isInteger(value) ? value : null;
+                            }
+
+                            if (typeof participant !== "object") return null;
+
+                            const participantId =
+                                participant.id ||
+                                participant.ID ||
+                                participant.personaId ||
+                                participant.userId ||
+                                participant.memberId;
+
+                            const normalized = Number(participantId);
+                            return Number.isInteger(normalized) ? normalized : null;
+                        })
+                        .filter((value) => value !== null)
+                )]
+                : [];
 
             return {
                 id: backendId ? String(backendId) : crypto.randomUUID(),
@@ -193,6 +253,7 @@ export default function TodoListsPage() {
                     list.title ||
                     list.taskListName ||
                     "Untitled list",
+                participantIds,
                 items: mapBackendTasks(list),
             };
         });
@@ -206,23 +267,38 @@ export default function TodoListsPage() {
     useEffect(() => {
         let isMounted = true;
 
-        async function loadLists() {
+        async function loadData() {
             try {
-                const data = await getTaskLists();
+                const [listsData, membersData] = await Promise.all([
+                    getTaskLists(),
+                    getFamilyMembers(),
+                ]);
                 if (!isMounted) return;
 
-                setLists(mapBackendLists(data));
+                setLists(mapBackendLists(listsData));
+                setFamilyMembers(Array.isArray(membersData) ? membersData : []);
             } catch (err) {
-                console.error(err.message || "Failed to load lists");
+                console.error(err.message || "Failed to load task list data");
             }
         }
 
-        loadLists();
+        loadData();
 
         return () => {
             isMounted = false;
         };
     }, []);
+
+    const selectedParticipantLabels = useMemo(() => {
+        if (selectedParticipantIds.length === 0) {
+            return "Family";
+        }
+
+        const membersById = new Map(familyMembers.map((member) => [member.id, member.name]));
+        return selectedParticipantIds
+            .map((participantId) => membersById.get(participantId) || participantId)
+            .join(", ");
+    }, [familyMembers, selectedParticipantIds]);
 
     async function handleSubmitListName(name) {
         const title = name.trim();
@@ -230,7 +306,7 @@ export default function TodoListsPage() {
 
         if (listNameModal.mode === "add") {
             try {
-                await createTaskList(title);
+                await createTaskList(title, selectedParticipantIds);
                 await refreshLists();
             } catch (err) {
                 console.error(err.message || "Failed to create list");
@@ -255,7 +331,7 @@ export default function TodoListsPage() {
         }
 
         try {
-            await updateTaskListName(backendId, title);
+            await updateTaskListName(backendId, title, selectedParticipantIds);
         } catch (err) {
             console.error(err.message || "Failed to rename list");
             return;
@@ -263,7 +339,9 @@ export default function TodoListsPage() {
 
         setLists((prev) =>
             prev.map((list) =>
-                list.id === listNameModal.listId ? { ...list, title } : list
+                list.id === listNameModal.listId
+                    ? { ...list, title, participantIds: [...new Set(selectedParticipantIds)] }
+                    : list
             )
         );
         closeListNameModal();
@@ -490,10 +568,19 @@ export default function TodoListsPage() {
                 title={
                     listNameModal.mode === "add"
                         ? "New to-do list"
-                        : "Rename to-do list"
+                        : "Edit to-do list"
                 }
                 confirmLabel={listNameModal.mode === "add" ? "Add" : "Save"}
                 initialValue={listNameModal.value}
+                showParticipants
+                familyMembers={familyMembers}
+                selectedParticipantIds={selectedParticipantIds}
+                participantsDropdownOpen={participantsDropdownOpen}
+                selectedParticipantLabel={selectedParticipantLabels}
+                onToggleParticipantsDropdown={() =>
+                    setParticipantsDropdownOpen((current) => !current)
+                }
+                onToggleParticipant={toggleParticipant}
                 onCancel={closeListNameModal}
                 onConfirm={handleSubmitListName}
             />

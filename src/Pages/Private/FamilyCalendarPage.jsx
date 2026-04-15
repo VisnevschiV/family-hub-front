@@ -459,7 +459,7 @@ function FamilyCalendarPage() {
 
     const selectedParticipantLabels = useMemo(() => {
         if (selectedParticipantIds.length === 0) {
-            return "No participants selected";
+            return "Family";
         }
 
         const membersById = new Map(familyMembers.map((member) => [member.id, member.name]));

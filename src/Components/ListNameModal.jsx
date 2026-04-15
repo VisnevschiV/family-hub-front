@@ -8,6 +8,13 @@ export default function ListNameModal({
     title,
     confirmLabel,
     initialValue,
+    showParticipants = false,
+    familyMembers = [],
+    selectedParticipantIds = [],
+    participantsDropdownOpen = false,
+    selectedParticipantLabel = "Family",
+    onToggleParticipantsDropdown,
+    onToggleParticipant,
     onCancel,
     onConfirm,
 }) {
@@ -45,6 +52,47 @@ export default function ListNameModal({
                         placeholder="e.g. Home"
                         autoFocus
                     />
+
+                    {showParticipants ? (
+                        <div className="listNameModal__participants">
+                            <span className="listNameModal__participantsLabel">Participants</span>
+                            <button
+                                type="button"
+                                className="listNameModalParticipants__trigger"
+                                onClick={onToggleParticipantsDropdown}
+                            >
+                                {selectedParticipantLabel}
+                            </button>
+
+                            {participantsDropdownOpen ? (
+                                <div className="listNameModalParticipants__menu">
+                                    {familyMembers.length === 0 ? (
+                                        <p className="listNameModalParticipants__empty">
+                                            No family members available
+                                        </p>
+                                    ) : (
+                                        familyMembers.map((member) => {
+                                            const isSelected = selectedParticipantIds.includes(member.id);
+
+                                            return (
+                                                <label
+                                                    key={member.id}
+                                                    className="listNameModalParticipants__option"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => onToggleParticipant(member.id)}
+                                                    />
+                                                    <span>{member.name}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
 
                     <div className="listNameModal__actions">
                         <button
