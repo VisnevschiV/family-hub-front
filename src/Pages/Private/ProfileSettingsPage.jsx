@@ -6,6 +6,7 @@ import { createFamily, updateFamilyName, leaveFamily, joinFamily, generateJoinCo
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
 import EnterFamilyModal from "../../Components/EnterFamilyModal.jsx";
 import InviteCodeModal from "../../Components/InviteCodeModal.jsx";
+import PeriodProfileModal from "../../Components/PeriodProfileModal.jsx";
 import "./ProfilePage/profilePage.css";
 import "./ProfilePage/profilePagedesktop.css";
 import "./ProfilePage/profilePagemobile.css";
@@ -41,6 +42,7 @@ function ProfileSettingsPage() {
     const [inviteLoading, setInviteLoading] = useState(false);
     const [inviteCode, setInviteCode] = useState("");
     const [inviteExpiresAt, setInviteExpiresAt] = useState("");
+    const [periodOpen, setPeriodOpen] = useState(false);
 
     async function handleLogout() {
         await logout();
@@ -408,6 +410,19 @@ function ProfileSettingsPage() {
 
                 <section className="page__grid">
                     <div className="card">
+                        <h2 className="card__title">Period settings</h2>
+                        <p className="card__text">Manage your period profile, cycle details, and predictions.</p>
+                        <div className="accountActions">
+                            <button
+                                type="button"
+                                className="periodOpenButton"
+                                onClick={() => setPeriodOpen(true)}
+                            >
+                                Open period settings
+                            </button>
+                        </div>
+                    </div>
+                    <div className="card">
                         <h2 className="card__title">Account settings</h2>
                         <p className="card__text">
                             Manage your session and sign out from this device.
@@ -419,9 +434,9 @@ function ProfileSettingsPage() {
                         >
                             Log out
                         </button>
-                    </div>
-                </section>
-            </div>
+                    </div >
+                </section >
+            </div >
             <CreateFamilyModal
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}
@@ -442,6 +457,7 @@ function ProfileSettingsPage() {
                 code={inviteCode}
                 expiresAt={inviteExpiresAt}
             />
+            <PeriodProfileModal isOpen={periodOpen} onClose={() => setPeriodOpen(false)} />
         </>
     );
 }

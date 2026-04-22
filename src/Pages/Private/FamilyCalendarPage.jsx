@@ -6,6 +6,7 @@ import {
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
+import { getPeriodMonth, getPeriodProfile, startPeriod, stopPeriod } from "../../api/periodProfile.js";
 import "./FamilyCalendarPage/familyCalendarPage.css";
 import "./FamilyCalendarPage/familyCalendarPagedesktop.css";
 import "./FamilyCalendarPage/familyCalendarPagemobile.css";
@@ -18,6 +19,37 @@ function toDateKey(date) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+
+function parseIsoDate(value) {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function clampDate(date, minDate, maxDate) {
+    if (date < minDate) return new Date(minDate);
+    if (date > maxDate) return new Date(maxDate);
+    return date;
+}
+
+function addRangeToKeySet(targetSet, startDate, endDate) {
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+        targetSet.add(toDateKey(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+    }
+}
+
+function findOpenPeriodRecord(records) {
+    if (!Array.isArray(records)) return null;
+    return records.find((record) => Boolean(record?.startDate) && !record?.endDate) || null;
 }
 
 function mapBackendEvents(data) {
@@ -154,6 +186,11 @@ function FamilyCalendarPage() {
     const [editingEventId, setEditingEventId] = useState(null);
     const [selectedDateKey, setSelectedDateKey] = useState(() => toDateKey(new Date()));
     const [calendarError, setCalendarError] = useState("");
+    const [calendarNotice, setCalendarNotice] = useState("");
+    const [startingPeriod, setStartingPeriod] = useState(false);
+    const [periodDateKeys, setPeriodDateKeys] = useState(new Set());
+    const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
+    const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
@@ -195,6 +232,95 @@ function FamilyCalendarPage() {
             active = false;
         };
     }, []);
+
+    useEffect(() => {
+        let active = true;
+
+        async function loadPeriodForMonth() {
+            const year = visibleMonth.getFullYear();
+            const month = visibleMonth.getMonth() + 1;
+            const monthStart = new Date(year, month - 1, 1);
+            const monthEnd = new Date(year, month, 0);
+            const now = new Date();
+            const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const isFutureMonth = monthStart > currentMonthStart;
+
+            try {
+                const [monthData, profile] = await Promise.all([
+                    getPeriodMonth(year, month),
+                    getPeriodProfile().catch(() => null),
+                ]);
+
+                if (!active) return;
+
+                const periodLength = Number(profile?.periodLengthDays) || 5;
+                const nextPeriodKeys = new Set();
+
+                const records = Array.isArray(monthData?.records) ? monthData.records : [];
+                const openRecord = findOpenPeriodRecord(records);
+
+                if (openRecord) {
+                    setPeriodCurrentlyOpen(true);
+                    setOpenPeriodStartDateKey(openRecord.startDate || "");
+                } else {
+                    setPeriodCurrentlyOpen(false);
+                    setOpenPeriodStartDateKey("");
+                }
+
+                for (const record of records) {
+                    const startDate = parseIsoDate(record?.startDate);
+                    if (!startDate) continue;
+
+                    const endDate = record?.endDate
+                        ? parseIsoDate(record.endDate)
+                        : addDays(startDate, Math.max(periodLength - 1, 0));
+                    if (!endDate) continue;
+
+                    // Skip ranges that do not overlap the current month at all.
+                    if (endDate < monthStart || startDate > monthEnd) {
+                        continue;
+                    }
+
+                    const clampedStart = clampDate(startDate, monthStart, monthEnd);
+                    const clampedEnd = clampDate(endDate, monthStart, monthEnd);
+
+                    if (clampedStart <= clampedEnd) {
+                        addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                    }
+                }
+
+                // For future months, when no records exist, rely on backend prediction.
+                if (isFutureMonth && records.length === 0) {
+                    const predictionStart = parseIsoDate(monthData?.prediction?.startDate);
+                    if (predictionStart) {
+                        const predictionEnd = monthData?.prediction?.endDate
+                            ? parseIsoDate(monthData.prediction.endDate)
+                            : addDays(predictionStart, Math.max(periodLength - 1, 0));
+
+                        if (predictionEnd) {
+                            const clampedStart = clampDate(predictionStart, monthStart, monthEnd);
+                            const clampedEnd = clampDate(predictionEnd, monthStart, monthEnd);
+
+                            if (clampedStart <= clampedEnd) {
+                                addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                            }
+                        }
+                    }
+                }
+
+                setPeriodDateKeys(nextPeriodKeys);
+            } catch {
+                if (!active) return;
+                setPeriodDateKeys(new Set());
+            }
+        }
+
+        loadPeriodForMonth();
+
+        return () => {
+            active = false;
+        };
+    }, [visibleMonth]);
 
     const monthLabel = useMemo(
         () =>
@@ -303,6 +429,7 @@ function FamilyCalendarPage() {
         setSelectedParticipantIds([]);
         setParticipantsDropdownOpen(false);
         setEditingEventId(null);
+        setCalendarNotice("");
         setCreateModalOpen(true);
     }
 
@@ -348,6 +475,7 @@ function FamilyCalendarPage() {
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
         setEditingEventId(eventItem.id);
+        setCalendarNotice("");
         setCreateModalOpen(true);
     }
 
@@ -355,6 +483,7 @@ function FamilyCalendarPage() {
         setCreateModalOpen(false);
         setEditingEventId(null);
         setParticipantsDropdownOpen(false);
+        setCalendarNotice("");
     }
 
     function toggleParticipant(participantId) {
@@ -438,6 +567,51 @@ function FamilyCalendarPage() {
         }
     }
 
+    async function handleStartPeriodForSelectedDay() {
+        if (editingEventId || startingPeriod || !selectedDateKey) return;
+
+        const todayKey = toDateKey(new Date());
+        if (selectedDateKey > todayKey) {
+            setCalendarError("Period date cannot be in the future.");
+            setCalendarNotice("");
+            return;
+        }
+
+        if (
+            periodCurrentlyOpen &&
+            openPeriodStartDateKey &&
+            selectedDateKey < openPeriodStartDateKey
+        ) {
+            setCalendarError(
+                `Stop date cannot be before the start date (${openPeriodStartDateKey}).`
+            );
+            setCalendarNotice("");
+            return;
+        }
+
+        try {
+            setStartingPeriod(true);
+            setCalendarError("");
+            setCalendarNotice("");
+
+            if (periodCurrentlyOpen) {
+                await stopPeriod(selectedDateKey);
+                setPeriodCurrentlyOpen(false);
+                setOpenPeriodStartDateKey("");
+                setCalendarNotice(`Period stopped on ${selectedDateKey}.`);
+            } else {
+                await startPeriod(selectedDateKey);
+                setPeriodCurrentlyOpen(true);
+                setOpenPeriodStartDateKey(selectedDateKey);
+                setCalendarNotice(`Period started on ${selectedDateKey}.`);
+            }
+        } catch (error) {
+            setCalendarError(error.message || `Failed to ${periodCurrentlyOpen ? "stop" : "start"} period`);
+        } finally {
+            setStartingPeriod(false);
+        }
+    }
+
     const selectedDateLabel = useMemo(() => {
         const [year, month, day] = selectedDateKey.split("-").map(Number);
         if (!year || !month || !day) return "Selected day";
@@ -476,6 +650,7 @@ function FamilyCalendarPage() {
             </header>
 
             {calendarError ? <p className="calendarView__error">{calendarError}</p> : null}
+            {calendarNotice ? <p className="calendarView__notice">{calendarNotice}</p> : null}
 
             <section className="card calendarView">
                 <div className="calendarView__toolbar">
@@ -512,6 +687,7 @@ function FamilyCalendarPage() {
                             className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
                                 } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
                                 } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
+                                } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
                                 }`}
                             role="gridcell"
                             onClick={cell.dateKey ? () => {
@@ -722,6 +898,22 @@ function FamilyCalendarPage() {
                                         onClick={handleDeleteEvent}
                                     >
                                         Delete
+                                    </button>
+                                ) : null}
+                                {!editingEventId ? (
+                                    <button
+                                        type="button"
+                                        className="calendarModalButton calendarModalButton--period"
+                                        onClick={handleStartPeriodForSelectedDay}
+                                        disabled={startingPeriod}
+                                    >
+                                        {startingPeriod
+                                            ? periodCurrentlyOpen
+                                                ? "Stopping..."
+                                                : "Starting..."
+                                            : periodCurrentlyOpen
+                                                ? "Stop period"
+                                                : "Start period"}
                                     </button>
                                 ) : null}
                                 <button

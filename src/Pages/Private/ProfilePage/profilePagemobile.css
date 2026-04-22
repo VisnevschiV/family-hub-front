@@ -40,7 +40,8 @@
         padding: 14px 16px;
     }
 
-    .accountLogoutButton {
+    .accountLogoutButton,
+    .periodOpenButton {
         width: 100%;
         min-height: 44px;
     }

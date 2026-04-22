@@ -123,6 +123,10 @@
         background: linear-gradient(90deg, #f2bd91 0%, #e99f6b 100%);
     }
 
+    .calendarView__cell--period .calendarView__eventItem::before {
+        background: linear-gradient(90deg, #f8b8d2 0%, #e992b4 100%);
+    }
+
     .calendarView__eventTime,
     .calendarView__eventTitle,
     .calendarView__eventDescription,

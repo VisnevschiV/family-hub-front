@@ -149,35 +149,17 @@
     background: #fde2d7;
 }
 
-.accountLogoutButton {
+.profileTestButton {
     margin-top: 12px;
-    border: 1px solid #e9b7a4;
-    background: #fde2d7;
-    color: #b8543e;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
     border-radius: 999px;
     padding: 9px 15px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.accountLogoutButton:hover {
-    background: #f9d3c7;
-}
-
-.accountActions {
-    margin-top: 12px;
-}
-
-.periodOpenButton {
-    border: 1px solid #e7a7bf;
-    background: #ffd9e8;
-    color: #8b3959;
-    border-radius: 999px;
-    padding: 9px 15px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.periodOpenButton:hover {
-    background: #ffc8de;
+.profileTestButton:hover {
+    background: #f3e6d8;
 }
