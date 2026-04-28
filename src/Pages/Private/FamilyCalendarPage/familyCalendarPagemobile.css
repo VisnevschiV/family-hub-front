@@ -107,6 +107,16 @@
         margin-top: 2px;
     }
 
+    .calendarView__periodMembers {
+        gap: 3px;
+    }
+
+    .calendarView__periodMemberPill {
+        font-size: 9px;
+        padding: 2px 5px;
+        max-width: 34px;
+    }
+
     .calendarView__eventItem {
         border: none;
         background: transparent;

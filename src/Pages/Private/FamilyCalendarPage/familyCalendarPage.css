@@ -147,6 +147,10 @@
     border-color: #eeb9ce;
 }
 
+.calendarView__cell--familyPeriod {
+    box-shadow: inset 0 0 0 1px rgba(220, 145, 171, 0.24);
+}
+
 .calendarView__dayNumber {
     font-size: 15px;
     font-weight: 700;
@@ -199,6 +203,33 @@
     font-weight: 700;
 }
 
+.calendarView__periodMembers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+}
+
+.calendarView__periodMemberPill {
+    font-size: 10px;
+    line-height: 1;
+    color: #8b3959;
+    background: #ffe0ec;
+    border: 1px solid #e7a7bf;
+    border-radius: 999px;
+    padding: 3px 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendarView__periodMemberPill--muted {
+    color: #735d67;
+    background: #f4e6ed;
+    border-color: #dbc4cf;
+}
+
 .calendarItinerary {
     display: flex;
     flex-direction: column;
@@ -208,6 +239,26 @@
 .calendarItinerary__list {
     display: grid;
     gap: 12px;
+}
+
+.calendarItinerary__periodSummary {
+    border: 1px solid #e7a7bf;
+    border-radius: 12px;
+    background: linear-gradient(160deg, #ffeef6 0%, #ffe5f0 100%);
+    padding: 12px;
+}
+
+.calendarItinerary__periodTitle {
+    margin: 0;
+    font-size: 14px;
+    color: #8b3959;
+}
+
+.calendarItinerary__periodEmpty,
+.calendarItinerary__periodNames {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #7f5c6d;
 }
 
 .calendarItinerary__item {

@@ -90,6 +90,24 @@ export async function getPeriodMonth(year, month) {
     return response.json();
 }
 
+export async function getFamilyPeriodProfiles() {
+    const response = await apiFetch(`${BASE}/family`);
+    if (!response.ok) {
+        const message = await parseErrorMessage(response, "Failed to load family period profiles");
+        throw new Error(message);
+    }
+    return response.json();
+}
+
+export async function getFamilyPeriodMonth(year, month) {
+    const response = await apiFetch(`${BASE}/family/records/month?year=${year}&month=${month}`);
+    if (!response.ok) {
+        const message = await parseErrorMessage(response, "Failed to load family period month data");
+        throw new Error(message);
+    }
+    return response.json();
+}
+
 export async function recordPeriodEvent(eventType, date) {
     const response = await apiFetch(`${BASE}/events`, {
         method: "POST",
