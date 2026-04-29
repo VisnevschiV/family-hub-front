@@ -6,6 +6,13 @@ import {
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
+import {
+    getFamilyPeriodMonth,
+    getPeriodMonth,
+    getPeriodProfile,
+    startPeriod,
+    stopPeriod,
+} from "../../api/periodProfile.js";
 import "./FamilyCalendarPage/familyCalendarPage.css";
 import "./FamilyCalendarPage/familyCalendarPagedesktop.css";
 import "./FamilyCalendarPage/familyCalendarPagemobile.css";
@@ -18,6 +25,177 @@ function toDateKey(date) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+
+function parseIsoDate(value) {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseFlexibleDate(value) {
+    if (!value) return null;
+
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    if (typeof value === "string" || typeof value === "number") {
+        return parseIsoDate(value);
+    }
+
+    if (Array.isArray(value) && value.length >= 3) {
+        const [year, month, day] = value.map(Number);
+        if (Number.isInteger(year) && Number.isInteger(month) && Number.isInteger(day)) {
+            return new Date(year, month - 1, day);
+        }
+        return null;
+    }
+
+    if (typeof value === "object") {
+        const year = Number(value.year ?? value.y ?? value.YYYY);
+        const month = Number(value.month ?? value.monthValue ?? value.MM);
+        const day = Number(value.day ?? value.dayOfMonth ?? value.dd);
+
+        if (Number.isInteger(year) && Number.isInteger(month) && Number.isInteger(day)) {
+            return new Date(year, month - 1, day);
+        }
+
+        if (value.date) {
+            return parseFlexibleDate(value.date);
+        }
+    }
+
+    return null;
+}
+
+function getRecordStartDate(record) {
+    return parseFlexibleDate(
+        record?.startDate ||
+        record?.periodStartDate ||
+        record?.start ||
+        record?.from ||
+        record?.date
+    );
+}
+
+function getRecordEndDate(record) {
+    return parseFlexibleDate(
+        record?.endDate ||
+        record?.periodEndDate ||
+        record?.end ||
+        record?.to
+    );
+}
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function clampDate(date, minDate, maxDate) {
+    if (date < minDate) return new Date(minDate);
+    if (date > maxDate) return new Date(maxDate);
+    return date;
+}
+
+function addRangeToKeySet(targetSet, startDate, endDate) {
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+        targetSet.add(toDateKey(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+    }
+}
+
+function findOpenPeriodRecord(records) {
+    if (!Array.isArray(records)) return null;
+    return records.find((record) => Boolean(getRecordStartDate(record)) && !getRecordEndDate(record)) || null;
+}
+
+function normalizeFamilyPeriodProfiles(payload, membersById = new Map()) {
+    const rawProfiles = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.profiles)
+            ? payload.profiles
+            : Array.isArray(payload?.members)
+                ? payload.members
+                : Array.isArray(payload?.data)
+                    ? payload.data
+                    : Array.isArray(payload?.items)
+                        ? payload.items
+                        : [];
+
+    return rawProfiles
+        .map((entry) => {
+            if (!entry || typeof entry !== "object") return null;
+
+            const memberId =
+                entry.memberId ||
+                entry.personaId ||
+                entry.id ||
+                entry.persona?.id ||
+                entry.member?.id ||
+                null;
+
+            const resolvedNameFromList =
+                memberId != null ? membersById.get(String(memberId)) || membersById.get(Number(memberId)) : undefined;
+
+            const memberName =
+                resolvedNameFromList ||
+                entry.memberName ||
+                entry.name ||
+                entry.personaName ||
+                entry.fullName ||
+                [entry.firstName, entry.lastName].filter(Boolean).join(" ") ||
+                entry.persona?.name ||
+                entry.persona?.fullName ||
+                entry.member?.name ||
+                entry.member?.fullName ||
+                (memberId ? `Member ${memberId}` : "Family member");
+
+            const records = Array.isArray(entry.records)
+                ? entry.records
+                : Array.isArray(entry.periodRecords)
+                    ? entry.periodRecords
+                    : Array.isArray(entry.periods)
+                        ? entry.periods
+                        : Array.isArray(entry.history)
+                            ? entry.history
+                            : Array.isArray(entry.periodProfile?.records)
+                                ? entry.periodProfile.records
+                                : Array.isArray(entry.periodProfile?.periods)
+                                    ? entry.periodProfile.periods
+                                    : [];
+
+            const prediction =
+                entry.prediction ||
+                entry.periodPrediction ||
+                entry.periodProfile?.prediction ||
+                null;
+
+            const periodLengthDays =
+                Number(entry.periodLengthDays) ||
+                Number(entry.periodProfile?.periodLengthDays) ||
+                5;
+
+            return {
+                memberId,
+                memberName,
+                records,
+                prediction,
+                periodLengthDays,
+            };
+        })
+        .filter(Boolean);
+}
+
+function addMemberNameForDate(targetMap, dateKey, memberName) {
+    if (!dateKey || !memberName) return;
+    const currentNames = targetMap.get(dateKey) || [];
+    if (!currentNames.includes(memberName)) {
+        targetMap.set(dateKey, [...currentNames, memberName]);
+    }
 }
 
 function mapBackendEvents(data) {
@@ -154,6 +332,12 @@ function FamilyCalendarPage() {
     const [editingEventId, setEditingEventId] = useState(null);
     const [selectedDateKey, setSelectedDateKey] = useState(() => toDateKey(new Date()));
     const [calendarError, setCalendarError] = useState("");
+    const [calendarNotice, setCalendarNotice] = useState("");
+    const [startingPeriod, setStartingPeriod] = useState(false);
+    const [periodDateKeys, setPeriodDateKeys] = useState(new Set());
+    const [familyPeriodNamesByDate, setFamilyPeriodNamesByDate] = useState(new Map());
+    const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
+    const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
@@ -195,6 +379,160 @@ function FamilyCalendarPage() {
             active = false;
         };
     }, []);
+
+    useEffect(() => {
+        let active = true;
+
+        async function loadPeriodForMonth() {
+            const year = visibleMonth.getFullYear();
+            const month = visibleMonth.getMonth() + 1;
+            const monthStart = new Date(year, month - 1, 1);
+            const monthEnd = new Date(year, month, 0);
+            const now = new Date();
+            const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const isFutureMonth = monthStart > currentMonthStart;
+
+            try {
+                const [monthData, profile, familyMonthData, membersData] = await Promise.all([
+                    getPeriodMonth(year, month),
+                    getPeriodProfile().catch(() => null),
+                    getFamilyPeriodMonth(year, month).catch(() => []),
+                    getFamilyMembers().catch(() => []),
+                ]);
+
+                console.log("[FamilyCalendarPage] family/records/month response", familyMonthData);
+
+                const membersById = new Map(
+                    (Array.isArray(membersData) ? membersData : [])
+                        .filter((m) => m?.id != null && m?.name)
+                        .flatMap((m) => [[String(m.id), m.name], [Number(m.id), m.name]])
+                );
+
+                if (!active) return;
+
+                const periodLength = Number(profile?.periodLengthDays) || 5;
+                const nextPeriodKeys = new Set();
+                const nextFamilyPeriodNamesByDate = new Map();
+
+                const records = Array.isArray(monthData?.records) ? monthData.records : [];
+                const openRecord = findOpenPeriodRecord(records);
+
+                if (openRecord) {
+                    setPeriodCurrentlyOpen(true);
+                    setOpenPeriodStartDateKey(openRecord.startDate || "");
+                } else {
+                    setPeriodCurrentlyOpen(false);
+                    setOpenPeriodStartDateKey("");
+                }
+
+                for (const record of records) {
+                    const startDate = parseIsoDate(record?.startDate);
+                    if (!startDate) continue;
+
+                    const endDate = record?.endDate
+                        ? parseIsoDate(record.endDate)
+                        : addDays(startDate, Math.max(periodLength - 1, 0));
+                    if (!endDate) continue;
+
+                    if (endDate < monthStart || startDate > monthEnd) continue;
+
+                    const clampedStart = clampDate(startDate, monthStart, monthEnd);
+                    const clampedEnd = clampDate(endDate, monthStart, monthEnd);
+
+                    if (clampedStart <= clampedEnd) {
+                        addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                    }
+                }
+
+                if (isFutureMonth && records.length === 0) {
+                    const predictionStart = parseIsoDate(monthData?.prediction?.startDate);
+                    if (predictionStart) {
+                        const predictionEnd = monthData?.prediction?.endDate
+                            ? parseIsoDate(monthData.prediction.endDate)
+                            : addDays(predictionStart, Math.max(periodLength - 1, 0));
+
+                        if (predictionEnd) {
+                            const clampedStart = clampDate(predictionStart, monthStart, monthEnd);
+                            const clampedEnd = clampDate(predictionEnd, monthStart, monthEnd);
+
+                            if (clampedStart <= clampedEnd) {
+                                addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                            }
+                        }
+                    }
+                }
+
+                // --- Family members period mapping via new per-month endpoint ---
+                const familyMonthList = Array.isArray(familyMonthData) ? familyMonthData : [];
+                console.log("[FamilyCalendarPage] family month entries", familyMonthList);
+
+                for (const entry of familyMonthList) {
+                    const personaId = entry?.personaId;
+                    const memberName =
+                        (personaId != null
+                            ? membersById.get(String(personaId)) || membersById.get(Number(personaId))
+                            : undefined) ||
+                        entry?.memberName ||
+                        entry?.name ||
+                        (personaId != null ? `Member ${personaId}` : "Family member");
+
+                    const memberRecords = Array.isArray(entry?.records) ? entry.records : [];
+
+                    for (const record of memberRecords) {
+                        const startDate = getRecordStartDate(record);
+                        if (!startDate) continue;
+
+                        const endDate = getRecordEndDate(record) ||
+                            addDays(startDate, Math.max(Number(entry?.periodLengthDays) || 5, 1) - 1);
+
+                        const clampedStart = clampDate(startDate, monthStart, monthEnd);
+                        const clampedEnd = clampDate(endDate, monthStart, monthEnd);
+                        if (clampedStart > clampedEnd) continue;
+
+                        const cursor = new Date(clampedStart);
+                        while (cursor <= clampedEnd) {
+                            addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
+                            cursor.setDate(cursor.getDate() + 1);
+                        }
+                    }
+
+                    // Use prediction when no real records and it is flagged as predicted
+                    if (memberRecords.length === 0 && entry?.prediction) {
+                        const pred = entry.prediction;
+                        const predStart = getRecordStartDate(pred) || parseFlexibleDate(pred?.startDate);
+                        if (!predStart) continue;
+
+                        const predEnd = getRecordEndDate(pred) ||
+                            parseFlexibleDate(pred?.endDate) ||
+                            addDays(predStart, Math.max(Number(entry?.periodLengthDays) || 5, 1) - 1);
+
+                        const clampedStart = clampDate(predStart, monthStart, monthEnd);
+                        const clampedEnd = clampDate(predEnd, monthStart, monthEnd);
+                        if (clampedStart > clampedEnd) continue;
+
+                        const cursor = new Date(clampedStart);
+                        while (cursor <= clampedEnd) {
+                            addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
+                            cursor.setDate(cursor.getDate() + 1);
+                        }
+                    }
+                }
+
+                setPeriodDateKeys(nextPeriodKeys);
+                setFamilyPeriodNamesByDate(nextFamilyPeriodNamesByDate);
+            } catch {
+                if (!active) return;
+                setPeriodDateKeys(new Set());
+                setFamilyPeriodNamesByDate(new Map());
+            }
+        }
+
+        loadPeriodForMonth();
+
+        return () => {
+            active = false;
+        };
+    }, [visibleMonth]);
 
     const monthLabel = useMemo(
         () =>
@@ -244,6 +582,7 @@ function FamilyCalendarPage() {
                 isToday,
                 dateKey,
                 dayEvents,
+                periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
             });
         }
 
@@ -262,7 +601,7 @@ function FamilyCalendarPage() {
         }
 
         return cells;
-    }, [events, visibleMonth]);
+    }, [events, familyPeriodNamesByDate, visibleMonth]);
 
     function showPreviousMonth() {
         setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
@@ -303,6 +642,7 @@ function FamilyCalendarPage() {
         setSelectedParticipantIds([]);
         setParticipantsDropdownOpen(false);
         setEditingEventId(null);
+        setCalendarNotice("");
         setCreateModalOpen(true);
     }
 
@@ -348,6 +688,7 @@ function FamilyCalendarPage() {
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
         setEditingEventId(eventItem.id);
+        setCalendarNotice("");
         setCreateModalOpen(true);
     }
 
@@ -355,6 +696,7 @@ function FamilyCalendarPage() {
         setCreateModalOpen(false);
         setEditingEventId(null);
         setParticipantsDropdownOpen(false);
+        setCalendarNotice("");
     }
 
     function toggleParticipant(participantId) {
@@ -438,6 +780,55 @@ function FamilyCalendarPage() {
         }
     }
 
+    async function handleStartPeriodForSelectedDay() {
+        if (editingEventId || startingPeriod || !selectedDateKey) return;
+
+        const todayKey = toDateKey(new Date());
+        if (selectedDateKey > todayKey) {
+            setCalendarError("Period date cannot be in the future.");
+            setCalendarNotice("");
+            return;
+        }
+
+        if (
+            periodCurrentlyOpen &&
+            openPeriodStartDateKey &&
+            selectedDateKey < openPeriodStartDateKey
+        ) {
+            setCalendarError(
+                `Stop date cannot be before the start date (${openPeriodStartDateKey}).`
+            );
+            setCalendarNotice("");
+            return;
+        }
+
+        try {
+            setStartingPeriod(true);
+            setCalendarError("");
+            setCalendarNotice("");
+
+            if (periodCurrentlyOpen) {
+                await stopPeriod(selectedDateKey);
+                setPeriodCurrentlyOpen(false);
+                setOpenPeriodStartDateKey("");
+                setCalendarNotice(`Period stopped on ${selectedDateKey}.`);
+            } else {
+                await startPeriod(selectedDateKey);
+                setPeriodCurrentlyOpen(true);
+                setOpenPeriodStartDateKey(selectedDateKey);
+                setCalendarNotice(`Period started on ${selectedDateKey}.`);
+            }
+
+            setVisibleMonth(
+                (current) => new Date(current.getFullYear(), current.getMonth(), 1)
+            );
+        } catch (error) {
+            setCalendarError(error.message || `Failed to ${periodCurrentlyOpen ? "stop" : "start"} period`);
+        } finally {
+            setStartingPeriod(false);
+        }
+    }
+
     const selectedDateLabel = useMemo(() => {
         const [year, month, day] = selectedDateKey.split("-").map(Number);
         if (!year || !month || !day) return "Selected day";
@@ -468,6 +859,11 @@ function FamilyCalendarPage() {
             .join(", ");
     }, [familyMembers, selectedParticipantIds]);
 
+    const selectedDatePeriodMembers = useMemo(
+        () => familyPeriodNamesByDate.get(selectedDateKey) || [],
+        [familyPeriodNamesByDate, selectedDateKey]
+    );
+
     return (
         <div className="page">
             <header className="page__header">
@@ -476,6 +872,7 @@ function FamilyCalendarPage() {
             </header>
 
             {calendarError ? <p className="calendarView__error">{calendarError}</p> : null}
+            {calendarNotice ? <p className="calendarView__notice">{calendarNotice}</p> : null}
 
             <section className="card calendarView">
                 <div className="calendarView__toolbar">
@@ -512,6 +909,8 @@ function FamilyCalendarPage() {
                             className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
                                 } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
                                 } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
+                                } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
+                                } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
                                 }`}
                             role="gridcell"
                             onClick={cell.dateKey ? () => {
@@ -555,6 +954,20 @@ function FamilyCalendarPage() {
                                                 +{cell.dayEvents.length - 2} more
                                             </div>
                                         ) : null}
+                                        {(cell.periodMemberNames || []).length > 0 ? (
+                                            <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
+                                                {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
+                                                    <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
+                                                        {memberName.split(" ")[0] || memberName}
+                                                    </span>
+                                                ))}
+                                                {(cell.periodMemberNames || []).length > 2 ? (
+                                                    <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
+                                                        +{(cell.periodMemberNames || []).length - 2}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </>
                             ) : null}
@@ -565,6 +978,18 @@ function FamilyCalendarPage() {
 
             <section ref={itinerarySectionRef} className="card calendarItinerary">
                 <h2 className="card__title">Itinerary · {selectedDateLabel}</h2>
+                <div className="calendarItinerary__periodSummary">
+                    <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
+                    {selectedDatePeriodMembers.length === 0 ? (
+                        <p className="calendarItinerary__periodEmpty">
+                            No family members on period for this day.
+                        </p>
+                    ) : (
+                        <p className="calendarItinerary__periodNames">
+                            On period: {selectedDatePeriodMembers.join(", ")}
+                        </p>
+                    )}
+                </div>
                 {selectedDateEvents.length === 0 ? (
                     <p className="card__text">No events planned for this day yet.</p>
                 ) : (
@@ -722,6 +1147,22 @@ function FamilyCalendarPage() {
                                         onClick={handleDeleteEvent}
                                     >
                                         Delete
+                                    </button>
+                                ) : null}
+                                {!editingEventId ? (
+                                    <button
+                                        type="button"
+                                        className="calendarModalButton calendarModalButton--period"
+                                        onClick={handleStartPeriodForSelectedDay}
+                                        disabled={startingPeriod}
+                                    >
+                                        {startingPeriod
+                                            ? periodCurrentlyOpen
+                                                ? "Stopping..."
+                                                : "Starting..."
+                                            : periodCurrentlyOpen
+                                                ? "Stop period"
+                                                : "Start period"}
                                     </button>
                                 ) : null}
                                 <button

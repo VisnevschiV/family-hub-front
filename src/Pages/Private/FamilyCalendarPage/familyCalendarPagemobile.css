@@ -107,6 +107,16 @@
         margin-top: 2px;
     }
 
+    .calendarView__periodMembers {
+        gap: 3px;
+    }
+
+    .calendarView__periodMemberPill {
+        font-size: 9px;
+        padding: 2px 5px;
+        max-width: 34px;
+    }
+
     .calendarView__eventItem {
         border: none;
         background: transparent;
@@ -121,6 +131,10 @@
         height: 4px;
         border-radius: 999px;
         background: linear-gradient(90deg, #f2bd91 0%, #e99f6b 100%);
+    }
+
+    .calendarView__cell--period .calendarView__eventItem::before {
+        background: linear-gradient(90deg, #f8b8d2 0%, #e992b4 100%);
     }
 
     .calendarView__eventTime,
