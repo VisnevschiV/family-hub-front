@@ -217,6 +217,9 @@ function AppShell() {
                         <NavLink to="/app/family/calendar" className="appShell__navLink">
                             Our Calendar
                         </NavLink>
+                        <NavLink to="/app/family/budget" className="appShell__navLink">
+                            Budget & Savings
+                        </NavLink>
                         <NavLink to="/app/notifications" className="appShell__navLink appShell__navLink--withIndicator">
                             Notifications
                             {hasUnreadNotifications && <span className="appShell__unreadDot" aria-label="Unread notifications" />}
