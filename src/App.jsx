@@ -11,6 +11,7 @@ import ProfileSettingsPage from "./Pages/Private/ProfileSettingsPage.jsx";
 import FamilyHubPage from "./Pages/Private/FamilyHubPage.jsx";
 import FamilyCalendarPage from "./Pages/Private/FamilyCalendarPage.jsx";
 import NotificationsPage from "./Pages/Private/NotificationsPage.jsx";
+import BudgetPage from "./Pages/Private/BudgetPage.jsx";
 import { fetchCurrentPersona } from "./api/persona.js";
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
                     <Route path="family" element={<FamilyHubPage />} />
                     <Route path="family/todo" element={<TodoListsPage />} />
                     <Route path="family/calendar" element={<FamilyCalendarPage />} />
+                    <Route path="family/budget" element={<BudgetPage />} />
                     <Route path="notifications" element={<NotificationsPage />} />
                     <Route path="todos" element={<TodoListsPage />} />
                 </Route>

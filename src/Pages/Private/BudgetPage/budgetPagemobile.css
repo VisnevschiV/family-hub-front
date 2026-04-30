@@ -1,0 +1,123 @@
+@media (max-width: 767px) {
+    .budget-page {
+        padding: 12px;
+        gap: 16px;
+    }
+
+    .budget-header {
+        padding: 16px;
+        border-radius: 8px;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .budget-title-section {
+        flex: 1;
+    }
+
+    .budget-header h1 {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+
+    .currency-label {
+        font-size: 12px;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .budget-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card {
+        padding: 16px;
+        gap: 6px;
+    }
+
+    .summary-label {
+        font-size: 12px;
+    }
+
+    .summary-value {
+        font-size: 24px;
+    }
+
+    .summary-count {
+        font-size: 11px;
+    }
+
+    .section-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+        flex: 1;
+        min-width: 100%;
+    }
+
+    .btn-add {
+        padding: 8px 14px;
+        font-size: 13px;
+        flex: 1;
+    }
+
+    .transactions-list {
+        gap: 8px;
+        border-radius: 6px;
+    }
+
+    .transaction-item {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        padding: 12px;
+        flex-wrap: wrap;
+    }
+
+    .transaction-info {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .transaction-name {
+        font-size: 14px;
+        flex: 1;
+    }
+
+    .transaction-currency {
+        font-size: 11px;
+    }
+
+    .transaction-value {
+        font-size: 15px;
+        min-width: auto;
+        text-align: right;
+        grid-column: 1 / -1;
+    }
+
+    .transaction-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
+
+    .empty-state {
+        padding: 30px 16px;
+        font-size: 13px;
+    }
+}

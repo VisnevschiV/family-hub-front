@@ -1,0 +1,84 @@
+@media (min-width: 768px) {
+    .budget-page {
+        padding: 24px;
+        gap: 24px;
+    }
+
+    .budget-header {
+        padding: 28px;
+        border-radius: 12px;
+        gap: 20px;
+    }
+
+    .budget-header h1 {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .currency-label {
+        font-size: 15px;
+    }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .budget-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card {
+        padding: 24px;
+        gap: 10px;
+    }
+
+    .summary-label {
+        font-size: 15px;
+    }
+
+    .summary-value {
+        font-size: 36px;
+    }
+
+    .section-header {
+        padding: 0 4px;
+        margin-bottom: 4px;
+    }
+
+    .section-header h2 {
+        font-size: 22px;
+    }
+
+    .btn-add {
+        padding: 10px 20px;
+        font-size: 15px;
+    }
+
+    .transaction-item {
+        grid-template-columns: 1fr 120px auto;
+        padding: 18px;
+        gap: 16px;
+    }
+
+    .transaction-name {
+        font-size: 16px;
+    }
+
+    .transaction-value {
+        font-size: 17px;
+        min-width: 120px;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .empty-state {
+        padding: 50px 20px;
+    }
+}

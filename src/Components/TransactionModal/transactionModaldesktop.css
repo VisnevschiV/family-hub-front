@@ -1,0 +1,16 @@
+@media (min-width: 768px) {
+    .transaction-modal {
+        width: 100%;
+        max-width: 550px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+}

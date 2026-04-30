@@ -1,0 +1,66 @@
+@media (max-width: 767px) {
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .budget-modal {
+        width: 100%;
+        max-width: none;
+        border-radius: 16px 16px 0 0;
+        max-height: 85vh;
+    }
+
+    .modal-header {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        font-size: 18px;
+    }
+
+    .close-button {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+
+    form {
+        padding: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .modal-buttons {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 14px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}

@@ -445,7 +445,6 @@ function FamilyCalendarPage() {
                 }
 
                 if (isFutureMonth && records.length === 0) {
-                    const predictionStart = parseIsoDate(monthData?.prediction?.startDate);
                     if (predictionStart) {
                         const predictionEnd = monthData?.prediction?.endDate
                             ? parseIsoDate(monthData.prediction.endDate)
@@ -509,7 +508,6 @@ function FamilyCalendarPage() {
                         const clampedStart = clampDate(predStart, monthStart, monthEnd);
                         const clampedEnd = clampDate(predEnd, monthStart, monthEnd);
                         if (clampedStart > clampedEnd) continue;
-
                         const cursor = new Date(clampedStart);
                         while (cursor <= clampedEnd) {
                             addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
