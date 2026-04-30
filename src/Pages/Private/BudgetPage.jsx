@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import BudgetModal from "../../Components/BudgetModal.jsx";
 import TransactionModal from "../../Components/TransactionModal.jsx";
 import {
@@ -7,6 +7,7 @@ import {
     modifyBudget,
     addTransaction,
     modifyTransaction,
+    deleteBudget,
     deleteTransaction,
 } from "../../api/budget.js";
 import "./BudgetPage/budgetPage.css";
@@ -23,6 +24,7 @@ export default function BudgetPage() {
     const [budgetModal, setBudgetModal] = useState({
         isOpen: false,
         mode: "add",
+        targetBudgetId: null,
     });
 
     // Transaction modal state
@@ -31,6 +33,21 @@ export default function BudgetPage() {
         mode: "add",
         transactionId: null,
     });
+    const [draggingItemKey, setDraggingItemKey] = useState(null);
+    const [dragStartX, setDragStartX] = useState(null);
+    const [deletePreviewItemKey, setDeletePreviewItemKey] = useState(null);
+    const [deletingItemKey, setDeletingItemKey] = useState(null);
+    const longPressTimerRef = useRef(null);
+    const longPressTriggeredRef = useRef(false);
+    const pointerSwipeRef = useRef({
+        itemKey: null,
+        itemType: null,
+        itemId: null,
+        pointerId: null,
+        startX: 0,
+        moved: false,
+    });
+    const suppressNextClickRef = useRef(false);
 
     // Load budget on mount
     useEffect(() => {
@@ -57,7 +74,7 @@ export default function BudgetPage() {
             const parentBudgetId = activeBudget?.id || null;
             await createBudget(data.name, data.currencyISOCode, parentBudgetId);
             await loadBudget();
-            setBudgetModal({ isOpen: false, mode: "add" });
+            setBudgetModal({ isOpen: false, mode: "add", targetBudgetId: null });
         } catch (err) {
             setError(err.message || "Failed to create budget");
             console.error("Error creating budget:", err);
@@ -67,9 +84,10 @@ export default function BudgetPage() {
     async function handleModifyBudget(data) {
         try {
             setError(null);
-            const updatedBudget = await modifyBudget(activeBudget.id, data.name, data.currencyISOCode);
+            const budgetIdToModify = budgetModal.targetBudgetId || activeBudget?.id;
+            const updatedBudget = await modifyBudget(budgetIdToModify, data.name, data.currencyISOCode);
             setBudget(updatedBudget);
-            setBudgetModal({ isOpen: false, mode: "add" });
+            setBudgetModal({ isOpen: false, mode: "add", targetBudgetId: null });
         } catch (err) {
             setError(err.message || "Failed to update budget");
             console.error("Error updating budget:", err);
@@ -80,11 +98,20 @@ export default function BudgetPage() {
         setBudgetModal({
             isOpen: true,
             mode: "edit",
+            targetBudgetId: activeBudget?.id || null,
+        });
+    }
+
+    function openAddBudgetModal() {
+        setBudgetModal({
+            isOpen: true,
+            mode: "add",
+            targetBudgetId: null,
         });
     }
 
     function closeBudgetModal() {
-        setBudgetModal({ isOpen: false, mode: "add" });
+        setBudgetModal({ isOpen: false, mode: "add", targetBudgetId: null });
     }
 
     async function handleAddTransaction(data) {
@@ -147,17 +174,28 @@ export default function BudgetPage() {
     }
 
     async function handleDeleteTransaction(transactionId) {
-        if (!window.confirm("Are you sure you want to delete this transaction?")) {
-            return;
-        }
-
         try {
             setError(null);
             const updatedBudget = await deleteTransaction(activeBudget.id, transactionId);
-            setBudget(updatedBudget);
+            if (updatedBudget) {
+                setBudget(updatedBudget);
+            } else {
+                await loadBudget();
+            }
         } catch (err) {
             setError(err.message || "Failed to delete transaction");
             console.error("Error deleting transaction:", err);
+        }
+    }
+
+    async function handleDeleteSubBudget(subBudgetId) {
+        try {
+            setError(null);
+            await deleteBudget(subBudgetId);
+            await loadBudget();
+        } catch (err) {
+            setError(err.message || "Failed to delete sub-budget");
+            console.error("Error deleting sub-budget:", err);
         }
     }
 
@@ -256,6 +294,24 @@ export default function BudgetPage() {
         return currentBudget;
     }, [budget, budgetPath]);
 
+    const findBudgetById = (budgetNode, budgetId) => {
+        if (!budgetNode || !budgetId) return null;
+        if (budgetNode.id === budgetId) return budgetNode;
+
+        for (const child of getBudgetChildren(budgetNode)) {
+            const found = findBudgetById(child, budgetId);
+            if (found) return found;
+        }
+
+        return null;
+    };
+
+    const budgetBeingEdited = useMemo(() => {
+        if (budgetModal.mode !== "edit") return null;
+        const targetId = budgetModal.targetBudgetId || activeBudget?.id;
+        return findBudgetById(budget, targetId);
+    }, [budgetModal, budget, activeBudget]);
+
     const currentTransaction = useMemo(() => {
         if (transactionModal.mode === "edit" && activeBudget?.transactions) {
             return activeBudget.transactions.find((t) => t.id === transactionModal.transactionId);
@@ -297,6 +353,215 @@ export default function BudgetPage() {
         setBudgetPath((currentPath) => currentPath.slice(0, -1));
     }
 
+    useEffect(
+        () => () => {
+            if (longPressTimerRef.current) {
+                window.clearTimeout(longPressTimerRef.current);
+                longPressTimerRef.current = null;
+            }
+        },
+        []
+    );
+
+    const EDIT_LONG_PRESS_MS = 420;
+    const DELETE_THRESHOLD = 40;
+    const DELETE_ANIMATION_MS = 300;
+
+    function clearLongPressTimer() {
+        if (longPressTimerRef.current) {
+            window.clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    }
+
+    function handleRowPointerDown(event, itemType, itemId, itemKey) {
+        if (draggingItemKey || deletingItemKey) return;
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        longPressTriggeredRef.current = false;
+        suppressNextClickRef.current = false;
+        clearLongPressTimer();
+
+        pointerSwipeRef.current = {
+            itemKey,
+            itemType,
+            itemId,
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            moved: false,
+        };
+
+        longPressTimerRef.current = window.setTimeout(() => {
+            longPressTriggeredRef.current = true;
+
+            if (itemType === "transaction") {
+                openEditTransactionModal(itemId);
+                return;
+            }
+
+            setBudgetModal({
+                isOpen: true,
+                mode: "edit",
+                targetBudgetId: itemId,
+            });
+        }, EDIT_LONG_PRESS_MS);
+    }
+
+    function handleRowPointerMove(event, itemKey) {
+        if (event.pointerType === "mouse") return;
+
+        const swipeState = pointerSwipeRef.current;
+        if (!swipeState || swipeState.pointerId !== event.pointerId || swipeState.itemKey !== itemKey) {
+            return;
+        }
+
+        const deltaX = event.clientX - swipeState.startX;
+
+        if (Math.abs(deltaX) > 8) {
+            swipeState.moved = true;
+            clearLongPressTimer();
+        }
+
+        if (deltaX < -DELETE_THRESHOLD) {
+            setDeletePreviewItemKey(itemKey);
+        } else if (deletePreviewItemKey === itemKey) {
+            setDeletePreviewItemKey(null);
+        }
+    }
+
+    function handleRowPointerEnd() {
+        clearLongPressTimer();
+    }
+
+    function handleCurrentBudgetPointerDown(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        longPressTriggeredRef.current = false;
+        suppressNextClickRef.current = false;
+        clearLongPressTimer();
+
+        longPressTimerRef.current = window.setTimeout(() => {
+            longPressTriggeredRef.current = true;
+            openEditBudgetModal();
+        }, EDIT_LONG_PRESS_MS);
+    }
+
+    function handleCurrentBudgetPointerUp() {
+        clearLongPressTimer();
+    }
+
+    async function triggerDeleteWithAnimation(item) {
+        const deletingKey = `${item.type}:${item.id}`;
+
+        setDeletingItemKey(deletingKey);
+        setDeletePreviewItemKey(null);
+        setDraggingItemKey(null);
+        setDragStartX(null);
+
+        window.setTimeout(async () => {
+            try {
+                if (item.type === "transaction") {
+                    await handleDeleteTransaction(item.id);
+                } else {
+                    await handleDeleteSubBudget(item.id);
+                }
+            } finally {
+                setDeletingItemKey(null);
+            }
+        }, DELETE_ANIMATION_MS);
+    }
+
+    async function handleRowPointerUp(event, item) {
+        const swipeState = pointerSwipeRef.current;
+        const itemKey = `${item.type}:${item.id}`;
+
+        if (
+            event.pointerType !== "mouse" &&
+            swipeState &&
+            swipeState.pointerId === event.pointerId &&
+            swipeState.itemKey === itemKey
+        ) {
+            const deltaX = event.clientX - swipeState.startX;
+
+            if (deltaX < -DELETE_THRESHOLD) {
+                suppressNextClickRef.current = true;
+                pointerSwipeRef.current = {
+                    itemKey: null,
+                    itemType: null,
+                    itemId: null,
+                    pointerId: null,
+                    startX: 0,
+                    moved: false,
+                };
+                await triggerDeleteWithAnimation(item);
+                handleRowPointerEnd();
+                return;
+            }
+
+            if (swipeState.moved) {
+                suppressNextClickRef.current = true;
+            }
+        }
+
+        pointerSwipeRef.current = {
+            itemKey: null,
+            itemType: null,
+            itemId: null,
+            pointerId: null,
+            startX: 0,
+            moved: false,
+        };
+        handleRowPointerEnd();
+    }
+
+    function handleItemDragStart(event, itemKey) {
+        setDraggingItemKey(itemKey);
+        setDragStartX(event.clientX);
+        setDeletePreviewItemKey(null);
+
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = "move";
+        }
+    }
+
+    function handleItemDragOver(event) {
+        event.preventDefault();
+    }
+
+    function handleItemDrag(event, itemKey) {
+        if (!dragStartX || deletingItemKey) return;
+        if (!event.clientX) return;
+
+        const deltaX = event.clientX - dragStartX;
+
+        if (deltaX < -DELETE_THRESHOLD) {
+            setDeletePreviewItemKey(itemKey);
+        } else if (deletePreviewItemKey === itemKey) {
+            setDeletePreviewItemKey(null);
+        }
+    }
+
+    async function handleItemDragEnd(event, item) {
+        if (!dragStartX) {
+            setDraggingItemKey(null);
+            setDragStartX(null);
+            setDeletePreviewItemKey(null);
+            return;
+        }
+
+        const deltaX = event.clientX - dragStartX;
+
+        if (deltaX < -DELETE_THRESHOLD) {
+            await triggerDeleteWithAnimation(item);
+
+            return;
+        }
+
+        setDraggingItemKey(null);
+        setDragStartX(null);
+        setDeletePreviewItemKey(null);
+    }
+
     if (loading) {
         return (
             <div className="budget-page">
@@ -325,7 +590,7 @@ export default function BudgetPage() {
                     <h2>No Budget Created Yet</h2>
                     <p>Get started by creating your first budget</p>
                     <button
-                        onClick={() => setBudgetModal({ isOpen: true, mode: "add" })}
+                        onClick={openAddBudgetModal}
                         className="btn-primary btn-large"
                     >
                         Create Budget
@@ -351,7 +616,13 @@ export default function BudgetPage() {
                                 ←
                             </button>
                         )}
-                        <div>
+                        <div
+                            onPointerDown={handleCurrentBudgetPointerDown}
+                            onPointerUp={handleCurrentBudgetPointerUp}
+                            onPointerLeave={handleCurrentBudgetPointerUp}
+                            onPointerCancel={handleCurrentBudgetPointerUp}
+                            className="budget-title-touchArea"
+                        >
                             <h1>{activeBudget?.name}</h1>
                             <p className="currency-label">{activeBudget?.currencyISOCode}</p>
                         </div>
@@ -360,22 +631,7 @@ export default function BudgetPage() {
                         <p className="budget-breadcrumb">{budgetBreadcrumb.join(" / ")}</p>
                     )}
                 </div>
-                <div className="budget-header-actions">
-                    <button
-                        onClick={openEditBudgetModal}
-                        className="btn-secondary btn-icon"
-                        title="Edit budget"
-                    >
-                        ✏️
-                    </button>
-                    <button
-                        onClick={() => setBudgetModal({ isOpen: true, mode: "add" })}
-                        className="btn-primary btn-icon"
-                        title="Create new budget"
-                    >
-                        ➕
-                    </button>
-                </div>
+                <div className="budget-header-actions" />
             </div>
 
             <div className="budget-summary">
@@ -393,7 +649,7 @@ export default function BudgetPage() {
             {error && (
                 <div className="error-banner">
                     {error}
-                    <button onClick={() => setError(null)} className="close-button">
+                    <button type="button" onClick={() => setError(null)} className="close-button">
                         ×
                     </button>
                 </div>
@@ -402,18 +658,33 @@ export default function BudgetPage() {
             <div className="transactions-section">
                 <div className="section-header">
                     <h2>Sub-budgets & Transactions</h2>
-                    <button
-                        onClick={openAddTransactionModal}
-                        className="btn-primary btn-add"
-                    >
-                        + Add Transaction
-                    </button>
+                    <div className="section-actions">
+                        <button
+                            onClick={openAddBudgetModal}
+                            className="btn-primary btn-add btn-add--soft"
+                        >
+                            + Add Budget
+                        </button>
+                        <button
+                            onClick={openAddTransactionModal}
+                            className="btn-primary btn-add"
+                        >
+                            + Add Transaction
+                        </button>
+                    </div>
                 </div>
 
                 {subBudgets.length > 0 || (activeBudget?.transactions && activeBudget.transactions.length > 0) ? (
                     <div className="transactions-list">
                         {subBudgets.map((subBudget) => (
                             (() => {
+                                const subBudgetKey = `budget:${subBudget.id}`;
+                                const rowClasses = ["transaction-item", "transaction-item--subBudget", "transaction-item--clickable"];
+
+                                if (draggingItemKey === subBudgetKey) rowClasses.push("transaction-item--dragging");
+                                if (deletePreviewItemKey === subBudgetKey) rowClasses.push("transaction-item--deletePreview");
+                                if (deletingItemKey === subBudgetKey) rowClasses.push("transaction-item--deleting");
+
                                 const subBudgetTotals = computeBudgetCurrencyTotals(subBudget);
                                 const subBudgetTotalLabel = formatCurrencyTotals(
                                     subBudgetTotals,
@@ -424,8 +695,28 @@ export default function BudgetPage() {
                                     <button
                                         key={subBudget.id}
                                         type="button"
-                                        className="transaction-item transaction-item--subBudget transaction-item--clickable"
-                                        onClick={() => openSubBudget(subBudget.id)}
+                                        className={rowClasses.join(" ")}
+                                        onClick={() => {
+                                            if (longPressTriggeredRef.current) {
+                                                longPressTriggeredRef.current = false;
+                                                return;
+                                            }
+                                            if (suppressNextClickRef.current) {
+                                                suppressNextClickRef.current = false;
+                                                return;
+                                            }
+                                            openSubBudget(subBudget.id);
+                                        }}
+                                        onPointerDown={(event) => handleRowPointerDown(event, "budget", subBudget.id, subBudgetKey)}
+                                        onPointerMove={(event) => handleRowPointerMove(event, subBudgetKey)}
+                                        onPointerUp={(event) => handleRowPointerUp(event, { type: "budget", id: subBudget.id })}
+                                        onPointerLeave={handleRowPointerEnd}
+                                        onPointerCancel={handleRowPointerEnd}
+                                        draggable
+                                        onDragStart={(event) => handleItemDragStart(event, subBudgetKey)}
+                                        onDragOver={handleItemDragOver}
+                                        onDrag={(event) => handleItemDrag(event, subBudgetKey)}
+                                        onDragEnd={(event) => handleItemDragEnd(event, { type: "budget", id: subBudget.id })}
                                         title={`Open ${subBudget.name || "sub-budget"}`}
                                     >
                                         <div className="transaction-info">
@@ -446,35 +737,41 @@ export default function BudgetPage() {
                             })()
                         ))}
 
-                        {getBudgetTransactions(activeBudget).map((transaction) => (
-                            <div key={transaction.id} className="transaction-item">
-                                <div className="transaction-info">
-                                    <div className="transaction-name">{transaction.description}</div>
-                                    <div className="transaction-currency">
-                                        {transaction.currencyISOCode}
+                        {getBudgetTransactions(activeBudget).map((transaction) => {
+                            const transactionKey = `transaction:${transaction.id}`;
+                            const rowClasses = ["transaction-item"];
+
+                            if (draggingItemKey === transactionKey) rowClasses.push("transaction-item--dragging");
+                            if (deletePreviewItemKey === transactionKey) rowClasses.push("transaction-item--deletePreview");
+                            if (deletingItemKey === transactionKey) rowClasses.push("transaction-item--deleting");
+
+                            return (
+                                <div
+                                    key={transaction.id}
+                                    className={rowClasses.join(" ")}
+                                    onPointerDown={(event) => handleRowPointerDown(event, "transaction", transaction.id, transactionKey)}
+                                    onPointerMove={(event) => handleRowPointerMove(event, transactionKey)}
+                                    onPointerUp={(event) => handleRowPointerUp(event, { type: "transaction", id: transaction.id })}
+                                    onPointerLeave={handleRowPointerEnd}
+                                    onPointerCancel={handleRowPointerEnd}
+                                    draggable
+                                    onDragStart={(event) => handleItemDragStart(event, transactionKey)}
+                                    onDragOver={handleItemDragOver}
+                                    onDrag={(event) => handleItemDrag(event, transactionKey)}
+                                    onDragEnd={(event) => handleItemDragEnd(event, { type: "transaction", id: transaction.id })}
+                                >
+                                    <div className="transaction-info">
+                                        <div className="transaction-name">{transaction.description}</div>
+                                        <div className="transaction-currency">
+                                            {transaction.currencyISOCode}
+                                        </div>
+                                    </div>
+                                    <div className="transaction-value">
+                                        {`${parseFloat(transaction.amount).toFixed(2)} ${transaction.currencyISOCode || activeBudget.currencyISOCode}`}
                                     </div>
                                 </div>
-                                <div className="transaction-value">
-                                    {`${parseFloat(transaction.amount).toFixed(2)} ${transaction.currencyISOCode || activeBudget.currencyISOCode}`}
-                                </div>
-                                <div className="transaction-actions">
-                                    <button
-                                        onClick={() => openEditTransactionModal(transaction.id)}
-                                        className="btn-icon btn-edit"
-                                        title="Edit transaction"
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteTransaction(transaction.id)}
-                                        className="btn-icon btn-delete"
-                                        title="Delete transaction"
-                                    >
-                                        🗑️
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="empty-state">
@@ -486,7 +783,7 @@ export default function BudgetPage() {
             <BudgetModal
                 isOpen={budgetModal.isOpen}
                 mode={budgetModal.mode}
-                budget={budgetModal.mode === "edit" ? activeBudget : null}
+                budget={budgetModal.mode === "edit" ? budgetBeingEdited : null}
                 onClose={closeBudgetModal}
                 onSubmit={
                     budgetModal.mode === "add"

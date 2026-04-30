@@ -68,6 +68,13 @@
         flex: 1;
     }
 
+    .section-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+    }
+
     .transactions-list {
         gap: 8px;
         border-radius: 6px;
@@ -107,13 +114,6 @@
     .transaction-actions {
         grid-column: 1 / -1;
         justify-content: flex-end;
-    }
-
-    .btn-edit,
-    .btn-delete {
-        width: 28px;
-        height: 28px;
-        font-size: 13px;
     }
 
     .empty-state {

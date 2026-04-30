@@ -71,13 +71,6 @@
         min-width: 120px;
     }
 
-    .btn-edit,
-    .btn-delete {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-    }
-
     .empty-state {
         padding: 50px 20px;
     }

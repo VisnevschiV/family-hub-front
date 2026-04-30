@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./TransactionModal/transactionModal.css";
 import "./TransactionModal/transactionModaldesktop.css";
 import "./TransactionModal/transactionModalmobile.css";
@@ -28,6 +28,21 @@ export default function TransactionModal({
     const [description, setDescription] = useState(transaction?.description || "");
     const [currencyISOCode, setCurrencyISOCode] = useState(transaction?.currencyISOCode || budgetCurrency || "USD");
     const [amount, setAmount] = useState(transaction?.amount || "");
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        if (mode === "edit" && transaction) {
+            setDescription(transaction.description || "");
+            setCurrencyISOCode(transaction.currencyISOCode || budgetCurrency || "USD");
+            setAmount(transaction.amount ?? "");
+            return;
+        }
+
+        setDescription("");
+        setCurrencyISOCode(budgetCurrency || "USD");
+        setAmount("");
+    }, [isOpen, mode, transaction, budgetCurrency]);
 
     if (!isOpen) return null;
 
