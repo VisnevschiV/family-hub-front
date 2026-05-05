@@ -372,3 +372,87 @@
     outline: 2px solid rgba(212, 131, 92, 0.35);
     outline-offset: 2px;
 }
+
+/* ===================================================
+   Bottom nav — hidden on desktop, shown on mobile via appShellmobile.css
+   =================================================== */
+
+.appShell__bottomNav {
+    display: none;
+}
+
+.appShell__bottomNavLink {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: 6px 4px 4px;
+    border-radius: 12px;
+    transition: color 0.2s ease, background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.appShell__bottomNavLink:hover,
+.appShell__bottomNavLink.active {
+    color: var(--brand-strong);
+}
+
+.appShell__bottomNavLink.active .appShell__bottomNavIcon,
+.appShell__bottomNavLink.active .appShell__bottomNavAvatar {
+    filter: drop-shadow(0 2px 6px rgba(180, 101, 65, 0.30));
+}
+
+.appShell__bottomNavIconWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.appShell__bottomNavIcon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.appShell__bottomNavDot {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d43535;
+    border: 2px solid var(--surface-strong);
+}
+
+.appShell__bottomNavLabel {
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.01em;
+}
+
+.appShell__bottomNavAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f6dcc5;
+    color: #6a3f24;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.appShell__bottomNavLink--withIndicator {
+    /* handled via .appShell__bottomNavDot */
+}

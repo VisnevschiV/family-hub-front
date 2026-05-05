@@ -32,6 +32,7 @@ export default function TodoList({
     const [editingText, setEditingText] = useState("");
     const menuRef = useRef(null);
     const editLongPressTimerRef = useRef(null);
+    const pointerSwipeRef = useRef({ active: false, id: null, startX: 0, startY: 0, directionLocked: false });
 
     const totalCount = items.length;
     const doneCount = useMemo(() => items.filter((i) => i.done).length, [items]);
@@ -282,6 +283,74 @@ export default function TodoList({
         }
     }
 
+    // ----- Touch swipe-to-delete (pointer events, works on mobile) -----
+
+    function handleItemPointerDown(e, itemId) {
+        if (e.pointerType === "mouse") return; // desktop uses drag events
+        if (editingTaskId || deletingId) return;
+        pointerSwipeRef.current = { active: true, id: itemId, startX: e.clientX, startY: e.clientY, directionLocked: false };
+    }
+
+    function handleItemPointerMove(e, itemId) {
+        const swipe = pointerSwipeRef.current;
+        if (!swipe.active || swipe.id !== itemId) return;
+
+        const dx = e.clientX - swipe.startX;
+        const dy = Math.abs(e.clientY - swipe.startY);
+
+        if (!swipe.directionLocked) {
+            // More vertical than horizontal — user is scrolling, not swiping
+            if (dy > Math.abs(dx) && dy > 5) {
+                pointerSwipeRef.current.active = false;
+                setDeletePreviewId(null);
+                return;
+            }
+            if (Math.abs(dx) > 5) {
+                pointerSwipeRef.current.directionLocked = true;
+                clearEditLongPressTimer(); // cancel long-press edit if swiping
+            }
+        }
+
+        if (dx > DELETE_THRESHOLD) {
+            setDeletePreviewId(itemId);
+        } else if (deletePreviewId === itemId) {
+            setDeletePreviewId(null);
+        }
+    }
+
+    async function handleItemPointerUp(e, itemId) {
+        const swipe = pointerSwipeRef.current;
+        if (!swipe.active || swipe.id !== itemId) return;
+
+        const dx = e.clientX - swipe.startX;
+        pointerSwipeRef.current = { active: false, id: null, startX: 0, startY: 0, directionLocked: false };
+
+        if (dx > DELETE_THRESHOLD) {
+            setDeletingId(itemId);
+            setDeletePreviewId(null);
+            setTimeout(async () => {
+                try {
+                    if (typeof onDeleteTask === "function") {
+                        await onDeleteTask(listId, itemId);
+                    } else {
+                        updateItems((prev) => prev.filter((i) => i.id !== itemId));
+                    }
+                } catch (err) {
+                    console.error(err.message || "Failed to delete task");
+                } finally {
+                    setDeletingId(null);
+                }
+            }, 300);
+        }
+    }
+
+    function handleItemPointerCancel(itemId) {
+        if (pointerSwipeRef.current.id === itemId) {
+            pointerSwipeRef.current = { active: false, id: null, startX: 0, startY: 0, directionLocked: false };
+            setDeletePreviewId(null);
+        }
+    }
+
     return (
         <section className={`todoList ${isMenuOpen ? "todoList--menuOpen" : ""}`}>
             <header
@@ -399,12 +468,15 @@ export default function TodoList({
                                 key={item.id}
                                 className={classes.join(" ")}
                                 draggable={editingTaskId !== item.id}
-                                onDragStart={(e) =>
-                                    handleDragStart(e, item.id)
-                                }
+                                style={{ touchAction: "pan-y" }}
+                                onDragStart={(e) => handleDragStart(e, item.id)}
                                 onDragOver={(e) => handleDragOver(e, item.id)}
                                 onDrag={(e) => handleDrag(e, item.id)}
                                 onDragEnd={(e) => handleDragEnd(e, item.id)}
+                                onPointerDown={(e) => handleItemPointerDown(e, item.id)}
+                                onPointerMove={(e) => handleItemPointerMove(e, item.id)}
+                                onPointerUp={(e) => handleItemPointerUp(e, item.id)}
+                                onPointerCancel={() => handleItemPointerCancel(item.id)}
                             >
                                 <label className="todoList__label">
                                     <input
