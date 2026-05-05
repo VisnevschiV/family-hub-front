@@ -74,6 +74,68 @@ export async function tryRegister(email, password, name, birthday, gender) {
 }
 
 /**
+ * CONFIRM EMAIL
+ * POST /auth/confirm
+ * Body: { code, email }
+ */
+export async function tryConfirmEmail(email, code) {
+    const normalizedEmail = email.trim();
+    const normalizedCode = code.trim();
+
+    const payload = { email: normalizedEmail, code: normalizedCode };
+    console.log("[auth] confirm payload:", payload);
+
+    const response = await apiFetch("/auth/confirm", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    }, {
+        skipAuthRefresh: true,
+    });
+
+    if (!response.ok) {
+        let errorMessage = "Confirmation failed";
+        try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await response.json();
+                logAuthError("confirm:response-json", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData,
+                });
+                errorMessage = errorData.error || errorData.message || "Invalid confirmation code";
+            } else {
+                const text = await response.text();
+                logAuthError("confirm:response-text", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    text,
+                });
+                if (text) {
+                    errorMessage = text;
+                }
+            }
+        } catch {
+            logAuthError("confirm:parse-error", {
+                status: response.status,
+                statusText: response.statusText,
+            });
+        }
+
+        throw new Error(errorMessage);
+    }
+
+    try {
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
+/**
  * LOGIN
  * POST /auth/login
  * Body: { email, password }

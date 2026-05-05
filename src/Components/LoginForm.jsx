@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
-import { tryLogin, tryRegister } from "../api/auth.js";
+import { tryConfirmEmail, tryLogin, tryRegister } from "../api/auth.js";
 import "react-day-picker/style.css";
 import "./LoginForm/loginForm.css";
 import "./LoginForm/loginFormdesktop.css";
@@ -15,15 +15,44 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
     const [birthdayDate, setBirthdayDate] = useState(null);
     const [isBirthdayOpen, setIsBirthdayOpen] = useState(false);
     const [gender, setGender] = useState("");
+    const [confirmationCode, setConfirmationCode] = useState("");
+    const [registrationStep, setRegistrationStep] = useState("form");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [isRegister, setIsRegister] = useState(initialMode === "register");
 
+    const isConfirmStep = isRegister && registrationStep === "confirm";
+
     async function handleSubmit(e) {
         e.preventDefault();
         setError("");
         setSuccessMessage("");
+
+        if (isConfirmStep) {
+            if (!confirmationCode.trim()) {
+                setError("Please enter the confirmation code from your email");
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                await tryConfirmEmail(email, confirmationCode.trim());
+                setSuccessMessage("Email confirmed successfully. You can now log in.");
+                setIsRegister(false);
+                setRegistrationStep("form");
+                setConfirmationCode("");
+                setConfirmPassword("");
+            } catch (err) {
+                console.error(err);
+                setError(err.message || "Invalid code. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+
+            return;
+        }
 
         // Validate for register mode
         if (isRegister) {
@@ -56,9 +85,9 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
             if (isRegister) {
                 const formattedBirthday = birthdayDate ? format(birthdayDate, "yyyy-MM-dd") : "";
                 await tryRegister(email, password, name, formattedBirthday, gender);
-                setSuccessMessage("Account created successfully. Please log in.");
-                setIsRegister(false);
-                setConfirmPassword("");
+                setRegistrationStep("confirm");
+                setConfirmationCode("");
+                setSuccessMessage("We sent a confirmation code to your email. Enter it below to finish creating your account.");
             } else {
                 await tryLogin(email, password);
                 onLoginSuccess();
@@ -75,10 +104,10 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
         <div className="loginForm__container">
             <form onSubmit={handleSubmit} className="loginForm__panel">
                 <h2 className="loginForm__title">
-                    {isRegister ? "Create Account" : "Sign in"}
+                    {isConfirmStep ? "Confirm Email" : (isRegister ? "Create Account" : "Sign in")}
                 </h2>
 
-                {isRegister && (
+                {isRegister && !isConfirmStep && (
                     <div className="loginForm__fieldGroup">
                         <label className="loginForm__label">
                             <span className="loginForm__labelText">Full Name</span>
@@ -95,7 +124,7 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
                     </div>
                 )}
 
-                {isRegister && (
+                {isRegister && !isConfirmStep && (
                     <div className="loginForm__fieldGroup">
                         <label className="loginForm__label">
                             <span className="loginForm__labelText">Birthday</span>
@@ -130,39 +159,64 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
                     </div>
                 )}
 
-                <div className="loginForm__fieldGroup">
+                {!isConfirmStep && (
+                    <div className="loginForm__fieldGroup">
+                        <label className="loginForm__label">
+                            <span className="loginForm__labelText">Email</span>
+                            <input
+                                type="email"
+                                className="loginForm__input"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                required
+                                autoComplete="email"
+                                disabled={loading}
+                            />
+                        </label>
+                    </div>
+                )}
+
+                {isConfirmStep && (
                     <label className="loginForm__label">
-                        <span className="loginForm__labelText">Email</span>
+                        <span className="loginForm__labelText">Confirmation code</span>
                         <input
-                            type="email"
+                            type="text"
                             className="loginForm__input"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
+                            value={confirmationCode}
+                            onChange={(e) => setConfirmationCode(e.target.value)}
+                            placeholder="Enter code from email"
                             required
-                            autoComplete="email"
                             disabled={loading}
                         />
                     </label>
-                </div>
+                )}
 
-                <div className="loginForm__fieldGroup">
-                    <label className="loginForm__label">
-                        <span className="loginForm__labelText">Password</span>
-                        <input
-                            type="password"
-                            className="loginForm__input"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
-                            required
-                            autoComplete={isRegister ? "new-password" : "current-password"}
-                            disabled={loading}
-                        />
-                    </label>
-                </div>
+                {isConfirmStep && (
+                    <p className="loginForm__helperText">
+                        Confirming account for {email}
+                    </p>
+                )}
 
-                {isRegister && (
+                {!isConfirmStep && (
+                    <div className="loginForm__fieldGroup">
+                        <label className="loginForm__label">
+                            <span className="loginForm__labelText">Password</span>
+                            <input
+                                type="password"
+                                className="loginForm__input"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter your password"
+                                required
+                                autoComplete={isRegister ? "new-password" : "current-password"}
+                                disabled={loading}
+                            />
+                        </label>
+                    </div>
+                )}
+
+                {isRegister && !isConfirmStep && (
                     <>
                         <div className="loginForm__fieldGroup">
                             <label className="loginForm__label">
@@ -210,8 +264,25 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
                     className="loginForm__submitBtn"
                     disabled={loading}
                 >
-                    {loading ? (isRegister ? "Creating account..." : "Logging in...") : (isRegister ? "Create Account" : "Login")}
+                    {loading
+                        ? (isConfirmStep ? "Confirming..." : (isRegister ? "Creating account..." : "Logging in..."))
+                        : (isConfirmStep ? "Confirm" : (isRegister ? "Create Account" : "Login"))}
                 </button>
+
+                {isConfirmStep && (
+                    <button
+                        type="button"
+                        className="loginForm__secondaryBtn"
+                        onClick={() => {
+                            setRegistrationStep("form");
+                            setError("");
+                            setSuccessMessage("");
+                        }}
+                        disabled={loading}
+                    >
+                        Back to registration form
+                    </button>
+                )}
 
                 <div className="loginForm__toggleMode">
                     <span>{isRegister ? "Already have an account?" : "Don't have an account?"}</span>
@@ -220,8 +291,10 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
                         className="loginForm__toggleBtn"
                         onClick={() => {
                             setIsRegister(!isRegister);
+                            setRegistrationStep("form");
                             setError("");
                             setSuccessMessage("");
+                            setConfirmationCode("");
                             setConfirmPassword("");
                             setName("");
                             setBirthdayDate(null);
