@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import BudgetModal from "../../Components/BudgetModal.jsx";
 import TransactionModal from "../../Components/TransactionModal.jsx";
+import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
 import {
     getBudget,
     createBudget,
@@ -10,6 +11,7 @@ import {
     deleteBudget,
     deleteTransaction,
 } from "../../api/budget.js";
+import { fetchCurrentPersona } from "../../api/persona.js";
 import "./BudgetPage/budgetPage.css";
 import "./BudgetPage/budgetPagedesktop.css";
 import "./BudgetPage/budgetPagemobile.css";
@@ -19,6 +21,7 @@ export default function BudgetPage() {
     const [budgetPath, setBudgetPath] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [hasFamily, setHasFamily] = useState(true);
 
     // Budget modal state
     const [budgetModal, setBudgetModal] = useState({
@@ -48,6 +51,13 @@ export default function BudgetPage() {
         moved: false,
     });
     const suppressNextClickRef = useRef(false);
+
+    // Check family membership on mount
+    useEffect(() => {
+        fetchCurrentPersona()
+            .then((data) => setHasFamily(Boolean(data?.family)))
+            .catch(() => setHasFamily(true));
+    }, []);
 
     // Load budget on mount
     useEffect(() => {
@@ -560,6 +570,10 @@ export default function BudgetPage() {
         setDraggingItemKey(null);
         setDragStartX(null);
         setDeletePreviewItemKey(null);
+    }
+
+    if (!hasFamily) {
+        return <NoFamilyBanner onFamilyJoined={() => setHasFamily(true)} />;
     }
 
     if (loading) {

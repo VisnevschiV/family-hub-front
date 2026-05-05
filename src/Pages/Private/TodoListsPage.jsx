@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import ListNameModal from "../../Components/ListNameModal.jsx";
 import TodoList from "../../Components/TodoList.jsx";
+import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
 import { getFamilyMembers } from "../../api/families.js";
+import { fetchCurrentPersona } from "../../api/persona.js";
 import {
     createTask,
     createTaskList,
@@ -18,6 +20,13 @@ import "./TodoListsPage/todoListsPagemobile.css";
 export default function TodoListsPage() {
     const [lists, setLists] = useState([]);
     const [familyMembers, setFamilyMembers] = useState([]);
+    const [hasFamily, setHasFamily] = useState(true);
+
+    useEffect(() => {
+        fetchCurrentPersona()
+            .then((data) => setHasFamily(Boolean(data?.family)))
+            .catch(() => setHasFamily(true));
+    }, []);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
     const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
     const [listNameModal, setListNameModal] = useState({
@@ -525,6 +534,10 @@ export default function TodoListsPage() {
                 };
             })
         );
+    }
+
+    if (!hasFamily) {
+        return <NoFamilyBanner onFamilyJoined={() => setHasFamily(true)} />;
     }
 
     return (

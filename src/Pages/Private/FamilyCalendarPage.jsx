@@ -6,6 +6,8 @@ import {
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
+import { fetchCurrentPersona } from "../../api/persona.js";
+import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
 import {
     getFamilyPeriodMonth,
     getPeriodMonth,
@@ -338,6 +340,7 @@ function FamilyCalendarPage() {
     const [familyPeriodNamesByDate, setFamilyPeriodNamesByDate] = useState(new Map());
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
+    const [hasFamily, setHasFamily] = useState(true);
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
@@ -355,6 +358,12 @@ function FamilyCalendarPage() {
         },
         []
     );
+
+    useEffect(() => {
+        fetchCurrentPersona()
+            .then((data) => setHasFamily(Boolean(data?.family)))
+            .catch(() => setHasFamily(true));
+    }, []);
 
     async function refreshEvents() {
         const data = await getCalendarEvents();
@@ -861,6 +870,10 @@ function FamilyCalendarPage() {
         () => familyPeriodNamesByDate.get(selectedDateKey) || [],
         [familyPeriodNamesByDate, selectedDateKey]
     );
+
+    if (!hasFamily) {
+        return <NoFamilyBanner onFamilyJoined={() => setHasFamily(true)} />;
+    }
 
     return (
         <div className="page">
