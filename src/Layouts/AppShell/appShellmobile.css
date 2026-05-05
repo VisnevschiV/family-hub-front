@@ -1,69 +1,70 @@
 /* ===================================================
-   AppShell — Extra small screens (max-width: 480px)
-   Fine-tunes the top navbar for very narrow phones
+   AppShell — Mobile: bottom icon navigation (max-width: 900px)
    =================================================== */
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
+
+    /* Slim top bar — brand + avatar only, no text nav */
     .appShell__sidebar {
-        height: auto;
-        min-height: 64px;
-        padding: 8px 10px 6px;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-            "brand user"
-            "nav nav";
-        gap: 6px 8px;
-        box-shadow: 0 8px 18px rgba(70, 52, 38, 0.08);
-    }
-
-    .appShell__brand {
-        grid-area: brand;
-        min-width: 0;
-        padding: 2px 6px 2px 2px;
-    }
-
-    .appShell__userLink {
-        grid-area: user;
-        justify-self: end;
-    }
-
-    .appShell__nav {
-        grid-area: nav;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         width: 100%;
-        border-top: 1px solid var(--border);
-        padding: 6px 0 2px;
-        gap: 6px;
-        margin-top: 1px;
+        height: 56px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(to right, var(--surface) 0%, #fff5e8 100%);
+        box-shadow: 0 2px 10px rgba(70, 52, 38, 0.06);
+        z-index: 100;
+        overflow: visible;
     }
 
-    .appShell__navSection {
-        gap: 6px;
+    /* Hide the text-based nav links on mobile */
+    .appShell__nav {
+        display: none;
     }
 
-    .appShell__navLink {
-        min-height: 38px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        background: rgba(255, 255, 255, 0.55);
+    /* Hide the user link in sidebar on mobile (profile is in the bottom nav) */
+    .appShell__userLink {
+        display: none;
     }
 
-    .appShell__navLink.active {
-        border-color: #edc9aa;
-        box-shadow: 0 6px 14px rgba(138, 79, 45, 0.14);
-    }
-
+    /* Main: offset for top bar + bottom nav */
     .appShell__main {
-        padding-top: 112px;
+        padding-top: 56px;
+        padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     }
 
-    .appShell__topbar {
-        padding-top: 14px;
+    /* Bottom nav bar */
+    .appShell__bottomNav {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(60px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: var(--surface-strong);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -4px 18px rgba(70, 52, 38, 0.08);
+        z-index: 100;
+        padding-left: 4px;
+        padding-right: 4px;
     }
 
-    .appShell__pageSubtitle {
-        max-width: 34ch;
+    /* Toast stack: above the bottom nav */
+    .appShell__toastStack {
+        bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+        top: auto;
+        right: 10px;
     }
 }
 
@@ -78,10 +79,8 @@
         font-size: 10px;
     }
 
-    .appShell__navLink {
-        padding: 6px 10px;
-        font-size: 12px;
-        min-height: 36px;
+    .appShell__bottomNavLabel {
+        font-size: 9px;
     }
 
     .appShell__content {
@@ -94,11 +93,5 @@
 
     .page__title {
         font-size: 19px;
-    }
-
-    .appShell__toastStack {
-        right: 8px;
-        top: 116px;
-        width: calc(100vw - 16px);
     }
 }
