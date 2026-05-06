@@ -55,6 +55,38 @@
         gap: 18px;
     }
 
+    .welcome__previewGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .welcome__calendarDays {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .welcome__todoInput {
+        min-width: 0;
+    }
+
+    .welcome__tourShell {
+        grid-template-columns: minmax(220px, 0.38fr) minmax(0, 1fr);
+        gap: 18px;
+        padding: 18px;
+    }
+
+    .welcome__tourGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .welcome__headline--small {
+        font-size: 36px;
+    }
+
+    .welcome__featureGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
     .welcome__ctaPanel {
         flex-direction: row;
         justify-content: space-between;

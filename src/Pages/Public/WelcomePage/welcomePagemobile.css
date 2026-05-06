@@ -31,4 +31,37 @@
     .welcome__heroCard {
         padding: 14px;
     }
+
+    .welcome__tourShell {
+        padding: 12px;
+    }
+
+    .welcome__tourSidebar,
+    .welcome__tourCard,
+    .welcome__tourMiniCard {
+        padding: 12px;
+    }
+
+    .welcome__headline--small {
+        font-size: 24px;
+    }
+
+    .welcome__todoRow,
+    .welcome__budgetLine,
+    .welcome__calendarEvent,
+    .welcome__notificationItem {
+        font-size: 12px;
+    }
+
+    .welcome__todoForm {
+        flex-direction: column;
+    }
+
+    .welcome__miniButton {
+        width: 100%;
+    }
+
+    .welcome__calendarDays {
+        grid-template-columns: 1fr;
+    }
 }
