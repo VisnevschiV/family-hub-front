@@ -39,8 +39,9 @@ function WelcomePage() {
                             One calm place for all your family plans.
                         </h1>
                         <p className="welcome__lead">
-                            Keep everyone in sync with shared tasks, calendars, and
-                            family updates that feel warm and effortless.
+                            happywifehappylife is a shared family hub where you can
+                            organize tasks, events, budgets, and updates in one place
+                            so everyone always knows what matters next.
                         </p>
                         <div className="welcome__heroActions">
                             <Link className="welcome__cta" to="/register">
@@ -91,6 +92,25 @@ function WelcomePage() {
                         <p className="welcome__panelText">
                             Everyone has admin rights so plans stay easy to update.
                         </p>
+                    </div>
+                </section>
+
+                <section className="welcome__grid" aria-label="How the app helps your family">
+                    <div className="welcome__panel">
+                        <h2 className="welcome__panelTitle">What the app does</h2>
+                        <p className="welcome__panelText">
+                            It brings your family calendar, to-do lists, shared budget,
+                            and important notifications together in one simple workspace.
+                        </p>
+                    </div>
+                    <div className="welcome__panel">
+                        <h2 className="welcome__panelTitle">How it helps daily life</h2>
+                        <ul className="welcome__benefitList">
+                            <li className="welcome__benefitItem">Less confusion about who is doing what.</li>
+                            <li className="welcome__benefitItem">Fewer forgotten tasks and missed events.</li>
+                            <li className="welcome__benefitItem">Clearer spending decisions as a family.</li>
+                            <li className="welcome__benefitItem">Better communication without extra group chats.</li>
+                        </ul>
                     </div>
                 </section>
 

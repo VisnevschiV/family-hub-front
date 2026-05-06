@@ -56,8 +56,8 @@ function handleAuthFailure() {
     if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("auth:logout"));
 
-        if (window.location.pathname !== "/login") {
-            window.location.assign("/login");
+        if (window.location.pathname !== "/welcome") {
+            window.location.assign("/welcome");
         }
     }
 }

@@ -269,6 +269,19 @@
     font-size: 14px;
 }
 
+.welcome__benefitList {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.welcome__benefitItem {
+    line-height: 1.4;
+}
+
 /* ---- CTA panel ---- */
 .welcome__ctaPanel {
     display: flex;
