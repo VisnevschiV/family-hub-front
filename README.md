@@ -1,103 +1,97 @@
-# happywifehappylife
+# Family Hub Frontend
 
-A modern family organization app that helps families manage shared tasks, calendars, and member profiles in one centralized hub.
+Frontend application for a shared family workspace with authentication, to-do lists, calendar, budget tracking, profile settings, and real-time notifications.
 
 ## Tech Stack
 
-- **React** 19.2.0 - UI framework
-- **Vite** 7.2.4 - Build tool & dev server with HMR
-- **React Router** 7.13.0 - Client-side routing
-- **date-fns** 4.1.0 - Date utilities
-- **react-day-picker** 9.7.0 - Calendar component
-- **ESLint** - Code linting
+- React 19
+- Vite 7
+- React Router 7
+- date-fns
+- react-day-picker
+- ESLint 9
 
-## Project Structure
+## Prerequisites
 
-```
-src/
- api/                    # API service layer
-    auth.js
-    persona.js
-    fetchProtectedDataService.js
- Components/             # Reusable components
-    LoginForm.jsx
-    TodoList.jsx
- Layouts/                # Layout wrappers
-    AppShell.jsx        # Main app layout with sidebar
- Pages/                  # Page components
-    Public/             # Pages for unauthenticated users
-       WelcomePage.jsx
-       LoginPage.jsx
-    Private/            # Pages for authenticated users
-        FamilyHubPage.jsx
-        ProfileSettingsPage.jsx
-        TodoListsPage.jsx
-        FamilyCalendarPage.jsx
- assets/                 # Static assets
- App.jsx                 # Main app & routing
- main.jsx                # Entry point
- index.css               # Global styles
+- Node.js 20+ (recommended)
+- npm
+
+## Getting Started
+
+1. Install dependencies:
+
+```sh
+npm install
 ```
 
-## Installation
+2. Start the development server:
 
-1. Clone the repository and navigate to the project directory:
-   ```sh
-   cd happywifehappylife
-   ```
-
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-
-## Development
-
-Start the development server with hot module replacement:
 ```sh
 npm run dev
 ```
 
-The app will be available at `localhost:5173` (or similar).
+3. Open the app at `http://localhost:5173`.
 
-## Build
+## Available Scripts
 
-Create an optimized production build:
-```sh
-npm run build
+- `npm run dev` - start Vite dev server
+- `npm run build` - build production assets
+- `npm run preview` - preview production build locally
+- `npm run lint` - run ESLint checks
+
+## Environment Variables
+
+Create a `.env` file in the project root when you need to override API endpoints.
+
+- `VITE_API_BASE_URL` (default: `http://localhost:8080`)
+- `VITE_NOTIFICATIONS_SSE_URL` (optional, defaults to `${VITE_API_BASE_URL}/notifications/stream`)
+
+Example:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
-Preview the production build:
-```sh
-npm run preview
+## Development API Notes
+
+- API requests use cookie-based auth (`credentials: include`) and CSRF headers for write requests.
+- The Vite dev server includes a proxy for `/notifications` to `http://localhost:8080`.
+- Most API calls use `VITE_API_BASE_URL`, so ensure the backend is reachable from the frontend.
+
+## App Routes
+
+Public routes:
+
+- `/welcome`
+- `/login`
+- `/register`
+
+Private app routes:
+
+- `/app` (family hub home)
+- `/app/family`
+- `/app/family/todo`
+- `/app/family/calendar`
+- `/app/family/budget`
+- `/app/profile`
+- `/app/notifications`
+
+## Project Structure
+
+```text
+src/
+  api/                 API clients and domain services
+  Components/          Shared UI components and modals
+  Layouts/             App shell and layout-specific styles
+  Pages/
+    Public/            Welcome/Login pages
+    Private/           Authenticated feature pages
+  App/                 App-level styles
+  styles/              Global styles (base, desktop, mobile)
+  App.jsx              Route configuration and auth gate
+  main.jsx             React entry point
 ```
-
-## Linting
-
-Check code for linting errors:
-```sh
-npm run lint
-```
-
-## Pages
-
-- **Welcome** - Landing page for new visitors
-- **Login/Register** - Authentication pages
-- **happywifehappylife** - Family group management (invitation codes, members, shared spaces)
-- **Profile Settings** - Personal user profile (name, birthday, gender, avatar)
-- **To-Do Lists** - Shared family task management
-- **Family Calendar** - Shared family calendar
-
-## Routing
-
-- `/welcome` - Welcome page
-- `/login` - Login page
-- `/register` - Registration page
-- `/app` - happywifehappylife (requires authentication)
-  - `/app/profile` - Profile settings
-  - `/app/family/todo` - To-do lists
-  - `/app/family/calendar` - Family calendar
 
 ## License
 
-Private project
+Private project.
