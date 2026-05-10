@@ -21,6 +21,9 @@ import "./FamilyCalendarPage/familyCalendarPagemobile.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const LONG_PRESS_DURATION_MS = 450;
+const DAY_HOURS = Array.from({ length: 25 }, (_, hour) => hour);
+const EVENT_BLOCK_MINUTES = 60;
+const MIN_EVENT_BLOCK_MINUTES = 30;
 
 function toDateKey(date) {
     const year = date.getFullYear();
@@ -341,6 +344,7 @@ function FamilyCalendarPage() {
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
+    const [monthViewOpen, setMonthViewOpen] = useState(false);
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
@@ -541,14 +545,13 @@ function FamilyCalendarPage() {
         };
     }, [visibleMonth]);
 
-    const monthLabel = useMemo(
-        () =>
-            visibleMonth.toLocaleDateString(undefined, {
-                month: "long",
-                year: "numeric",
-            }),
-        [visibleMonth]
-    );
+    const monthLabel = useMemo(() => {
+        if (monthViewOpen) {
+            return visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+        }
+        const [sy, sm] = selectedDateKey.split("-").map(Number);
+        return new Date(sy, sm - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    }, [visibleMonth, selectedDateKey, monthViewOpen]);
 
     const dayCells = useMemo(() => {
         const year = visibleMonth.getFullYear();
@@ -627,6 +630,30 @@ function FamilyCalendarPage() {
         return cells;
     }, [events, familyPeriodNamesByDate, visibleMonth]);
 
+    const fiveDayCells = useMemo(() => {
+        const [sy, sm, sd] = selectedDateKey.split("-").map(Number);
+        const todayKey = toDateKey(new Date());
+        return [-2, -1, 0, 1, 2].map((offset) => {
+            const date = new Date(sy, sm - 1, sd + offset);
+            const dateKey = toDateKey(date);
+            const isToday = dateKey === todayKey;
+            const dayEvents = events
+                .filter((eventItem) => eventItem.dateKey === dateKey)
+                .sort((a, b) => a.timestamp - b.timestamp);
+            const isCurrentMonth = date.getMonth() === sm - 1;
+            return {
+                key: `fiveday-${dateKey}`,
+                isCurrentMonth,
+                dayNumber: date.getDate(),
+                dayName: date.toLocaleDateString(undefined, { weekday: "short" }),
+                isToday,
+                dateKey,
+                dayEvents,
+                periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
+            };
+        });
+    }, [selectedDateKey, events, familyPeriodNamesByDate]);
+
     function showPreviousMonth() {
         setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
     }
@@ -638,6 +665,31 @@ function FamilyCalendarPage() {
     function showCurrentMonth() {
         const now = new Date();
         setVisibleMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+        setSelectedDateKey(toDateKey(now));
+    }
+
+    function showPreviousDay() {
+        setSelectedDateKey((current) => {
+            const [y, m, d] = current.split("-").map(Number);
+            return toDateKey(new Date(y, m - 1, d - 1));
+        });
+    }
+
+    function showNextDay() {
+        setSelectedDateKey((current) => {
+            const [y, m, d] = current.split("-").map(Number);
+            return toDateKey(new Date(y, m - 1, d + 1));
+        });
+    }
+
+    function toggleMonthView() {
+        setMonthViewOpen((prev) => {
+            if (!prev) {
+                const [y, m] = selectedDateKey.split("-").map(Number);
+                setVisibleMonth(new Date(y, m - 1, 1));
+            }
+            return !prev;
+        });
     }
 
     function openCreateModalForDate(dateKey) {
@@ -887,6 +939,31 @@ function FamilyCalendarPage() {
         [events, selectedDateKey]
     );
 
+    const selectedDateTimelineEvents = useMemo(() => {
+        const minimumHeightPercent = (MIN_EVENT_BLOCK_MINUTES / (24 * 60)) * 100;
+
+        return selectedDateEvents.map((eventItem) => {
+            const timestamp = new Date(eventItem.timestamp);
+            const minutes = timestamp.getHours() * 60 + timestamp.getMinutes();
+            const topPercent = (minutes / (24 * 60)) * 100;
+            const heightPercent = Math.max((EVENT_BLOCK_MINUTES / (24 * 60)) * 100, minimumHeightPercent);
+
+            return {
+                ...eventItem,
+                topPercent,
+                heightPercent,
+            };
+        });
+    }, [selectedDateEvents]);
+
+    const selectedDateNowLinePercent = useMemo(() => {
+        const now = new Date();
+        if (selectedDateKey !== toDateKey(now)) return null;
+
+        const minutes = now.getHours() * 60 + now.getMinutes();
+        return (minutes / (24 * 60)) * 100;
+    }, [selectedDateKey]);
+
     const selectedParticipantLabels = useMemo(() => {
         if (selectedParticipantIds.length === 0) {
             return "Family";
@@ -917,151 +994,222 @@ function FamilyCalendarPage() {
             {calendarError ? <p className="calendarView__error">{calendarError}</p> : null}
             {calendarNotice ? <p className="calendarView__notice">{calendarNotice}</p> : null}
 
-            <section className="card calendarView">
+            <section className={`calendarView${monthViewOpen ? "" : " calendarView--compact"}`}>
                 <div className="calendarView__toolbar">
                     <h2 className="calendarView__monthLabel">{monthLabel}</h2>
                     <div className="calendarView__toolbarRight">
-                        <button type="button" className="calendarView__button" onClick={showPreviousMonth} aria-label="Previous month">
+                        <button type="button" className="calendarView__button" onClick={monthViewOpen ? showPreviousMonth : showPreviousDay} aria-label="Previous">
                             &lt;
                         </button>
                         <button type="button" className="calendarView__button" onClick={showCurrentMonth}>
                             Today
                         </button>
-                        <button type="button" className="calendarView__button" onClick={showNextMonth} aria-label="Next month">
+                        <button type="button" className={`calendarView__button${monthViewOpen ? " calendarView__button--active" : ""}`} onClick={toggleMonthView} aria-label="Toggle month view">
+                            &#128197;
+                        </button>
+                        <button type="button" className="calendarView__button" onClick={monthViewOpen ? showNextMonth : showNextDay} aria-label="Next">
                             &gt;
                         </button>
                     </div>
                 </div>
 
-                <div className="calendarView__weekHeader" role="row">
-                    {WEEK_DAYS.map((day, dayIndex) => (
-                        <div
-                            key={day}
-                            className={`calendarView__weekDay ${dayIndex === 0 || dayIndex === 6 ? "calendarView__weekDay--weekend" : ""}`}
-                            role="columnheader"
-                        >
-                            {day}
+                {monthViewOpen ? (
+                    <>
+                        <div className="calendarView__weekHeader" role="row">
+                            {WEEK_DAYS.map((day, dayIndex) => (
+                                <div
+                                    key={day}
+                                    className={`calendarView__weekDay ${dayIndex === 0 || dayIndex === 6 ? "calendarView__weekDay--weekend" : ""}`}
+                                    role="columnheader"
+                                >
+                                    {day}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-
-                <div className="calendarView__grid" role="grid" aria-label={monthLabel}>
-                    {dayCells.map((cell, cellIndex) => (
-                        <div
-                            key={cell.key}
-                            className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
-                                } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
-                                } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
-                                } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
-                                } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
-                                }`}
-                            role="gridcell"
-                            onClick={cell.dateKey ? () => {
-                                if (longPressTriggeredRef.current) {
-                                    longPressTriggeredRef.current = false;
-                                    return;
-                                }
-                                handleDayCellClick(cell);
-                            } : undefined}
-                            onDoubleClick={cell.isCurrentMonth && cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
-                            onPointerDown={cell.isCurrentMonth && cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
-                            onPointerUp={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                            onPointerLeave={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                            onPointerCancel={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                        >
-                            {cell.dayNumber ? (
-                                <>
-                                    <span className="calendarView__dayNumber">{cell.dayNumber}</span>
-                                    {cell.isCurrentMonth || cell.dayEvents.length > 0 || (cell.periodMemberNames || []).length > 0 ? (
-                                        <div className="calendarView__events">
-                                            {cell.dayEvents.slice(0, 2).map((eventItem) => (
-                                                <div
-                                                    key={eventItem.id}
-                                                    className="calendarView__eventItem"
-                                                >
-                                                    <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
-                                                    <div className="calendarView__eventTitle">{eventItem.title}</div>
-                                                    {eventItem.participantNames.length > 0 ? (
-                                                        <div className="calendarView__eventDescription">
-                                                            With: {eventItem.participantNames.join(", ")}
+                        <div className="calendarView__grid" role="grid" aria-label={monthLabel}>
+                            {dayCells.map((cell, cellIndex) => (
+                                <div
+                                    key={cell.key}
+                                    className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
+                                        } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                        } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
+                                        } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
+                                        } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
+                                        }`}
+                                    role="gridcell"
+                                    onClick={cell.dateKey ? () => {
+                                        if (longPressTriggeredRef.current) {
+                                            longPressTriggeredRef.current = false;
+                                            return;
+                                        }
+                                        handleDayCellClick(cell);
+                                    } : undefined}
+                                    onDoubleClick={cell.isCurrentMonth && cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
+                                    onPointerDown={cell.isCurrentMonth && cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
+                                    onPointerUp={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                                    onPointerLeave={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                                    onPointerCancel={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                                >
+                                    {cell.dayNumber ? (
+                                        <>
+                                            <span className="calendarView__dayNumber">{cell.dayNumber}</span>
+                                            {cell.isCurrentMonth || cell.dayEvents.length > 0 || (cell.periodMemberNames || []).length > 0 ? (
+                                                <div className="calendarView__events">
+                                                    {cell.dayEvents.slice(0, 2).map((eventItem) => (
+                                                        <div
+                                                            key={eventItem.id}
+                                                            className="calendarView__eventItem"
+                                                        >
+                                                            <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
+                                                            <div className="calendarView__eventTitle">{eventItem.title}</div>
+                                                            {eventItem.participantNames.length > 0 ? (
+                                                                <div className="calendarView__eventDescription">
+                                                                    With: {eventItem.participantNames.join(", ")}
+                                                                </div>
+                                                            ) : null}
+                                                            {eventItem.description ? (
+                                                                <div className="calendarView__eventDescription">
+                                                                    {eventItem.description}
+                                                                </div>
+                                                            ) : null}
                                                         </div>
-                                                    ) : null}
-                                                    {eventItem.description ? (
-                                                        <div className="calendarView__eventDescription">
-                                                            {eventItem.description}
-                                                        </div>
-                                                    ) : null}
-                                                </div>
-                                            ))}
-                                            {cell.dayEvents.length > 2 ? (
-                                                <div className="calendarView__moreEvents">
-                                                    +{cell.dayEvents.length - 2} more
-                                                </div>
-                                            ) : null}
-                                            {(cell.periodMemberNames || []).length > 0 ? (
-                                                <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
-                                                    {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
-                                                        <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
-                                                            {memberName.split(" ")[0] || memberName}
-                                                        </span>
                                                     ))}
-                                                    {(cell.periodMemberNames || []).length > 2 ? (
-                                                        <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
-                                                            +{(cell.periodMemberNames || []).length - 2}
-                                                        </span>
+                                                    {cell.dayEvents.length > 2 ? (
+                                                        <div className="calendarView__moreEvents">
+                                                            +{cell.dayEvents.length - 2} more
+                                                        </div>
+                                                    ) : null}
+                                                    {(cell.periodMemberNames || []).length > 0 ? (
+                                                        <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
+                                                            {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
+                                                                <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
+                                                                    {memberName.split(" ")[0] || memberName}
+                                                                </span>
+                                                            ))}
+                                                            {(cell.periodMemberNames || []).length > 2 ? (
+                                                                <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
+                                                                    +{(cell.periodMemberNames || []).length - 2}
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
                                                     ) : null}
                                                 </div>
                                             ) : null}
-                                        </div>
+                                        </>
                                     ) : null}
-                                </>
-                            ) : null}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="calendarView__grid calendarView__grid--fiveDay" role="grid" aria-label={monthLabel}>
+                            {fiveDayCells.map((cell) => (
+                                <div
+                                    key={cell.key}
+                                    className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
+                                        } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                        } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
+                                        } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
+                                        }`}
+                                    role="gridcell"
+                                    onClick={() => selectDateAndScroll(cell.dateKey)}
+                                    onDoubleClick={() => openCreateModalForDate(cell.dateKey)}
+                                    onPointerDown={(event) => handleCellPointerDown(event, cell)}
+                                    onPointerUp={handleCellPointerEnd}
+                                    onPointerLeave={handleCellPointerEnd}
+                                    onPointerCancel={handleCellPointerEnd}
+                                >
+                                    <div className="calendarView__compactDay">
+                                        <span className={`calendarView__compactDayName${!cell.isCurrentMonth ? " calendarView__compactDayName--muted" : ""}`}>
+                                            {cell.dayName}
+                                        </span>
+                                        <span className="calendarView__compactDayNumber">{cell.dayNumber}</span>
+                                        <span
+                                            className={`calendarView__eventDot${cell.dayEvents.length > 0 ? " calendarView__eventDot--hasEvents" : ""}`}
+                                            aria-label={cell.dayEvents.length > 0 ? "Has events" : "No events"}
+                                            title={cell.dayEvents.length > 0 ? `${cell.dayEvents.length} event(s)` : "No events"}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
             </section>
 
-            <section ref={itinerarySectionRef} className="card calendarItinerary">
+            <section ref={itinerarySectionRef} className="calendarItinerary">
                 <h2 className="card__title">Itinerary · {selectedDateLabel}</h2>
-                <div className="calendarItinerary__periodSummary">
-                    <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
-                    {selectedDatePeriodMembers.length === 0 ? (
-                        <p className="calendarItinerary__periodEmpty">
-                            No family members on period for this day.
-                        </p>
-                    ) : (
+                {selectedDatePeriodMembers.length > 0 ? (
+                    <div className="calendarItinerary__periodSummary">
+                        <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
                         <p className="calendarItinerary__periodNames">
                             On period: {selectedDatePeriodMembers.join(", ")}
                         </p>
-                    )}
-                </div>
-                {selectedDateEvents.length === 0 ? (
-                    <p className="card__text">No events planned for this day yet.</p>
-                ) : (
-                    <div className="calendarItinerary__list">
-                        {selectedDateEvents.map((eventItem) => (
-                            <article key={eventItem.id} className="calendarItinerary__item">
-                                <div className="calendarItinerary__time">{eventItem.timeLabel}</div>
-                                <div className="calendarItinerary__content">
-                                    <h3 className="calendarItinerary__title">{eventItem.title}</h3>
+                    </div>
+                ) : null}
+                <div className="calendarItinerary__timeline" aria-label="Day timeline from 00:00 to 24:00">
+                    <div className="calendarItinerary__timelineScale" aria-hidden="true">
+                        {DAY_HOURS.map((hour) => (
+                            <div
+                                key={`scale-${hour}`}
+                                className="calendarItinerary__timelineScaleLabel"
+                                style={{ top: `${(hour / 24) * 100}%` }}
+                            >
+                                {`${String(hour).padStart(2, "0")}:00`}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="calendarItinerary__timelineTrack">
+                        {DAY_HOURS.map((hour) => (
+                            <div
+                                key={`line-${hour}`}
+                                className="calendarItinerary__timelineHourLine"
+                                style={{ top: `${(hour / 24) * 100}%` }}
+                            />
+                        ))}
+
+                        {selectedDateNowLinePercent !== null ? (
+                            <div
+                                className="calendarItinerary__timelineNowLine"
+                                style={{ top: `${selectedDateNowLinePercent}%` }}
+                            >
+                                <span className="calendarItinerary__timelineNowLabel">Now</span>
+                            </div>
+                        ) : null}
+
+                        {selectedDateTimelineEvents.length === 0 ? (
+                            <p className="calendarItinerary__timelineEmpty">No events planned for this day yet.</p>
+                        ) : (
+                            selectedDateTimelineEvents.map((eventItem) => (
+                                <article
+                                    key={eventItem.id}
+                                    className="calendarItinerary__timelineEvent"
+                                    style={{
+                                        top: `${eventItem.topPercent}%`,
+                                        height: `${eventItem.heightPercent}%`,
+                                    }}
+                                >
+                                    <div className="calendarItinerary__timelineEventTime">{eventItem.timeLabel}</div>
+                                    <h3 className="calendarItinerary__timelineEventTitle">{eventItem.title}</h3>
                                     {eventItem.participantNames.length > 0 ? (
-                                        <p className="calendarItinerary__description">
+                                        <p className="calendarItinerary__timelineEventMeta">
                                             With: {eventItem.participantNames.join(", ")}
                                         </p>
                                     ) : null}
-                                    <p className="calendarItinerary__description">{eventItem.description}</p>
                                     <button
                                         type="button"
-                                        className="calendarItinerary__detailsButton"
+                                        className="calendarItinerary__timelineEventButton"
                                         onClick={() => openEditModal(eventItem)}
                                     >
-                                        View details / Modify
+                                        Open
                                     </button>
-                                </div>
-                            </article>
-                        ))}
+                                </article>
+                            ))
+                        )}
                     </div>
-                )}
+                </div>
             </section>
 
             {createModalOpen ? (

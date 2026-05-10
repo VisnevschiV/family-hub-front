@@ -53,6 +53,13 @@
     transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
+.calendarView--compact .calendarView__button {
+    min-height: 32px;
+    padding: 5px 9px;
+    font-size: 12px;
+    border-radius: 8px;
+}
+
 .calendarView__button:hover {
     background: #f6e9da;
     box-shadow: 0 8px 16px rgba(70, 52, 38, 0.1);
@@ -64,11 +71,24 @@
     outline-offset: 1px;
 }
 
+.calendarView__button--active {
+    background: #f0e2d0;
+    box-shadow: inset 0 2px 4px rgba(70, 52, 38, 0.12);
+}
+
 .calendarView__weekHeader {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
     padding: 0 2px;
+}
+
+.calendarView__weekHeader--fiveDay {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.calendarView__weekDay--muted {
+    opacity: 0.5;
 }
 
 .calendarView__weekDay {
@@ -88,6 +108,83 @@
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 0;
+}
+
+.calendarView__grid--fiveDay {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell {
+    min-height: 86px;
+    border-right: none;
+    border-bottom: none;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell:last-child {
+    border-right: none;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--today,
+.calendarView__grid--fiveDay .calendarView__cell--selected,
+.calendarView__grid--fiveDay .calendarView__cell--period,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod {
+    box-shadow: none;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--selected {
+    background: #f4e9dc;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell:not(.calendarView__cell--selected) .calendarView__compactDayName {
+    font-size: 10px;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell:not(.calendarView__cell--selected) .calendarView__compactDayNumber {
+    font-size: 16px;
+}
+
+.calendarView__compactDay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.calendarView__compactDayName {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+
+.calendarView__compactDayName--muted {
+    opacity: 0.5;
+}
+
+.calendarView__compactDayNumber {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.calendarView__eventDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #b7b7b7;
+}
+
+.calendarView__eventDot--hasEvents {
+    background: var(--brand);
 }
 
 .calendarView__cell {
@@ -278,11 +375,123 @@
     color: #7f5c6d;
 }
 
+.calendarItinerary__timeline {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 960px;
+}
+
+.calendarItinerary__timelineScale {
+    position: relative;
+}
+
+.calendarItinerary__timelineScaleLabel {
+    position: absolute;
+    left: 0;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.calendarItinerary__timelineTrack {
+    position: relative;
+    border: none;
+    border-radius: 0;
+    background: none;
+    overflow: hidden;
+}
+
+.calendarItinerary__timelineHourLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid rgba(112, 94, 74, 0.15);
+}
+
+.calendarItinerary__timelineNowLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #ef7fa9;
+    z-index: 4;
+}
+
+.calendarItinerary__timelineNowLabel {
+    position: absolute;
+    right: 10px;
+    top: -10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #b24a74;
+    background: #ffe6f0;
+    border: 1px solid #f5b7cd;
+    border-radius: 999px;
+    padding: 1px 6px;
+}
+
+.calendarItinerary__timelineEmpty {
+    margin: 0;
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.calendarItinerary__timelineEvent {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    border: 1px solid #e5c2a4;
+    border-radius: 10px;
+    background: #fff3e8;
+    padding: 6px 8px;
+    z-index: 3;
+    overflow: hidden;
+    min-height: 40px;
+}
+
+.calendarItinerary__timelineEventTime {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8c6445;
+}
+
+.calendarItinerary__timelineEventTitle {
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.calendarItinerary__timelineEventMeta {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendarItinerary__timelineEventButton {
+    margin-top: 5px;
+    border: 1px solid #dcae8c;
+    background: #fff9f3;
+    color: #7a4e2c;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
 .calendarItinerary__item {
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: linear-gradient(160deg, #fffdf9 0%, #fff7ee 100%);
-    padding: 14px;
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 14px 0;
     display: grid;
     grid-template-columns: 84px minmax(0, 1fr);
     gap: 12px;
