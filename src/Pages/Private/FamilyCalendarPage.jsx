@@ -556,17 +556,26 @@ function FamilyCalendarPage() {
         const firstDayOfMonth = new Date(year, month, 1);
         const firstWeekday = firstDayOfMonth.getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPreviousMonth = new Date(year, month, 0).getDate();
 
         const cells = [];
 
         for (let index = 0; index < firstWeekday; index += 1) {
+            const dayNumber = daysInPreviousMonth - firstWeekday + index + 1;
+            const adjacentDate = new Date(year, month - 1, dayNumber);
+            const dateKey = toDateKey(adjacentDate);
+            const dayEvents = events
+                .filter((eventItem) => eventItem.dateKey === dateKey)
+                .sort((a, b) => a.timestamp - b.timestamp);
+
             cells.push({
                 key: `empty-start-${index}`,
                 isCurrentMonth: false,
-                dayNumber: null,
+                dayNumber,
                 isToday: false,
-                dateKey: null,
-                dayEvents: [],
+                dateKey,
+                dayEvents,
+                periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
             });
         }
 
@@ -597,13 +606,21 @@ function FamilyCalendarPage() {
         const trailingDays = remainder === 0 ? 0 : 7 - remainder;
 
         for (let index = 0; index < trailingDays; index += 1) {
+            const dayNumber = index + 1;
+            const adjacentDate = new Date(year, month + 1, dayNumber);
+            const dateKey = toDateKey(adjacentDate);
+            const dayEvents = events
+                .filter((eventItem) => eventItem.dateKey === dateKey)
+                .sort((a, b) => a.timestamp - b.timestamp);
+
             cells.push({
                 key: `empty-end-${index}`,
                 isCurrentMonth: false,
-                dayNumber: null,
+                dayNumber,
                 isToday: false,
-                dateKey: null,
-                dayEvents: [],
+                dateKey,
+                dayEvents,
+                periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
             });
         }
 
@@ -682,6 +699,21 @@ function FamilyCalendarPage() {
                 block: "start",
             });
         });
+    }
+
+    function handleDayCellClick(cell) {
+        if (!cell?.dateKey) return;
+
+        if (cell.isCurrentMonth) {
+            selectDateAndScroll(cell.dateKey);
+            return;
+        }
+
+        const targetDate = parseIsoDate(cell.dateKey);
+        if (!targetDate) return;
+
+        setVisibleMonth(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
+        selectDateAndScroll(cell.dateKey);
     }
 
     function openEditModal(eventItem) {
@@ -929,57 +961,59 @@ function FamilyCalendarPage() {
                                     longPressTriggeredRef.current = false;
                                     return;
                                 }
-                                selectDateAndScroll(cell.dateKey);
+                                handleDayCellClick(cell);
                             } : undefined}
-                            onDoubleClick={cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
-                            onPointerDown={cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
-                            onPointerUp={cell.dateKey ? handleCellPointerEnd : undefined}
-                            onPointerLeave={cell.dateKey ? handleCellPointerEnd : undefined}
-                            onPointerCancel={cell.dateKey ? handleCellPointerEnd : undefined}
+                            onDoubleClick={cell.isCurrentMonth && cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
+                            onPointerDown={cell.isCurrentMonth && cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
+                            onPointerUp={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerLeave={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerCancel={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
                         >
                             {cell.dayNumber ? (
                                 <>
                                     <span className="calendarView__dayNumber">{cell.dayNumber}</span>
-                                    <div className="calendarView__events">
-                                        {cell.dayEvents.slice(0, 2).map((eventItem) => (
-                                            <div
-                                                key={eventItem.id}
-                                                className="calendarView__eventItem"
-                                            >
-                                                <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
-                                                <div className="calendarView__eventTitle">{eventItem.title}</div>
-                                                {eventItem.participantNames.length > 0 ? (
-                                                    <div className="calendarView__eventDescription">
-                                                        With: {eventItem.participantNames.join(", ")}
-                                                    </div>
-                                                ) : null}
-                                                {eventItem.description ? (
-                                                    <div className="calendarView__eventDescription">
-                                                        {eventItem.description}
-                                                    </div>
-                                                ) : null}
-                                            </div>
-                                        ))}
-                                        {cell.dayEvents.length > 2 ? (
-                                            <div className="calendarView__moreEvents">
-                                                +{cell.dayEvents.length - 2} more
-                                            </div>
-                                        ) : null}
-                                        {(cell.periodMemberNames || []).length > 0 ? (
-                                            <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
-                                                {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
-                                                    <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
-                                                        {memberName.split(" ")[0] || memberName}
-                                                    </span>
-                                                ))}
-                                                {(cell.periodMemberNames || []).length > 2 ? (
-                                                    <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
-                                                        +{(cell.periodMemberNames || []).length - 2}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        ) : null}
-                                    </div>
+                                    {cell.isCurrentMonth || cell.dayEvents.length > 0 || (cell.periodMemberNames || []).length > 0 ? (
+                                        <div className="calendarView__events">
+                                            {cell.dayEvents.slice(0, 2).map((eventItem) => (
+                                                <div
+                                                    key={eventItem.id}
+                                                    className="calendarView__eventItem"
+                                                >
+                                                    <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
+                                                    <div className="calendarView__eventTitle">{eventItem.title}</div>
+                                                    {eventItem.participantNames.length > 0 ? (
+                                                        <div className="calendarView__eventDescription">
+                                                            With: {eventItem.participantNames.join(", ")}
+                                                        </div>
+                                                    ) : null}
+                                                    {eventItem.description ? (
+                                                        <div className="calendarView__eventDescription">
+                                                            {eventItem.description}
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            ))}
+                                            {cell.dayEvents.length > 2 ? (
+                                                <div className="calendarView__moreEvents">
+                                                    +{cell.dayEvents.length - 2} more
+                                                </div>
+                                            ) : null}
+                                            {(cell.periodMemberNames || []).length > 0 ? (
+                                                <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
+                                                    {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
+                                                        <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
+                                                            {memberName.split(" ")[0] || memberName}
+                                                        </span>
+                                                    ))}
+                                                    {(cell.periodMemberNames || []).length > 2 ? (
+                                                        <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
+                                                            +{(cell.periodMemberNames || []).length - 2}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    ) : null}
                                 </>
                             ) : null}
                         </div>

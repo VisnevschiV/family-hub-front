@@ -4,11 +4,11 @@
     }
 
     .calendarView__toolbar {
-        background: linear-gradient(150deg, #fffaf3 0%, #fff2e3 100%);
-        border: 1px solid #e6d7c4;
-        border-radius: 16px;
-        padding: 10px;
-        box-shadow: 0 10px 20px rgba(70, 52, 38, 0.1);
+        background: none;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
     }
 
     .calendarView__monthLabel {
@@ -35,7 +35,7 @@
 
     .calendarView__cell {
         min-height: 78px;
-        border-radius: 10px;
+        border-radius: 0;
         padding: 6px;
     }
 
@@ -84,7 +84,7 @@
     }
 
     .calendarView__grid {
-        gap: 3px;
+        gap: 0;
     }
 
     .calendarView__weekDay {

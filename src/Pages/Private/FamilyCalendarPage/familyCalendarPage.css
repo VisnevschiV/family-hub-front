@@ -20,10 +20,10 @@
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: linear-gradient(140deg, #fffaf3 0%, #fff4e7 100%);
-    padding: 12px;
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 0;
 }
 
 .calendarView__toolbarRight {
@@ -87,25 +87,34 @@
 .calendarView__grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
+    gap: 0;
 }
 
 .calendarView__cell {
     min-height: 104px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
     padding: 10px 8px 8px;
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
     gap: 6px;
-    background: linear-gradient(160deg, #fffdf8 0%, #fff8ef 100%);
+    background: transparent;
     transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
 
+.calendarView__cell:nth-child(7n) {
+    border-right: none;
+}
+
+.calendarView__cell:nth-last-child(-n + 7) {
+    border-bottom: none;
+}
+
 .calendarView__cell--weekend {
-    background: linear-gradient(160deg, #fef7ee 0%, #f8efe4 100%);
+    background: transparent;
 }
 
 .calendarView__cell--current {
@@ -119,7 +128,15 @@
 }
 
 .calendarView__cell--empty {
-    background: #f8f0e4;
+    background: transparent;
+}
+
+.calendarView__cell--empty .calendarView__dayNumber {
+    opacity: 0.5;
+}
+
+.calendarView__cell--empty .calendarView__eventItem {
+    opacity: 0.5;
 }
 
 .calendarView__cell--today {
@@ -134,12 +151,12 @@
 
 .calendarView__cell--period {
     border-color: #e7a7bf;
-    background: linear-gradient(160deg, #ffeef6 0%, #ffdce9 100%);
+    background: transparent;
     box-shadow: inset 0 0 0 1px rgba(231, 167, 191, 0.35);
 }
 
 .calendarView__cell--period.calendarView__cell--weekend {
-    background: linear-gradient(160deg, #ffe7f2 0%, #ffd6e6 100%);
+    background: transparent;
 }
 
 .calendarView__cell--period .calendarView__eventItem {
