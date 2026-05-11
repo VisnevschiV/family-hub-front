@@ -12,6 +12,7 @@ import {
     deleteTransaction,
 } from "../../api/budget.js";
 import { fetchCurrentPersona } from "../../api/persona.js";
+import { fetchExchangeRates, convertToBase } from "../../api/exchangeRates.js";
 import "./BudgetPage/budgetPage.css";
 import "./BudgetPage/budgetPagedesktop.css";
 import "./BudgetPage/budgetPagemobile.css";
@@ -22,6 +23,8 @@ export default function BudgetPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hasFamily, setHasFamily] = useState(true);
+    const [exchangeRates, setExchangeRates] = useState({});
+    const [ratesLoading, setRatesLoading] = useState(false);
 
     // Budget modal state
     const [budgetModal, setBudgetModal] = useState({
@@ -63,6 +66,30 @@ export default function BudgetPage() {
     useEffect(() => {
         loadBudget();
     }, []);
+
+    // Fetch exchange rates whenever the currently opened budget's base currency changes
+    useEffect(() => {
+        let currentBudget = budget;
+
+        for (const budgetId of budgetPath) {
+            const nextBudget = getBudgetChildren(currentBudget).find((child) => child.id === budgetId);
+            if (!nextBudget) break;
+            currentBudget = nextBudget;
+        }
+
+        const baseCurrency = currentBudget?.currencyISOCode;
+        if (!baseCurrency) return;
+
+        let active = true;
+        setRatesLoading(true);
+
+        fetchExchangeRates(baseCurrency)
+            .then((rates) => { if (active) setExchangeRates(rates); })
+            .catch(() => { /* silently fall back to raw multi-currency display */ })
+            .finally(() => { if (active) setRatesLoading(false); });
+
+        return () => { active = false; };
+    }, [budget, budgetPath]);
 
     async function loadBudget() {
         try {
@@ -355,6 +382,22 @@ export default function BudgetPage() {
         return formatCurrencyTotals(activeBudgetCurrencyTotals, activeBudget?.currencyISOCode);
     }, [activeBudgetCurrencyTotals, activeBudget]);
 
+    /**
+     * Sum of all transactions in the active budget (including sub-budgets),
+     * converted to the root budget's base currency using live rates.
+     */
+    const convertedTotal = useMemo(() => {
+        const base = activeBudget?.currencyISOCode;
+        if (!base || Object.keys(exchangeRates).length === 0) return null;
+
+        let total = 0;
+        for (const [currency, amount] of Object.entries(activeBudgetCurrencyTotals)) {
+            total += convertToBase(amount, currency, base, exchangeRates);
+        }
+
+        return { amount: Math.round((total + Number.EPSILON) * 100) / 100, currency: base };
+    }, [activeBudgetCurrencyTotals, exchangeRates, activeBudget?.currencyISOCode]);
+
     function openSubBudget(subBudgetId) {
         setBudgetPath((currentPath) => [...currentPath, subBudgetId]);
     }
@@ -638,24 +681,19 @@ export default function BudgetPage() {
                             className="budget-title-touchArea"
                         >
                             <h1>{activeBudget?.name}</h1>
-                            <p className="currency-label">{activeBudget?.currencyISOCode}</p>
                         </div>
                     </div>
                     {budgetBreadcrumb.length > 1 && (
                         <p className="budget-breadcrumb">{budgetBreadcrumb.join(" / ")}</p>
                     )}
                 </div>
-                <div className="budget-header-actions" />
-            </div>
-
-            <div className="budget-summary">
-                <div className="summary-card">
-                    <div className="summary-label">Total Amount</div>
+                <div className="budget-header-summary">
                     <div className="summary-value">
-                        {activeBudgetTotalLabel}
-                    </div>
-                    <div className="summary-count">
-                        {subBudgets.length} sub-budget{subBudgets.length !== 1 ? "s" : ""} • {activeBudget?.transactions?.length || 0} transaction{(activeBudget?.transactions?.length || 0) !== 1 ? "s" : ""}
+                        {convertedTotal
+                            ? `${convertedTotal.amount.toFixed(2)} ${convertedTotal.currency}`
+                            : ratesLoading
+                                ? activeBudgetTotalLabel
+                                : activeBudgetTotalLabel}
                     </div>
                 </div>
             </div>
@@ -735,15 +773,11 @@ export default function BudgetPage() {
                                     >
                                         <div className="transaction-info">
                                             <div className="transaction-name">{subBudget.name || "Unnamed Sub-budget"}</div>
-                                            <div className="transaction-currency">
-                                                {subBudget.currencyISOCode || activeBudget.currencyISOCode}
+                                            <div className="transaction-currency transaction-currency--value">
+                                                {subBudgetTotalLabel}
                                             </div>
                                         </div>
-                                        <div className="transaction-value">
-                                            {subBudgetTotalLabel}
-                                        </div>
                                         <div className="transaction-actions">
-                                            <span className="subBudget-tag">Sub-budget</span>
                                             <span className="subBudget-chevron" aria-hidden="true">›</span>
                                         </div>
                                     </button>
@@ -776,12 +810,9 @@ export default function BudgetPage() {
                                 >
                                     <div className="transaction-info">
                                         <div className="transaction-name">{transaction.description}</div>
-                                        <div className="transaction-currency">
-                                            {transaction.currencyISOCode}
+                                        <div className="transaction-currency transaction-currency--value">
+                                            {parseFloat(transaction.amount).toFixed(2)}
                                         </div>
-                                    </div>
-                                    <div className="transaction-value">
-                                        {`${parseFloat(transaction.amount).toFixed(2)} ${transaction.currencyISOCode || activeBudget.currencyISOCode}`}
                                     </div>
                                 </div>
                             );
