@@ -4,26 +4,30 @@
     }
 
     .calendarView__toolbar {
-        background: linear-gradient(150deg, #fffaf3 0%, #fff2e3 100%);
-        border: 1px solid #e6d7c4;
-        border-radius: 16px;
-        padding: 10px;
-        box-shadow: 0 10px 20px rgba(70, 52, 38, 0.1);
+        background: none;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        justify-content: space-between;
+        flex-wrap: nowrap;
     }
 
     .calendarView__monthLabel {
-        width: 100%;
-        order: -1;
+        width: auto;
+        order: 0;
+        flex: 1;
         font-size: 18px;
-        text-align: center;
-        margin-bottom: 2px;
+        text-align: left;
+        margin-bottom: 0;
     }
 
     .calendarView__toolbarRight {
-        width: 100%;
-        justify-content: center;
+        width: auto;
+        justify-content: flex-end;
         gap: 8px;
         flex-wrap: nowrap;
+        flex-shrink: 0;
     }
 
     .calendarView__button {
@@ -33,9 +37,16 @@
         border-radius: 10px;
     }
 
+    .calendarView--compact .calendarView__button {
+        min-height: 27px;
+        font-size: 12px;
+        padding: 6px 9px;
+        border-radius: 8px;
+    }
+
     .calendarView__cell {
         min-height: 78px;
-        border-radius: 10px;
+        border-radius: 0;
         padding: 6px;
     }
 
@@ -58,6 +69,35 @@
         gap: 6px;
         border-radius: 14px;
         padding: 12px;
+    }
+
+    .calendarItinerary__timeline {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 8px;
+        min-height: 840px;
+    }
+
+    .calendarItinerary__timelineScaleLabel {
+        font-size: 10px;
+    }
+
+    .calendarItinerary__timelineEvent {
+        left: 6px;
+        right: 6px;
+        padding: 5px 6px;
+    }
+
+    .calendarItinerary__timelineEventTitle {
+        font-size: 12px;
+    }
+
+    .calendarItinerary__timelineEventMeta {
+        font-size: 10px;
+    }
+
+    .calendarItinerary__timelineEventButton {
+        font-size: 10px;
+        padding: 2px 6px;
     }
 
     .calendarItinerary__detailsButton {
@@ -84,7 +124,7 @@
     }
 
     .calendarView__grid {
-        gap: 3px;
+        gap: 0;
     }
 
     .calendarView__weekDay {
@@ -100,6 +140,28 @@
     .calendarView__cell {
         min-height: 68px;
         padding: 6px 4px 4px;
+    }
+
+    .calendarView__grid--fiveDay .calendarView__cell {
+        min-height: 61px;
+        padding: 3px;
+    }
+
+    .calendarView__compactDay {
+        gap: 5px;
+    }
+
+    .calendarView__compactDayName {
+        font-size: 8px;
+    }
+
+    .calendarView__compactDayNumber {
+        font-size: 13px;
+    }
+
+    .calendarView__eventDot {
+        width: 6px;
+        height: 6px;
     }
 
     .calendarView__events {
@@ -144,16 +206,26 @@
         display: none;
     }
 
+    .calendarItinerary__timelineNowLabel {
+        right: 6px;
+        font-size: 9px;
+    }
+
     .calendarModalOverlay {
         align-items: flex-end;
-        padding: 0;
+        padding: 0 0 calc(56px + env(safe-area-inset-bottom, 0px));
     }
 
     .calendarModalCard {
         width: 100%;
         max-width: 100%;
+        max-height: calc(100svh - (56px + env(safe-area-inset-bottom, 0px)));
+        max-height: calc(100dvh - (56px + env(safe-area-inset-bottom, 0px)));
         border-radius: 20px 20px 0 0;
-        padding: 18px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+        padding: 14px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .calendarModalCard::before {
@@ -168,6 +240,12 @@
 
     .calendarModalActions {
         flex-direction: column-reverse;
+        position: sticky;
+        bottom: 0;
+        background: var(--surface-strong);
+        padding-top: 10px;
+        padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+        z-index: 2;
     }
 
     .calendarModalButton,
@@ -175,5 +253,19 @@
     .calendarModalButton--danger {
         width: 100%;
         text-align: center;
+    }
+
+    .calendarModalBody {
+        margin-top: 10px;
+        overflow-y: auto;
+        max-height: calc(100svh - 220px);
+        max-height: calc(100dvh - 220px);
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .calendarModalField input,
+    .calendarModalField textarea {
+        font-size: 16px;
     }
 }

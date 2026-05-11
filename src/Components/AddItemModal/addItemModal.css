@@ -1,0 +1,39 @@
+.addItem-modal {
+    width: 90%;
+    max-width: 500px;
+}
+
+.addItem-modal__toggleRow {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 14px;
+}
+
+.addItem-modal__toggleRow--spaced {
+    margin-bottom: 16px;
+}
+
+.addItem-modal__toggleRow--disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.addItem-modal__toggleRow--flow-expense .segmentedControl__option--selected,
+.addItem-modal__toggleRow--flow-expense .segmentedControl__thumb {
+    color: #ffffff;
+    background: #b43f3f;
+}
+
+.addItem-modal__toggleRow--flow-income .segmentedControl__option--selected,
+.addItem-modal__toggleRow--flow-income .segmentedControl__thumb {
+    color: #ffffff;
+    background: #2f7d38;
+}
+
+@media (max-width: 767px) {
+    .addItem-modal {
+        width: 100%;
+        max-width: none;
+        border-radius: 16px 16px 0 0;
+    }
+}

@@ -220,10 +220,6 @@ function AppShell() {
                         <NavLink to="/app/family/budget" className="appShell__navLink">
                             Budget & Savings
                         </NavLink>
-                        <NavLink to="/app/notifications" className="appShell__navLink appShell__navLink--withIndicator">
-                            Notifications
-                            {hasUnreadNotifications && <span className="appShell__unreadDot" aria-label="Unread notifications" />}
-                        </NavLink>
                     </div>
                 </nav>
 
@@ -255,16 +251,6 @@ function AppShell() {
                             <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
                         </svg>
                         <span className="appShell__bottomNavLabel">Budget</span>
-                    </NavLink>
-
-                    <NavLink to="/app/notifications" className="appShell__bottomNavLink appShell__bottomNavLink--withIndicator" aria-label="Notifications">
-                        <span className="appShell__bottomNavIconWrap">
-                            <svg className="appShell__bottomNavIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-                            </svg>
-                            {hasUnreadNotifications && <span className="appShell__bottomNavDot" aria-label="Unread notifications" />}
-                        </span>
-                        <span className="appShell__bottomNavLabel">Alerts</span>
                     </NavLink>
 
                     <NavLink to="/app/profile" className="appShell__bottomNavLink" aria-label="Profile">
@@ -301,6 +287,24 @@ function AppShell() {
             </aside>
 
             <div className="appShell__main">
+                <NavLink
+                    to="/app/notifications"
+                    className={({ isActive }) =>
+                        `appShell__notificationsShortcut${isActive ? " appShell__notificationsShortcut--active" : ""}`
+                    }
+                    aria-label="Notifications"
+                    title="Notifications"
+                >
+                    <span className="appShell__notificationsShortcutIconWrap">
+                        <svg className="appShell__notificationsShortcutIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+                        </svg>
+                        {hasUnreadNotifications && (
+                            <span className="appShell__notificationsShortcutDot" aria-label="Unread notifications" />
+                        )}
+                    </span>
+                </NavLink>
+
                 <main className="appShell__content">
                     <Outlet />
                 </main>
