@@ -1,0 +1,55 @@
+.segmentedControl {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    position: relative;
+    gap: 0;
+}
+
+.segmentedControl__track {
+    display: contents;
+}
+
+.segmentedControl__option {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.18s ease;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.segmentedControl__option:focus-visible {
+    outline: 2px solid rgba(212, 131, 92, 0.45);
+    outline-offset: 1px;
+}
+
+.segmentedControl__option--selected {
+    color: var(--text);
+}
+
+.segmentedControl__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: calc(100% - 6px);
+    border-radius: 999px;
+    background: var(--surface-strong);
+    box-shadow: 0 2px 8px rgba(70, 52, 38, 0.1);
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, width;
+}

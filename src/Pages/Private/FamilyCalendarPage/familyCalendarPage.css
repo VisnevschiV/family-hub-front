@@ -110,6 +110,40 @@
     gap: 0;
 }
 
+.calendarView__grid--slide-left {
+    animation: calendarMonthSlideLeft 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
+}
+
+.calendarView__grid--slide-right {
+    animation: calendarMonthSlideRight 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
+}
+
+@keyframes calendarMonthSlideLeft {
+    from {
+        opacity: 0.78;
+        transform: translateX(28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes calendarMonthSlideRight {
+    from {
+        opacity: 0.78;
+        transform: translateX(-28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 .calendarView__grid--fiveDay {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     border: 1px solid var(--border);
@@ -118,12 +152,12 @@
 }
 
 .calendarView__grid--fiveDay .calendarView__cell {
-    min-height: 86px;
+    min-height: 69px;
     border-right: none;
     border-bottom: none;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    padding: 5px;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell:last-child {
@@ -141,12 +175,21 @@
     background: #f4e9dc;
 }
 
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
+    color: #c65b87;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName--muted {
+    color: rgba(198, 91, 135, 0.68);
+}
+
 .calendarView__grid--fiveDay .calendarView__cell:not(.calendarView__cell--selected) .calendarView__compactDayName {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell:not(.calendarView__cell--selected) .calendarView__compactDayNumber {
-    font-size: 16px;
+    font-size: 13px;
 }
 
 .calendarView__compactDay {
@@ -154,12 +197,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
 }
 
 .calendarView__compactDayName {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -171,14 +214,14 @@
 }
 
 .calendarView__compactDayNumber {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
 }
 
 .calendarView__eventDot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 999px;
     background: #b7b7b7;
 }
@@ -219,8 +262,8 @@
 }
 
 .calendarView__cell--current:hover {
-    border-color: #ddc7af;
     box-shadow: 0 10px 18px rgba(70, 52, 38, 0.09);
+    background: #fcf2e6;
     transform: translateY(-1px);
 }
 
@@ -236,14 +279,19 @@
     opacity: 0.5;
 }
 
-.calendarView__cell--today {
-    border-color: var(--brand);
-    box-shadow: inset 0 0 0 1px var(--brand), 0 8px 16px rgba(180, 101, 65, 0.12);
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today {
+    background: #fce8d7;
+    box-shadow: 0 8px 16px rgba(180, 101, 65, 0.1);
 }
 
-.calendarView__cell--selected {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--accent), 0 10px 20px rgba(127, 157, 122, 0.15);
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--selected {
+    background: #e6f0df;
+    box-shadow: 0 10px 20px rgba(127, 157, 122, 0.12);
+}
+
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today.calendarView__cell--selected {
+    background: linear-gradient(180deg, #fce8d7 0%, #e6f0df 100%);
+    box-shadow: 0 10px 20px rgba(127, 157, 122, 0.14);
 }
 
 .calendarView__cell--period {
@@ -261,8 +309,23 @@
     border-color: #eeb9ce;
 }
 
-.calendarView__cell--familyPeriod {
-    box-shadow: inset 0 0 0 1px rgba(220, 145, 171, 0.24);
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod {
+    background: #ffe8f1;
+    box-shadow: inset 0 0 0 1px rgba(220, 145, 171, 0.18);
+    color: #a64f72;
+}
+
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventTime,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventTitle,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventDescription,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__moreEvents {
+    color: #a64f72;
+}
+
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventItem {
+    background: #fff1f7;
+    border-color: #efbfd2;
 }
 
 .calendarView__dayNumber {
@@ -284,12 +347,6 @@
     padding: 5px 7px;
     display: grid;
     gap: 3px;
-    transition: background 0.16s ease, border-color 0.16s ease;
-}
-
-.calendarView__eventItem:hover {
-    background: #fff2e3;
-    border-color: #e0c3a8;
 }
 
 .calendarView__eventTime {
@@ -452,6 +509,12 @@
     z-index: 3;
     overflow: hidden;
     min-height: 40px;
+    cursor: pointer;
+}
+
+.calendarItinerary__timelineEvent:focus-visible {
+    outline: 2px solid rgba(212, 131, 92, 0.45);
+    outline-offset: 1px;
 }
 
 .calendarItinerary__timelineEventTime {

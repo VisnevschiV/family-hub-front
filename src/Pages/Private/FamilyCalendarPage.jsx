@@ -8,6 +8,7 @@ import {
 import { getFamilyMembers } from "../../api/families.js";
 import { fetchCurrentPersona } from "../../api/persona.js";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
+import SegmentedControl from "../../Components/SegmentedControl.jsx";
 import {
     getFamilyPeriodMonth,
     getPeriodMonth,
@@ -21,6 +22,7 @@ import "./FamilyCalendarPage/familyCalendarPagemobile.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const LONG_PRESS_DURATION_MS = 450;
+const MONTH_SWIPE_THRESHOLD_PX = 48;
 const DAY_HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 const EVENT_BLOCK_MINUTES = 60;
 const MIN_EVENT_BLOCK_MINUTES = 30;
@@ -345,8 +347,12 @@ function FamilyCalendarPage() {
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
     const [monthViewOpen, setMonthViewOpen] = useState(false);
+    const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
+    const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
+    const monthSwipeStartRef = useRef(null);
+    const monthSwipeTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
 
     function clearLongPressTimer() {
@@ -654,35 +660,60 @@ function FamilyCalendarPage() {
         });
     }, [selectedDateKey, events, familyPeriodNamesByDate]);
 
-    function showPreviousMonth() {
-        setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
-    }
-
-    function showNextMonth() {
-        setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
-    }
-
     function showCurrentMonth() {
+        setMonthTransitionDirection("");
         const now = new Date();
         setVisibleMonth(new Date(now.getFullYear(), now.getMonth(), 1));
         setSelectedDateKey(toDateKey(now));
     }
 
-    function showPreviousDay() {
-        setSelectedDateKey((current) => {
-            const [y, m, d] = current.split("-").map(Number);
-            return toDateKey(new Date(y, m - 1, d - 1));
-        });
+    function showPreviousMonth() {
+        setMonthTransitionDirection("right");
+        setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
     }
 
-    function showNextDay() {
-        setSelectedDateKey((current) => {
-            const [y, m, d] = current.split("-").map(Number);
-            return toDateKey(new Date(y, m - 1, d + 1));
-        });
+    function showNextMonth() {
+        setMonthTransitionDirection("left");
+        setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
+    }
+
+    function handleMonthGridTouchStart(event) {
+        const touch = event.touches?.[0];
+        if (!touch) return;
+
+        monthSwipeStartRef.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+        };
+        monthSwipeTriggeredRef.current = false;
+    }
+
+    function handleMonthGridTouchEnd(event) {
+        const touch = event.changedTouches?.[0];
+        const swipeStart = monthSwipeStartRef.current;
+        monthSwipeStartRef.current = null;
+
+        if (!touch || !swipeStart) return;
+
+        const deltaX = touch.clientX - swipeStart.x;
+        const deltaY = touch.clientY - swipeStart.y;
+
+        if (Math.abs(deltaX) < MONTH_SWIPE_THRESHOLD_PX || Math.abs(deltaX) <= Math.abs(deltaY)) {
+            return;
+        }
+
+        monthSwipeTriggeredRef.current = true;
+
+        if (deltaX < 0) {
+            showNextMonth();
+            return;
+        }
+
+        showPreviousMonth();
     }
 
     function toggleMonthView() {
+        setMonthTransitionDirection("");
         setMonthViewOpen((prev) => {
             if (!prev) {
                 const [y, m] = selectedDateKey.split("-").map(Number);
@@ -980,17 +1011,14 @@ function FamilyCalendarPage() {
         [familyPeriodNamesByDate, selectedDateKey]
     );
 
+    const visibleMonthKey = `${visibleMonth.getFullYear()}-${String(visibleMonth.getMonth() + 1).padStart(2, "0")}`;
+
     if (!hasFamily) {
         return <NoFamilyBanner onFamilyJoined={() => setHasFamily(true)} />;
     }
 
     return (
         <div className="page">
-            <header className="page__header">
-                <h1 className="page__title">Shared Calendar</h1>
-                <p className="page__subtitle">Track events, trips, and family milestones together.</p>
-            </header>
-
             {calendarError ? <p className="calendarView__error">{calendarError}</p> : null}
             {calendarNotice ? <p className="calendarView__notice">{calendarNotice}</p> : null}
 
@@ -998,17 +1026,11 @@ function FamilyCalendarPage() {
                 <div className="calendarView__toolbar">
                     <h2 className="calendarView__monthLabel">{monthLabel}</h2>
                     <div className="calendarView__toolbarRight">
-                        <button type="button" className="calendarView__button" onClick={monthViewOpen ? showPreviousMonth : showPreviousDay} aria-label="Previous">
-                            &lt;
-                        </button>
                         <button type="button" className="calendarView__button" onClick={showCurrentMonth}>
                             Today
                         </button>
                         <button type="button" className={`calendarView__button${monthViewOpen ? " calendarView__button--active" : ""}`} onClick={toggleMonthView} aria-label="Toggle month view">
                             &#128197;
-                        </button>
-                        <button type="button" className="calendarView__button" onClick={monthViewOpen ? showNextMonth : showNextDay} aria-label="Next">
-                            &gt;
                         </button>
                     </div>
                 </div>
@@ -1026,7 +1048,15 @@ function FamilyCalendarPage() {
                                 </div>
                             ))}
                         </div>
-                        <div className="calendarView__grid" role="grid" aria-label={monthLabel}>
+                        <div
+                            key={`${visibleMonthKey}-${monthTransitionDirection || "static"}`}
+                            className={`calendarView__grid${monthTransitionDirection ? ` calendarView__grid--slide-${monthTransitionDirection}` : ""}`}
+                            role="grid"
+                            aria-label={monthLabel}
+                            onTouchStart={handleMonthGridTouchStart}
+                            onTouchEnd={handleMonthGridTouchEnd}
+                            onAnimationEnd={() => setMonthTransitionDirection("")}
+                        >
                             {dayCells.map((cell, cellIndex) => (
                                 <div
                                     key={cell.key}
@@ -1038,8 +1068,9 @@ function FamilyCalendarPage() {
                                         }`}
                                     role="gridcell"
                                     onClick={cell.dateKey ? () => {
-                                        if (longPressTriggeredRef.current) {
+                                        if (longPressTriggeredRef.current || monthSwipeTriggeredRef.current) {
                                             longPressTriggeredRef.current = false;
+                                            monthSwipeTriggeredRef.current = false;
                                             return;
                                         }
                                         handleDayCellClick(cell);
@@ -1138,8 +1169,16 @@ function FamilyCalendarPage() {
                 )}
             </section>
 
+            <div style={{ display: "flex", justifyContent: "left" }}>
+                <SegmentedControl
+                    options={["Mine", "Shared", "Partner"]}
+                    value={calendarFilter}
+                    onChange={setCalendarFilter}
+                />
+            </div>
+
             <section ref={itinerarySectionRef} className="calendarItinerary">
-                <h2 className="card__title">Itinerary · {selectedDateLabel}</h2>
+                <h2 className="card__title">{selectedDateLabel}</h2>
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
@@ -1190,6 +1229,15 @@ function FamilyCalendarPage() {
                                         top: `${eventItem.topPercent}%`,
                                         height: `${eventItem.heightPercent}%`,
                                     }}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => openEditModal(eventItem)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault();
+                                            openEditModal(eventItem);
+                                        }
+                                    }}
                                 >
                                     <div className="calendarItinerary__timelineEventTime">{eventItem.timeLabel}</div>
                                     <h3 className="calendarItinerary__timelineEventTitle">{eventItem.title}</h3>
@@ -1198,13 +1246,6 @@ function FamilyCalendarPage() {
                                             With: {eventItem.participantNames.join(", ")}
                                         </p>
                                     ) : null}
-                                    <button
-                                        type="button"
-                                        className="calendarItinerary__timelineEventButton"
-                                        onClick={() => openEditModal(eventItem)}
-                                    >
-                                        Open
-                                    </button>
                                 </article>
                             ))
                         )}
