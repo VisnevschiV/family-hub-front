@@ -219,6 +219,57 @@
     padding-top: 56px;
 }
 
+.appShell__notificationsShortcut {
+    position: fixed;
+    top: 10px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: linear-gradient(170deg, #fffaf3 0%, #f6dcc5 100%);
+    color: #6a3f24;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(70, 52, 38, 0.14);
+    z-index: 130;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.appShell__notificationsShortcut:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(70, 52, 38, 0.2);
+}
+
+.appShell__notificationsShortcut--active {
+    background: linear-gradient(170deg, #ffe7d3 0%, #f3c9a8 100%);
+}
+
+.appShell__notificationsShortcutIconWrap {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+}
+
+.appShell__notificationsShortcutIcon {
+    width: 18px;
+    height: 18px;
+}
+
+.appShell__notificationsShortcutDot {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d43535;
+    box-shadow: 0 0 0 2px rgba(255, 250, 243, 0.95);
+}
+
 /* ---- Top bar ---- */
 .appShell__topbar {
     display: flex;
