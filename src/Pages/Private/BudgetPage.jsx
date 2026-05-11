@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import BudgetModal from "../../Components/BudgetModal.jsx";
 import TransactionModal from "../../Components/TransactionModal.jsx";
+import AddItemModal from "../../Components/AddItemModal.jsx";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
 import {
     getBudget,
@@ -39,6 +40,8 @@ export default function BudgetPage() {
         mode: "add",
         transactionId: null,
     });
+    const [addItemModalOpen, setAddItemModalOpen] = useState(false);
+    const [isSubmittingQuickAdd, setIsSubmittingQuickAdd] = useState(false);
     const [draggingItemKey, setDraggingItemKey] = useState(null);
     const [dragStartX, setDragStartX] = useState(null);
     const [deletePreviewItemKey, setDeletePreviewItemKey] = useState(null);
@@ -208,6 +211,46 @@ export default function BudgetPage() {
             mode: "add",
             transactionId: null,
         });
+    }
+
+    function openAddItemModal() {
+        setAddItemModalOpen(true);
+    }
+
+    function closeAddItemModal() {
+        if (isSubmittingQuickAdd) return;
+        setAddItemModalOpen(false);
+    }
+
+    async function handleQuickAddSubmit(payload) {
+        try {
+            setIsSubmittingQuickAdd(true);
+            setError(null);
+
+            if (payload.itemType === "budget") {
+                const parentBudgetId = activeBudget?.id || null;
+                await createBudget(payload.name, payload.currencyISOCode, parentBudgetId);
+            } else {
+                const rawAmount = Number(payload.amount);
+                const safeAmount = Number.isFinite(rawAmount) ? Math.abs(rawAmount) : 0;
+                const signedAmount = payload.flowType === "income" ? safeAmount : -safeAmount;
+
+                await addTransaction(
+                    activeBudget.id,
+                    payload.description,
+                    signedAmount,
+                    payload.currencyISOCode
+                );
+            }
+
+            await loadBudget();
+            setAddItemModalOpen(false);
+        } catch (err) {
+            setError(err.message || "Failed to add item");
+            console.error("Error adding item:", err);
+        } finally {
+            setIsSubmittingQuickAdd(false);
+        }
     }
 
     async function handleDeleteTransaction(transactionId) {
@@ -712,16 +755,10 @@ export default function BudgetPage() {
                     <h2>Sub-budgets & Transactions</h2>
                     <div className="section-actions">
                         <button
-                            onClick={openAddBudgetModal}
-                            className="btn-primary btn-add btn-add--soft"
-                        >
-                            + Add Budget
-                        </button>
-                        <button
-                            onClick={openAddTransactionModal}
+                            onClick={openAddItemModal}
                             className="btn-primary btn-add"
                         >
-                            + Add Transaction
+                            + Add
                         </button>
                     </div>
                 </div>
@@ -742,6 +779,12 @@ export default function BudgetPage() {
                                     subBudgetTotals,
                                     subBudget.currencyISOCode || activeBudget.currencyISOCode
                                 );
+                                const subBudgetPrimaryAmount = Number.parseFloat(subBudgetTotalLabel);
+                                const subBudgetValueClass = Number.isFinite(subBudgetPrimaryAmount)
+                                    ? subBudgetPrimaryAmount >= 0
+                                        ? "is-income"
+                                        : "is-expense"
+                                    : "";
 
                                 return (
                                     <button
@@ -773,7 +816,7 @@ export default function BudgetPage() {
                                     >
                                         <div className="transaction-info">
                                             <div className="transaction-name">{subBudget.name || "Unnamed Sub-budget"}</div>
-                                            <div className="transaction-currency transaction-currency--value">
+                                            <div className={`transaction-currency transaction-currency--value ${subBudgetValueClass}`.trim()}>
                                                 {subBudgetTotalLabel}
                                             </div>
                                         </div>
@@ -788,6 +831,12 @@ export default function BudgetPage() {
                         {getBudgetTransactions(activeBudget).map((transaction) => {
                             const transactionKey = `transaction:${transaction.id}`;
                             const rowClasses = ["transaction-item"];
+                            const transactionAmountValue = Number.parseFloat(transaction.amount);
+                            const transactionValueClass = Number.isFinite(transactionAmountValue)
+                                ? transactionAmountValue >= 0
+                                    ? "is-income"
+                                    : "is-expense"
+                                : "";
 
                             if (draggingItemKey === transactionKey) rowClasses.push("transaction-item--dragging");
                             if (deletePreviewItemKey === transactionKey) rowClasses.push("transaction-item--deletePreview");
@@ -810,7 +859,7 @@ export default function BudgetPage() {
                                 >
                                     <div className="transaction-info">
                                         <div className="transaction-name">{transaction.description}</div>
-                                        <div className="transaction-currency transaction-currency--value">
+                                        <div className={`transaction-currency transaction-currency--value ${transactionValueClass}`.trim()}>
                                             {parseFloat(transaction.amount).toFixed(2)}
                                         </div>
                                     </div>
@@ -836,6 +885,14 @@ export default function BudgetPage() {
                         : handleModifyBudget
                 }
                 isLoading={loading}
+            />
+
+            <AddItemModal
+                isOpen={addItemModalOpen}
+                onClose={closeAddItemModal}
+                onSubmit={handleQuickAddSubmit}
+                isLoading={isSubmittingQuickAdd}
+                budgetCurrency={activeBudget.currencyISOCode}
             />
 
             <TransactionModal

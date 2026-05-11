@@ -52,27 +52,29 @@
     }
 
     .section-header {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        align-items: flex-end;
         gap: 10px;
     }
 
     .section-header h2 {
-        font-size: 18px;
+        font-size: 9px;
         flex: 1;
-        min-width: 100%;
+        min-width: 0;
+        line-height: 1;
     }
 
     .btn-add {
-        padding: 8px 14px;
-        font-size: 13px;
-        flex: 1;
+        padding: 6px 10px;
+        font-size: 11px;
+        border-radius: 3px;
+        flex: 0;
     }
 
     .section-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
         gap: 8px;
-        width: 100%;
+        width: auto;
     }
 
     .transactions-list {
@@ -110,6 +112,14 @@
     .transaction-currency--value {
         font-size: 15px;
         color: #7a4e2c;
+    }
+
+    .transaction-currency--value.is-income {
+        color: #2f7d38;
+    }
+
+    .transaction-currency--value.is-expense {
+        color: #b43f3f;
     }
 
     .transaction-value {
