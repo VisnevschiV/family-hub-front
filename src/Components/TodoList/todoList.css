@@ -74,6 +74,10 @@
     flex-shrink: 0;
 }
 
+.todoList:not(.todoList--expanded) .todoList__meta {
+    margin-left: auto;
+}
+
 .todoList--expanded .todoList__meta {
     align-items: flex-start;
 }
