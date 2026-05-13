@@ -334,6 +334,7 @@
     border-radius: 8px 0 0 8px;
 }
 
+
 .todoList__item--deleting {
     background-color: #fbe4db;
     transform: translateX(140%);
