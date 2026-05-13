@@ -324,7 +324,7 @@
 
 .todoList__item--deletePreview {
     background-color: #fbe4db;
-    transform: translateX(12px);
+    transform: translateX(6px);
 }
 
 .todoList__item--deletePreview::before {
