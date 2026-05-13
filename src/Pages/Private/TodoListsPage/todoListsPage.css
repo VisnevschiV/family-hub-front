@@ -1,3 +1,17 @@
+.todoListsPage_header {
+    min-height: 140px;
+    justify-content: center;
+}
+
+.todoListsPage_actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: -6px;
+}
+
 .todoListsPage_container {
     display: flex;
     flex-wrap: wrap;

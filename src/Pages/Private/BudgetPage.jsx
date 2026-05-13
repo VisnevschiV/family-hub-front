@@ -3,6 +3,7 @@ import BudgetModal from "../../Components/BudgetModal.jsx";
 import TransactionModal from "../../Components/TransactionModal.jsx";
 import AddItemModal from "../../Components/AddItemModal.jsx";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
+import AddButton from "../../Components/AddButton.jsx";
 import {
     getBudget,
     createBudget,
@@ -187,14 +188,6 @@ export default function BudgetPage() {
             setError(err.message || "Failed to update transaction");
             console.error("Error updating transaction:", err);
         }
-    }
-
-    function openAddTransactionModal() {
-        setTransactionModal({
-            isOpen: true,
-            mode: "add",
-            transactionId: null,
-        });
     }
 
     function openEditTransactionModal(transactionId) {
@@ -754,12 +747,7 @@ export default function BudgetPage() {
                 <div className="section-header">
                     <h2>Sub-budgets & Transactions</h2>
                     <div className="section-actions">
-                        <button
-                            onClick={openAddItemModal}
-                            className="btn-primary btn-add"
-                        >
-                            + Add
-                        </button>
+                        <AddButton onClick={openAddItemModal} />
                     </div>
                 </div>
 

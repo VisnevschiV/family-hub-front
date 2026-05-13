@@ -106,9 +106,7 @@ function WelcomePage() {
         () => ["Elena", "Marta", "Sofia", "Lina", "Nora"],
         []
     );
-    const periodOwner = useMemo(() => {
-        return periodNames[Math.floor(Math.random() * periodNames.length)];
-    }, [periodNames]);
+    const periodOwner = periodNames[0] || "Family member";
 
     const weekDays = useMemo(() => {
         const start = new Date();
@@ -313,7 +311,7 @@ function WelcomePage() {
                             See what your family can do before creating an account.
                         </h1>
                         <p className="welcome__lead">
-                            One app for tasks, calendar, budget, notifications, and
+                            One app for priorities, calendar, budget, notifications, and
                             profile/family settings.
                         </p>
                         <div className="welcome__heroActions">
@@ -349,7 +347,7 @@ function WelcomePage() {
                     <article className="welcome__previewCard">
                         <TodoList
                             listId="welcome-preview-list"
-                            title="To-Do's"
+                            title="Priorities"
                             items={todos}
                             onItemsChange={(_, nextItems) => setTodos(nextItems)}
                             onRequestRename={() => { }}
@@ -496,7 +494,7 @@ function WelcomePage() {
                         <h2 className="welcome__panelTitle">Notifications</h2>
                         <div className="welcome__notificationsMock">
                             <div className="welcome__notificationItem">New event: Parent meeting tomorrow</div>
-                            <div className="welcome__notificationItem">Task completed: Laundry</div>
+                            <div className="welcome__notificationItem">Priority completed: Laundry</div>
                             <div className="welcome__notificationItem">Budget updated by Alex</div>
                         </div>
                     </article>
@@ -506,14 +504,14 @@ function WelcomePage() {
                     <article className="welcome__panel">
                         <h2 className="welcome__panelTitle">What is included</h2>
                         <p className="welcome__panelText">
-                            Family Hub, To-Do's, Our Calendar, Budget &amp; Savings,
+                            Family Hub, Priorities, Our Calendar, Budget &amp; Savings,
                             Notifications, and Profile &amp; Family settings.
                         </p>
                     </article>
                     <article className="welcome__panel">
                         <h2 className="welcome__panelTitle">Family sharing</h2>
                         <p className="welcome__panelText">
-                            Tasks, events, budget changes, and alerts are shared with
+                            Priorities, events, budget changes, and alerts are shared with
                             your family so everyone stays aligned.
                         </p>
                     </article>

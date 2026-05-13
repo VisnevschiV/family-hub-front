@@ -119,6 +119,11 @@
 }
 
 @media (max-width: 640px) {
+
+    .calendarView__actionsRow {
+        gap: 10px;
+    }
+
     .calendarView__weekHeader {
         gap: 3px;
     }

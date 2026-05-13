@@ -6,6 +6,14 @@ function logTaskError(context, details) {
     console.error("[tasks]", context, details);
 }
 
+function normalizeApiId(value) {
+    const asNumber = Number(value);
+    if (Number.isInteger(asNumber) && String(asNumber) === String(value).trim()) {
+        return asNumber;
+    }
+    return value;
+}
+
 export async function getTaskLists() {
     const requestUrl = buildApiUrl("/tasks/getLists");
     const response = await apiFetch("/tasks/getLists", {
@@ -152,18 +160,22 @@ export async function updateTaskListName(id, newName, participantIds = []) {
         : [];
     const participantIdSet = [...new Set(normalizedParticipantIds)];
 
+    const normalizedListId = normalizeApiId(id);
     const requestUrl = buildApiUrl("/tasks/lists");
+    const payload = {
+        id: normalizedListId,
+        taskListId: normalizedListId,
+        newName,
+        participants: participantIdSet,
+        participantIds: participantIdSet,
+    };
+
     const response = await apiFetch("/tasks/lists", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            id,
-            newName,
-            participants: participantIdSet,
-            participantIds: participantIdSet,
-        }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -202,12 +214,16 @@ export async function updateTaskListName(id, newName, participantIds = []) {
 
 export async function createTask(listID, taskName) {
     const requestUrl = buildApiUrl("/tasks");
+    const payload = {
+        listId: String(listID),
+        taskName,
+    };
     const response = await apiFetch("/tasks", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ listID, taskName }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -246,12 +262,17 @@ export async function createTask(listID, taskName) {
 
 export async function deleteTask(listID, taskID) {
     const requestUrl = buildApiUrl("/tasks");
+    const payload = {
+        listId: String(listID),
+        taskId: String(taskID),
+    };
+
     const response = await apiFetch("/tasks", {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ listID, taskID }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -290,12 +311,19 @@ export async function deleteTask(listID, taskID) {
 
 export async function updateTask(listID, taskID, newName, completed) {
     const requestUrl = buildApiUrl("/tasks");
+    const payload = {
+        listId: String(listID),
+        taskId: String(taskID),
+        newName,
+        completed,
+    };
+
     const response = await apiFetch("/tasks", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ listID, taskID, newName, completed }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

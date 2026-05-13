@@ -11,13 +11,14 @@
     background: var(--surface-strong);
     color: var(--text);
     box-shadow: var(--shadow);
-    overflow: visible;
+    overflow: hidden;
     position: relative;
     z-index: auto;
 }
 
 .todoList--menuOpen {
     z-index: 400;
+    overflow: visible;
 }
 
 /* ---- Header ---- */
@@ -27,8 +28,8 @@
     justify-content: space-between;
     gap: 12px;
     padding: 10px 12px;
-    background: #fff3e6;
-    border-bottom: 1px solid var(--border);
+    background: transparent;
+    border-bottom: none;
     cursor: pointer;
     user-select: none;
 }
@@ -45,6 +46,12 @@
     min-width: 0;
 }
 
+.todoList--expanded .todoList__heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
 .todoList__title {
     margin: 0;
     font-size: 14px;
@@ -55,15 +62,55 @@
     text-overflow: ellipsis;
 }
 
+.todoList--expanded .todoList__title {
+    font-size: 17px;
+}
+
 .todoList__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.todoList:not(.todoList--expanded) .todoList__meta {
+    margin-left: auto;
+}
+
+.todoList--expanded .todoList__meta {
+    align-items: flex-start;
+}
+
+.todoList__metaLabel {
     font-size: 12px;
     font-weight: 700;
     color: #7a4e2c;
-    background: #f6dcc5;
-    border: 1px solid #edc9aa;
-    padding: 2px 10px;
+    line-height: 1;
+}
+
+.todoList--expanded .todoList__metaLabel {
+    font-size: 16px;
+}
+
+.todoList__progressTrack {
+    display: block;
+    width: 4.5rem;
+    height: 0.375rem;
     border-radius: 999px;
-    flex-shrink: 0;
+    background: #f2e5d6;
+    overflow: hidden;
+}
+
+.todoList--expanded .todoList__progressTrack {
+    width: 18rem;
+}
+
+.todoList__progressFill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #d4835c 0%, #b46541 100%);
 }
 
 .todoList__headerActions {
@@ -71,6 +118,24 @@
     align-items: center;
     gap: 8px;
     position: relative;
+}
+
+.todoList__chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    color: #7a4e2c;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+    transition: transform 0.18s ease;
+    transform: rotate(0deg);
+}
+
+.todoList__chevron--open {
+    transform: rotate(90deg);
 }
 
 /* ---- Icon buttons ---- */
@@ -99,13 +164,16 @@
     width: 32px;
     height: 32px;
     padding: 0;
-    border-radius: 8px;
+    border-radius: 100%;
     border: 1px solid var(--border);
     background: #ffffff;
     color: #7a4e2c;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .todoList__menuBtn:hover {
@@ -149,6 +217,53 @@
 }
 
 /* ---- Task list ---- */
+.todoList__body {
+    display: grid;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transition: grid-template-rows 0.28s ease, opacity 0.22s ease;
+}
+
+.todoList__body--collapsed {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+.todoList__bodyInner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.todoList__milestonesRow {
+    display: flex;
+    align-items: bottom;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem 0.25rem;
+}
+
+.todoList__milestonesTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.todoList__milestonesAddBtn {
+    border: 1px solid var(--border);
+    background: #fffaf3;
+    color: var(--brand-strong);
+    border-radius: 999px;
+    min-height: 1.9rem;
+    padding: 0 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.todoList__milestonesAddBtn:hover {
+    background: #f6e9da;
+}
+
 .todoList__items {
     list-style: none;
     margin: 0;
@@ -161,10 +276,9 @@
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
     cursor: grab;
     position: relative;
-    background-color: var(--surface-strong);
+    background-color: transparent;
     transition:
         transform 0.3s ease-out,
         opacity 0.3s ease-out,
@@ -172,14 +286,37 @@
     min-height: 44px;
 }
 
-.todoList__item:last-child {
-    border-bottom: none;
+.todoList__item::after {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    border-radius: 999px;
+    background: #eadfce;
+    pointer-events: none;
+}
+
+.todoList__item:first-child::after {
+    top: 50%;
+}
+
+.todoList__item:last-child::after {
+    bottom: 50%;
 }
 
 .todoList__item--dragging {
     opacity: 0.9;
     background-color: #fff3e6;
     cursor: grabbing;
+}
+
+.todoList__item--touchHold {
+    transform: scale(1.02);
+    background-color: #fff6ec;
+    box-shadow: 0 6px 14px rgba(122, 78, 44, 0.12);
+    z-index: 2;
 }
 
 .todoList__item--deletePreview {
@@ -203,27 +340,51 @@
     opacity: 0;
 }
 
-.todoList__item::after {
-    content: " ";
-    float: right;
-    font-size: 10px;
-    color: #b3a493;
-}
-
 .todoList__label {
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 0;
     flex: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .todoList__checkbox {
     width: 16px;
     height: 16px;
     margin: 0;
-    accent-color: var(--brand);
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid #cda98e;
+    border-radius: 50%;
+    background: #fffaf3;
+    display: inline-grid;
+    place-content: center;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background-color 0.18s ease;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.todoList__checkbox::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.16s ease;
+    background: #ffffff;
+}
+
+.todoList__checkbox:checked {
+    border-color: var(--brand);
+    background: var(--brand);
+}
+
+.todoList__checkbox:checked::before {
+    transform: scale(1);
 }
 
 .todoList__text {

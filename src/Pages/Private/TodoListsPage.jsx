@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import ListNameModal from "../../Components/ListNameModal.jsx";
 import TodoList from "../../Components/TodoList.jsx";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
+import AddButton from "../../Components/AddButton.jsx";
+import SegmentedControl from "../../Components/SegmentedControl.jsx";
 import { getFamilyMembers } from "../../api/families.js";
 import { fetchCurrentPersona } from "../../api/persona.js";
 import {
@@ -18,9 +20,34 @@ import "./TodoListsPage/todoListsPagedesktop.css";
 import "./TodoListsPage/todoListsPagemobile.css";
 
 export default function TodoListsPage() {
+    const LIST_ID_KEYS = [
+        "id",
+        "listId",
+        "taskListId",
+    ];
+    const NESTED_LIST_ID_KEYS = ["id"];
+    const TASK_ID_KEYS = ["id", "taskId", "todoId", "uuid", "taskUuid", "todoUuid"];
+    const NESTED_TASK_ID_KEYS = ["id", "taskId", "todoId", "uuid"];
+    const TASK_NAME_KEYS = ["name", "taskName", "title", "text"];
+
+    function pickFirstPresentValue(source, keys) {
+        if (!source || typeof source !== "object") return null;
+
+        for (const key of keys) {
+            const value = source[key];
+            if (value !== null && value !== undefined && value !== "") {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
     const [lists, setLists] = useState([]);
     const [familyMembers, setFamilyMembers] = useState([]);
     const [hasFamily, setHasFamily] = useState(true);
+    const [todoFilter, setTodoFilter] = useState("Shared");
+    const [openListId, setOpenListId] = useState(null);
 
     useEffect(() => {
         fetchCurrentPersona()
@@ -80,74 +107,22 @@ export default function TodoListsPage() {
 
     function resolveBackendListId(list) {
         return (
-            list.id ||
-            list.ID ||
-            list.getId ||
-            list.getID ||
-            list.uuid ||
-            list.listId ||
-            list.listID ||
-            list.listUuid ||
-            list.listUUID ||
-            list.taskListId ||
-            list.taskListID ||
-            list.taskListUuid ||
-            list.taskListUUID ||
-            list?.taskList?.id ||
-            list?.taskList?.ID ||
-            list?.taskList?.getId ||
-            list?.taskList?.getID ||
-            list?.taskList?.uuid
+            pickFirstPresentValue(list, LIST_ID_KEYS) ||
+            pickFirstPresentValue(list?.taskList, NESTED_LIST_ID_KEYS)
         );
     }
 
     function resolveBackendTaskId(task) {
         return (
-            task.id ||
-            task.ID ||
-            task.taskid ||
-            task.task_id ||
-            task.taskID ||
-            task.taskId ||
-            task.todoid ||
-            task.todo_id ||
-            task.todoID ||
-            task.todoId ||
-            task.getId ||
-            task.getID ||
-            task.uuid ||
-            task.taskUuid ||
-            task.taskUUID ||
-            task.taskUUID ||
-            task.todoUuid ||
-            task.todoUUID ||
-            task?.task?.id ||
-            task?.task?.ID ||
-            task?.task?.taskId ||
-            task?.task?.taskID ||
-            task?.task?.uuid ||
-            task?.todo?.id ||
-            task?.todo?.ID ||
-            task?.todo?.taskId ||
-            task?.todo?.taskID ||
-            task?.todo?.uuid ||
-            task?.taskItem?.id ||
-            task?.taskItem?.ID ||
-            task?.taskItem?.taskId ||
-            task?.taskItem?.taskID ||
-            task?.taskItem?.uuid
+            pickFirstPresentValue(task, TASK_ID_KEYS) ||
+            pickFirstPresentValue(task?.task, NESTED_TASK_ID_KEYS) ||
+            pickFirstPresentValue(task?.todo, NESTED_TASK_ID_KEYS) ||
+            pickFirstPresentValue(task?.taskItem, NESTED_TASK_ID_KEYS)
         );
     }
 
     function resolveBackendTaskName(task) {
-        return (
-            task.name ||
-            task.getName ||
-            task.taskName ||
-            task.title ||
-            task.text ||
-            "Untitled task"
-        );
+        return pickFirstPresentValue(task, TASK_NAME_KEYS) || "Untitled task";
     }
 
     function resolveBackendTaskDone(task) {
@@ -161,31 +136,13 @@ export default function TodoListsPage() {
     function mapBackendTasks(list) {
         const taskContainer = list?.taskList && typeof list.taskList === "object"
             ? list.taskList
-            : list?.tasks && typeof list.tasks === "object" && !Array.isArray(list.tasks)
-                ? list.tasks
-                : null;
+            : null;
 
         const backendTasks = Array.isArray(list?.tasks)
             ? list.tasks
-            : Array.isArray(list?.Tasks)
-                ? list.Tasks
-                : Array.isArray(list?.taskItems)
-                    ? list.taskItems
-                    : Array.isArray(list?.items)
-                        ? list.items
-                        : Array.isArray(list?.todos)
-                            ? list.todos
-                            : Array.isArray(list?.taskList)
-                                ? list.taskList
-                                : Array.isArray(taskContainer?.tasks)
-                                    ? taskContainer.tasks
-                                    : Array.isArray(taskContainer?.taskItems)
-                                        ? taskContainer.taskItems
-                                        : Array.isArray(taskContainer?.items)
-                                            ? taskContainer.items
-                                            : Array.isArray(taskContainer?.todos)
-                                                ? taskContainer.todos
-                                                : [];
+            : Array.isArray(taskContainer?.tasks)
+                ? taskContainer.tasks
+                : [];
 
         return backendTasks.map((task) => {
             const backendTaskId = resolveBackendTaskId(task);
@@ -204,25 +161,18 @@ export default function TodoListsPage() {
             ? data
             : Array.isArray(data?.taskLists)
                 ? data.taskLists
-                : Array.isArray(data?.lists)
-                    ? data.lists
-                    : Array.isArray(data?.tasklists)
-                        ? data.tasklists
-                        : [];
+                : [];
 
         return backendLists.map((list) => {
             const backendId = resolveBackendListId(list);
             const participantCandidates =
                 list.participantIds ||
-                list.participantsIds ||
-                list.participantIDs ||
                 list.participants ||
                 list.memberIds ||
                 list.members ||
                 list.assigneeIds ||
                 list.assignees ||
                 list?.taskList?.participantIds ||
-                list?.taskList?.participants ||
                 [];
 
             const participantIds = Array.isArray(participantCandidates)
@@ -240,7 +190,6 @@ export default function TodoListsPage() {
 
                             const participantId =
                                 participant.id ||
-                                participant.ID ||
                                 participant.personaId ||
                                 participant.userId ||
                                 participant.memberId;
@@ -257,8 +206,6 @@ export default function TodoListsPage() {
                 backendId: backendId ? String(backendId) : null,
                 title:
                     list.name ||
-                    list.getName ||
-                    list.listName ||
                     list.title ||
                     list.taskListName ||
                     "Untitled list",
@@ -308,6 +255,20 @@ export default function TodoListsPage() {
             .map((participantId) => membersById.get(participantId) || participantId)
             .join(", ");
     }, [familyMembers, selectedParticipantIds]);
+
+    const visibleLists = useMemo(() => {
+        return lists.filter((list) => {
+            const participantCount = Array.isArray(list.participantIds)
+                ? list.participantIds.length
+                : 0;
+
+            if (todoFilter === "Mine") {
+                return participantCount === 1;
+            }
+
+            return participantCount !== 1;
+        });
+    }, [lists, todoFilter]);
 
     async function handleSubmitListName(name) {
         const title = name.trim();
@@ -473,18 +434,7 @@ export default function TodoListsPage() {
 
         const createdTask = await createTask(backendId, taskName);
         const createdTaskBackendId = createdTask
-            ? String(
-                createdTask.id ||
-                createdTask.ID ||
-                createdTask.getId ||
-                createdTask.getID ||
-                createdTask.uuid ||
-                createdTask.taskId ||
-                createdTask.taskID ||
-                createdTask.taskUuid ||
-                createdTask.taskUUID ||
-                ""
-            ) || null
+            ? String(resolveBackendTaskId(createdTask) || "") || null
             : null;
 
         setLists((prev) =>
@@ -542,29 +492,34 @@ export default function TodoListsPage() {
 
     return (
         <div className="page">
-            <header className="page__header">
-                <h1 className="page__title">Shared To-Do</h1>
+            <header className="page__header todoListsPage_header">
+                <h1 className="page__title">Our Priorities,</h1>
+                <h1 className="page__title">Our Future</h1>
                 <p className="page__subtitle">
-                    Coordinate chores, shopping, and reminders together.
+                    Focus on what trully Matters.
                 </p>
-                <div>
-                    <button
-                        type="button"
-                        className="ctaButton"
-                        onClick={openAddListModal}
-                    >
-                        Add to-do list
-                    </button>
-                </div>
             </header>
 
+            <div className="todoListsPage_actions">
+                <SegmentedControl
+                    options={["Mine", "Shared"]}
+                    value={todoFilter}
+                    onChange={setTodoFilter}
+                />
+                <AddButton onClick={openAddListModal} />
+            </div>
+
             <div className="todoListsPage_container">
-                {lists.map((list) => (
+                {visibleLists.map((list) => (
                     <TodoList
                         key={list.id}
                         listId={list.id}
                         title={list.title}
                         items={list.items}
+                        collapsed={openListId !== list.id}
+                        onToggleCollapsed={(nextCollapsed) => {
+                            setOpenListId(nextCollapsed ? null : list.id);
+                        }}
                         onItemsChange={handleUpdateItems}
                         onAddTask={handleAddTask}
                         onDeleteTask={handleDeleteTask}
@@ -580,8 +535,8 @@ export default function TodoListsPage() {
                 isOpen={listNameModal.isOpen}
                 title={
                     listNameModal.mode === "add"
-                        ? "New to-do list"
-                        : "Edit to-do list"
+                        ? "New priorities list"
+                        : "Edit priorities list"
                 }
                 confirmLabel={listNameModal.mode === "add" ? "Add" : "Save"}
                 initialValue={listNameModal.value}

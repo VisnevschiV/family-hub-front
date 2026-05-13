@@ -47,11 +47,6 @@
         font-size: 11px;
     }
 
-    .btn-add {
-        padding: 10px 20px;
-        font-size: 15px;
-    }
-
     .transaction-item {
         grid-template-columns: 1fr 120px auto;
         padding: 18px;
