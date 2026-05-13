@@ -284,6 +284,9 @@
         opacity 0.3s ease-out,
         background-color 0.3s ease-out;
     min-height: 44px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .todoList__item::after {
@@ -397,6 +400,9 @@
 .todoList__textWrap {
     display: block;
     width: 100%;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .todoList__text--done {

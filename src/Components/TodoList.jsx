@@ -329,6 +329,7 @@ export default function TodoList({
     const TOUCH_HOLD_MS = 320;
     const TAP_MOVE_TOLERANCE = 8;
     const REORDER_MOVE_THRESHOLD = 12;
+    const DELETE_DIRECTION_BUFFER = 10;
 
     function resetTouchGesture(clearActivated = false) {
         clearTimeout(touchHoldTimerRef.current);
@@ -371,6 +372,11 @@ export default function TodoList({
     function handleItemPointerDown(e, itemId) {
         if (e.pointerType === "mouse") return;
         if (editingTaskId || deletingId) return;
+
+        // Prevent iOS long-press text selection/callout for gesture interactions.
+        if (!e.target.closest("input, button, textarea")) {
+            e.preventDefault();
+        }
 
         // If already activated from a previous hold, continue immediately.
         if (touchActivatedId === itemId) {
@@ -431,7 +437,8 @@ export default function TodoList({
             return;
         }
 
-        if (dx > DELETE_THRESHOLD) {
+        const isIntentionalRightSwipe = dx > DELETE_THRESHOLD && dx > absDy + DELETE_DIRECTION_BUFFER;
+        if (isIntentionalRightSwipe) {
             setDeletePreviewId(itemId);
         } else if (deletePreviewId === itemId) {
             setDeletePreviewId(null);
@@ -472,7 +479,7 @@ export default function TodoList({
             return;
         }
 
-        if (dx > DELETE_THRESHOLD) {
+        if (deletePreviewId === itemId) {
             resetTouchGesture(true);
             await runDelete(itemId);
             return;
