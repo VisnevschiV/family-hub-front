@@ -47,6 +47,7 @@ export default function TodoListsPage() {
     const [familyMembers, setFamilyMembers] = useState([]);
     const [hasFamily, setHasFamily] = useState(true);
     const [todoFilter, setTodoFilter] = useState("Shared");
+    const [openListId, setOpenListId] = useState(null);
 
     useEffect(() => {
         fetchCurrentPersona()
@@ -515,6 +516,10 @@ export default function TodoListsPage() {
                         listId={list.id}
                         title={list.title}
                         items={list.items}
+                        collapsed={openListId !== list.id}
+                        onToggleCollapsed={(nextCollapsed) => {
+                            setOpenListId(nextCollapsed ? null : list.id);
+                        }}
                         onItemsChange={handleUpdateItems}
                         onAddTask={handleAddTask}
                         onDeleteTask={handleDeleteTask}

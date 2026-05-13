@@ -7,6 +7,8 @@ export default function TodoList({
     listId,
     title,
     items = [],
+    collapsed,
+    onToggleCollapsed,
     onItemsChange,
     onAddTask,
     onDeleteTask,
@@ -16,7 +18,7 @@ export default function TodoList({
     onEditTask,
 }) {
 
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
     const [hideCompleted, setHideCompleted] = useState(false);
 
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -36,6 +38,10 @@ export default function TodoList({
 
     const totalCount = items.length;
     const doneCount = useMemo(() => items.filter((i) => i.done).length, [items]);
+    const completionPercent = totalCount > 0
+        ? Math.round((doneCount / totalCount) * 100)
+        : 0;
+    const isCollapsed = typeof collapsed === "boolean" ? collapsed : internalIsCollapsed;
 
     const visibleItems = useMemo(() => {
         return hideCompleted ? items.filter((i) => !i.done) : items;
@@ -66,14 +72,23 @@ export default function TodoList({
     }
 
     function toggleCollapsed() {
-        setIsCollapsed((prev) => !prev);
+        const nextCollapsed = !isCollapsed;
+        if (typeof onToggleCollapsed === "function") {
+            onToggleCollapsed(nextCollapsed);
+        } else {
+            setInternalIsCollapsed(nextCollapsed);
+        }
         setIsAddOpen(false);
     }
 
     function openAdd() {
         setNewText("");
         setIsAddOpen(true);
-        setIsCollapsed(false);
+        if (typeof onToggleCollapsed === "function") {
+            onToggleCollapsed(false);
+        } else {
+            setInternalIsCollapsed(false);
+        }
     }
 
     function closeAdd() {
@@ -118,6 +133,12 @@ export default function TodoList({
         },
         []
     );
+
+    useEffect(() => {
+        if (isCollapsed) {
+            setIsMenuOpen(false);
+        }
+    }, [isCollapsed]);
 
     useEffect(() => {
         if (editingTaskId) {
@@ -352,7 +373,7 @@ export default function TodoList({
     }
 
     return (
-        <section className={`todoList ${isMenuOpen ? "todoList--menuOpen" : ""}`}>
+        <section className={`todoList ${!isCollapsed ? "todoList--expanded" : ""} ${isMenuOpen ? "todoList--menuOpen" : ""}`.trim()}>
             <header
                 className="todoList__header"
                 role="button"
@@ -369,25 +390,25 @@ export default function TodoList({
                 <div className="todoList__heading">
                     <h2 className="todoList__title">{title}</h2>
                     <div className="todoList__meta">
-                        {doneCount}/{totalCount}
+                        <span className="todoList__metaLabel">{completionPercent}%</span>
+                        <span
+                            className="todoList__progressTrack"
+                            style={{ "--progress": `${completionPercent}%` }}
+                            aria-hidden="true"
+                        >
+                            <span
+                                className="todoList__progressFill"
+                                style={{ width: `${completionPercent}%` }}
+                            />
+                        </span>
                     </div>
                 </div>
 
-                <div className="todoList__headerActions">
-                    <button
-                        type="button"
-                        className="todoList__iconBtn"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            openAdd();
-                        }}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        aria-label={`Add a task to ${title}`}
-                        title="Add task"
-                    >
-                        +
-                    </button>
-
+                {isCollapsed ? (
+                    <span className="todoList__chevron" aria-hidden="true">
+                        &gt;
+                    </span>
+                ) : (
                     <div className="todoList__menuWrap" ref={menuRef}>
                         <button
                             type="button"
@@ -411,6 +432,18 @@ export default function TodoList({
                                 role="menu"
                                 onClick={(e) => e.stopPropagation()}
                             >
+                                <button
+                                    type="button"
+                                    className="todoList__menuItem"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        openAdd();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    Add task
+                                </button>
+
                                 <button
                                     type="button"
                                     className="todoList__menuItem"
@@ -449,87 +482,92 @@ export default function TodoList({
                             </div>
                         )}
                     </div>
-                </div>
+                )}
             </header>
 
-            {!isCollapsed && (
-                <ul className="todoList__items">
-                    {visibleItems.map((item) => {
-                        const classes = ["todoList__item"];
-                        if (item.id === draggingId)
-                            classes.push("todoList__item--dragging");
-                        if (item.id === deletePreviewId)
-                            classes.push("todoList__item--deletePreview");
-                        if (item.id === deletingId)
-                            classes.push("todoList__item--deleting");
+            <div
+                className={`todoList__body${isCollapsed ? " todoList__body--collapsed" : ""}`}
+                aria-hidden={isCollapsed}
+            >
+                <div className="todoList__bodyInner">
+                    <ul className="todoList__items">
+                        {visibleItems.map((item) => {
+                            const classes = ["todoList__item"];
+                            if (item.id === draggingId)
+                                classes.push("todoList__item--dragging");
+                            if (item.id === deletePreviewId)
+                                classes.push("todoList__item--deletePreview");
+                            if (item.id === deletingId)
+                                classes.push("todoList__item--deleting");
 
-                        return (
-                            <li
-                                key={item.id}
-                                className={classes.join(" ")}
-                                draggable={editingTaskId !== item.id}
-                                style={{ touchAction: "pan-y" }}
-                                onDragStart={(e) => handleDragStart(e, item.id)}
-                                onDragOver={(e) => handleDragOver(e, item.id)}
-                                onDrag={(e) => handleDrag(e, item.id)}
-                                onDragEnd={(e) => handleDragEnd(e, item.id)}
-                                onPointerDown={(e) => handleItemPointerDown(e, item.id)}
-                                onPointerMove={(e) => handleItemPointerMove(e, item.id)}
-                                onPointerUp={(e) => handleItemPointerUp(e, item.id)}
-                                onPointerCancel={() => handleItemPointerCancel(item.id)}
-                            >
-                                <label className="todoList__label">
-                                    <input
-                                        className="todoList__checkbox"
-                                        type="checkbox"
-                                        checked={item.done}
-                                        onChange={() => toggleItem(item.id)}
-                                    />
-                                    <span
-                                        className="todoList__textWrap"
-                                        onPointerDown={(event) => handleInlineEditPointerDown(event, item)}
-                                        onPointerUp={handleInlineEditPointerEnd}
-                                        onPointerLeave={handleInlineEditPointerEnd}
-                                        onPointerCancel={handleInlineEditPointerEnd}
-                                    >
-                                        {editingTaskId === item.id ? (
-                                            <input
-                                                type="text"
-                                                className="todoList__inlineEditInput"
-                                                value={editingText}
-                                                onChange={(event) => setEditingText(event.target.value)}
-                                                onClick={(event) => event.stopPropagation()}
-                                                onBlur={() => commitInlineEdit(item)}
-                                                onKeyDown={(event) => {
-                                                    if (event.key === "Enter") {
-                                                        event.preventDefault();
-                                                        commitInlineEdit(item);
+                            return (
+                                <li
+                                    key={item.id}
+                                    className={classes.join(" ")}
+                                    draggable={editingTaskId !== item.id}
+                                    style={{ touchAction: "pan-y" }}
+                                    onDragStart={(e) => handleDragStart(e, item.id)}
+                                    onDragOver={(e) => handleDragOver(e, item.id)}
+                                    onDrag={(e) => handleDrag(e, item.id)}
+                                    onDragEnd={(e) => handleDragEnd(e, item.id)}
+                                    onPointerDown={(e) => handleItemPointerDown(e, item.id)}
+                                    onPointerMove={(e) => handleItemPointerMove(e, item.id)}
+                                    onPointerUp={(e) => handleItemPointerUp(e, item.id)}
+                                    onPointerCancel={() => handleItemPointerCancel(item.id)}
+                                >
+                                    <label className="todoList__label">
+                                        <input
+                                            className="todoList__checkbox"
+                                            type="checkbox"
+                                            checked={item.done}
+                                            onChange={() => toggleItem(item.id)}
+                                        />
+                                        <span
+                                            className="todoList__textWrap"
+                                            onPointerDown={(event) => handleInlineEditPointerDown(event, item)}
+                                            onPointerUp={handleInlineEditPointerEnd}
+                                            onPointerLeave={handleInlineEditPointerEnd}
+                                            onPointerCancel={handleInlineEditPointerEnd}
+                                        >
+                                            {editingTaskId === item.id ? (
+                                                <input
+                                                    type="text"
+                                                    className="todoList__inlineEditInput"
+                                                    value={editingText}
+                                                    onChange={(event) => setEditingText(event.target.value)}
+                                                    onClick={(event) => event.stopPropagation()}
+                                                    onBlur={() => commitInlineEdit(item)}
+                                                    onKeyDown={(event) => {
+                                                        if (event.key === "Enter") {
+                                                            event.preventDefault();
+                                                            commitInlineEdit(item);
+                                                        }
+                                                        if (event.key === "Escape") {
+                                                            event.preventDefault();
+                                                            cancelInlineEdit();
+                                                        }
+                                                    }}
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                <span
+                                                    className={
+                                                        item.done
+                                                            ? "todoList__text todoList__text--done"
+                                                            : "todoList__text"
                                                     }
-                                                    if (event.key === "Escape") {
-                                                        event.preventDefault();
-                                                        cancelInlineEdit();
-                                                    }
-                                                }}
-                                                autoFocus
-                                            />
-                                        ) : (
-                                            <span
-                                                className={
-                                                    item.done
-                                                        ? "todoList__text todoList__text--done"
-                                                        : "todoList__text"
-                                                }
-                                            >
-                                                {item.text}
-                                            </span>
-                                        )}
-                                    </span>
-                                </label>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
+                                                >
+                                                    {item.text}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </label>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            </div>
 
             {isAddOpen && !isCollapsed && (
                 <div
