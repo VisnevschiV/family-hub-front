@@ -212,7 +212,7 @@ function AppShell() {
                     <div className="appShell__navSection">
                         <div className="appShell__navLabel">Family</div>
                         <NavLink to="/app/family/todo" className="appShell__navLink">
-                            To-Do's
+                            Priorities
                         </NavLink>
                         <NavLink to="/app/family/calendar" className="appShell__navLink">
                             Our Calendar
@@ -232,11 +232,11 @@ function AppShell() {
                         <span className="appShell__bottomNavLabel">Home</span>
                     </NavLink>
 
-                    <NavLink to="/app/family/todo" className="appShell__bottomNavLink" aria-label="To-Do lists">
+                    <NavLink to="/app/family/todo" className="appShell__bottomNavLink" aria-label="Priorities">
                         <svg className="appShell__bottomNavIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            <path d="M6 2v20H4V2h2zm2 2h10l-2 4 2 4H8V4z" />
                         </svg>
-                        <span className="appShell__bottomNavLabel">To-Do's</span>
+                        <span className="appShell__bottomNavLabel">Priorities</span>
                     </NavLink>
 
                     <NavLink to="/app/family/calendar" className="appShell__bottomNavLink" aria-label="Family calendar">

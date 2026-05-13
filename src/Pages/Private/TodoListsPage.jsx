@@ -535,8 +535,8 @@ export default function TodoListsPage() {
                 isOpen={listNameModal.isOpen}
                 title={
                     listNameModal.mode === "add"
-                        ? "New to-do list"
-                        : "Edit to-do list"
+                        ? "New priorities list"
+                        : "Edit priorities list"
                 }
                 confirmLabel={listNameModal.mode === "add" ? "Add" : "Save"}
                 initialValue={listNameModal.value}

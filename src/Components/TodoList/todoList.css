@@ -234,6 +234,36 @@
     overflow: hidden;
 }
 
+.todoList__milestonesRow {
+    display: flex;
+    align-items: bottom;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem 0.25rem;
+}
+
+.todoList__milestonesTitle {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.todoList__milestonesAddBtn {
+    border: 1px solid var(--border);
+    background: #fffaf3;
+    color: var(--brand-strong);
+    border-radius: 999px;
+    min-height: 1.9rem;
+    padding: 0 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.todoList__milestonesAddBtn:hover {
+    background: #f6e9da;
+}
+
 .todoList__items {
     list-style: none;
     margin: 0;
@@ -280,6 +310,13 @@
     opacity: 0.9;
     background-color: #fff3e6;
     cursor: grabbing;
+}
+
+.todoList__item--touchHold {
+    transform: scale(1.02);
+    background-color: #fff6ec;
+    box-shadow: 0 6px 14px rgba(122, 78, 44, 0.12);
+    z-index: 2;
 }
 
 .todoList__item--deletePreview {

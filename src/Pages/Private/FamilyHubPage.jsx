@@ -122,7 +122,7 @@ function FamilyHubPage() {
                     <div className="card">
                         <h2 className="card__title">Shared Spaces</h2>
                         <p className="card__text">
-                            Quick links to the shared calendar and to-do list.
+                            Quick links to the shared calendar and priorities.
                         </p>
                     </div>
                 </section>

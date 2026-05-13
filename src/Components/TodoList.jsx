@@ -27,6 +27,10 @@ export default function TodoList({
     // Drag state
     const [draggingId, setDraggingId] = useState(null);
     const [dragStartX, setDragStartX] = useState(null);
+    const [dragOrder, setDragOrder] = useState(null); // local order while dragging
+    const [isTouchDragging, setIsTouchDragging] = useState(false);
+    const [touchHoldId, setTouchHoldId] = useState(null);
+    const [touchActivatedId, setTouchActivatedId] = useState(null);
     const [deletePreviewId, setDeletePreviewId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,7 +38,15 @@ export default function TodoList({
     const [editingText, setEditingText] = useState("");
     const menuRef = useRef(null);
     const editLongPressTimerRef = useRef(null);
-    const pointerSwipeRef = useRef({ active: false, id: null, startX: 0, startY: 0, directionLocked: false });
+    const touchHoldTimerRef = useRef(null);
+    const touchGestureRef = useRef({
+        active: false,
+        id: null,
+        startX: 0,
+        startY: 0,
+        held: false,
+        moved: false,
+    });
 
     const totalCount = items.length;
     const doneCount = useMemo(() => items.filter((i) => i.done).length, [items]);
@@ -44,8 +56,9 @@ export default function TodoList({
     const isCollapsed = typeof collapsed === "boolean" ? collapsed : internalIsCollapsed;
 
     const visibleItems = useMemo(() => {
-        return hideCompleted ? items.filter((i) => !i.done) : items;
-    }, [items, hideCompleted]);
+        const source = dragOrder || items;
+        return hideCompleted ? source.filter((i) => !i.done) : source;
+    }, [items, hideCompleted, dragOrder]);
 
     function updateItems(nextItemsOrUpdater) {
         const nextItems =
@@ -152,7 +165,7 @@ export default function TodoList({
 
     function handleDeleteList() {
         const confirmed = window.confirm(
-            `Delete to-do list "${title}"? This cannot be undone.`
+            `Delete priorities list "${title}"? This cannot be undone.`
         );
         if (!confirmed) return;
         onDeleteList(listId);
@@ -174,6 +187,7 @@ export default function TodoList({
 
     function handleInlineEditPointerDown(event, item) {
         if (draggingId || deletingId || editingTaskId) return;
+        if (event.pointerType !== "mouse") return;
         if (event.pointerType === "mouse" && event.button !== 0) return;
 
         clearEditLongPressTimer();
@@ -229,6 +243,7 @@ export default function TodoList({
         setDraggingId(id);
         setDragStartX(e.clientX);
         setDeletePreviewId(null);
+        setDragOrder([...items]); // snapshot current order for local reorder
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = "move";
         }
@@ -238,17 +253,17 @@ export default function TodoList({
         e.preventDefault();
         if (!draggingId || draggingId === overId || deletingId || editingTaskId) return;
 
-        updateItems((prev) => {
-            const fromIndex = prev.findIndex((i) => i.id === draggingId);
-            const toIndex = prev.findIndex((i) => i.id === overId);
+        setDragOrder((prev) => {
+            const source = prev || items;
+            const fromIndex = source.findIndex((i) => i.id === draggingId);
+            const toIndex = source.findIndex((i) => i.id === overId);
             if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
-                return prev;
+                return source;
             }
-
-            const newItems = [...prev];
-            const [moved] = newItems.splice(fromIndex, 1);
-            newItems.splice(toIndex, 0, moved);
-            return newItems;
+            const next = [...source];
+            const [moved] = next.splice(fromIndex, 1);
+            next.splice(toIndex, 0, moved);
+            return next;
         });
     }
 
@@ -274,7 +289,6 @@ export default function TodoList({
             setDeletePreviewId(null);
             return;
         }
-
         const dx = e.clientX - dragStartX;
 
         if (dx > DELETE_THRESHOLD) {
@@ -283,6 +297,7 @@ export default function TodoList({
             setDeletePreviewId(null);
             setDraggingId(null);
             setDragStartX(null);
+            setDragOrder(null);
 
             setTimeout(async () => {
                 try {
@@ -298,38 +313,122 @@ export default function TodoList({
                 }
             }, 300); // match CSS duration below
         } else {
+            // Commit reordered items to parent
+            if (dragOrder) {
+                updateItems(dragOrder);
+            }
             setDraggingId(null);
             setDragStartX(null);
             setDeletePreviewId(null);
+            setDragOrder(null);
         }
     }
 
-    // ----- Touch swipe-to-delete (pointer events, works on mobile) -----
+    // ----- Touch hold gestures (mobile): hold => enlarge, release => rename, move => reorder/delete -----
+
+    const TOUCH_HOLD_MS = 320;
+    const TAP_MOVE_TOLERANCE = 8;
+    const REORDER_MOVE_THRESHOLD = 12;
+
+    function resetTouchGesture(clearActivated = false) {
+        clearTimeout(touchHoldTimerRef.current);
+        touchGestureRef.current = {
+            active: false,
+            id: null,
+            startX: 0,
+            startY: 0,
+            held: false,
+            moved: false,
+        };
+        setTouchHoldId(null);
+        setIsTouchDragging(false);
+        setDraggingId(null);
+        setDeletePreviewId(null);
+        setDragOrder(null);
+        if (clearActivated) {
+            setTouchActivatedId(null);
+        }
+    }
+
+    async function runDelete(itemId) {
+        setDeletingId(itemId);
+        setDeletePreviewId(null);
+        setTimeout(async () => {
+            try {
+                if (typeof onDeleteTask === "function") {
+                    await onDeleteTask(listId, itemId);
+                } else {
+                    updateItems((prev) => prev.filter((i) => i.id !== itemId));
+                }
+            } catch (err) {
+                console.error(err.message || "Failed to delete task");
+            } finally {
+                setDeletingId(null);
+            }
+        }, 300);
+    }
 
     function handleItemPointerDown(e, itemId) {
-        if (e.pointerType === "mouse") return; // desktop uses drag events
+        if (e.pointerType === "mouse") return;
         if (editingTaskId || deletingId) return;
-        pointerSwipeRef.current = { active: true, id: itemId, startX: e.clientX, startY: e.clientY, directionLocked: false };
+
+        // If already activated from a previous hold, continue immediately.
+        if (touchActivatedId === itemId) {
+            touchGestureRef.current = {
+                active: true,
+                id: itemId,
+                startX: e.clientX,
+                startY: e.clientY,
+                held: true,
+                moved: false,
+            };
+            setTouchHoldId(itemId);
+            setDraggingId(itemId);
+            setDragOrder([...items]);
+            setIsTouchDragging(true);
+            try { e.target.setPointerCapture(e.pointerId); } catch (_) { }
+            return;
+        }
+
+        clearEditLongPressTimer();
+        touchGestureRef.current = {
+            active: true,
+            id: itemId,
+            startX: e.clientX,
+            startY: e.clientY,
+            held: false,
+            moved: false,
+        };
+
+        clearTimeout(touchHoldTimerRef.current);
+        touchHoldTimerRef.current = setTimeout(() => {
+            if (!touchGestureRef.current.active || touchGestureRef.current.id !== itemId) return;
+            touchGestureRef.current.held = true;
+            setTouchHoldId(itemId);
+            setTouchActivatedId(itemId);
+            setDraggingId(itemId);
+            setDragOrder([...items]);
+            setIsTouchDragging(true);
+            try { e.target.setPointerCapture(e.pointerId); } catch (_) { }
+        }, TOUCH_HOLD_MS);
     }
 
     function handleItemPointerMove(e, itemId) {
-        const swipe = pointerSwipeRef.current;
-        if (!swipe.active || swipe.id !== itemId) return;
+        const gesture = touchGestureRef.current;
+        if (!gesture.active || gesture.id !== itemId) return;
 
-        const dx = e.clientX - swipe.startX;
-        const dy = Math.abs(e.clientY - swipe.startY);
+        const dx = e.clientX - gesture.startX;
+        const dy = e.clientY - gesture.startY;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
 
-        if (!swipe.directionLocked) {
-            // More vertical than horizontal — user is scrolling, not swiping
-            if (dy > Math.abs(dx) && dy > 5) {
-                pointerSwipeRef.current.active = false;
-                setDeletePreviewId(null);
-                return;
+        if (!gesture.held) {
+            if (absDx > TAP_MOVE_TOLERANCE || absDy > TAP_MOVE_TOLERANCE) {
+                // User is scrolling or moving before hold, do nothing special.
+                clearTimeout(touchHoldTimerRef.current);
+                touchGestureRef.current.active = false;
             }
-            if (Math.abs(dx) > 5) {
-                pointerSwipeRef.current.directionLocked = true;
-                clearEditLongPressTimer(); // cancel long-press edit if swiping
-            }
+            return;
         }
 
         if (dx > DELETE_THRESHOLD) {
@@ -337,39 +436,76 @@ export default function TodoList({
         } else if (deletePreviewId === itemId) {
             setDeletePreviewId(null);
         }
+
+        if (absDy < REORDER_MOVE_THRESHOLD) return;
+
+        touchGestureRef.current.moved = true;
+        try { e.target.releasePointerCapture(e.pointerId); } catch (_) { }
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        try { e.target.setPointerCapture(e.pointerId); } catch (_) { }
+        const li = el && el.closest("[data-item-id]");
+        const hoveredId = li && li.dataset.itemId;
+        if (hoveredId && hoveredId !== String(itemId)) {
+            setDragOrder((prev) => {
+                const source = prev || items;
+                const fromIndex = source.findIndex((i) => String(i.id) === String(itemId));
+                const toIndex = source.findIndex((i) => String(i.id) === hoveredId);
+                if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return source;
+                const next = [...source];
+                const [moved] = next.splice(fromIndex, 1);
+                next.splice(toIndex, 0, moved);
+                return next;
+            });
+        }
     }
 
     async function handleItemPointerUp(e, itemId) {
-        const swipe = pointerSwipeRef.current;
-        if (!swipe.active || swipe.id !== itemId) return;
+        const gesture = touchGestureRef.current;
+        clearTimeout(touchHoldTimerRef.current);
+        if (!gesture.active || gesture.id !== itemId) return;
 
-        const dx = e.clientX - swipe.startX;
-        pointerSwipeRef.current = { active: false, id: null, startX: 0, startY: 0, directionLocked: false };
+        const dx = e.clientX - gesture.startX;
+        const dy = Math.abs(e.clientY - gesture.startY);
+
+        if (!gesture.held) {
+            resetTouchGesture();
+            return;
+        }
 
         if (dx > DELETE_THRESHOLD) {
-            setDeletingId(itemId);
-            setDeletePreviewId(null);
-            setTimeout(async () => {
-                try {
-                    if (typeof onDeleteTask === "function") {
-                        await onDeleteTask(listId, itemId);
-                    } else {
-                        updateItems((prev) => prev.filter((i) => i.id !== itemId));
-                    }
-                } catch (err) {
-                    console.error(err.message || "Failed to delete task");
-                } finally {
-                    setDeletingId(null);
-                }
-            }, 300);
+            resetTouchGesture(true);
+            await runDelete(itemId);
+            return;
+        }
+
+        if (gesture.moved || dy >= REORDER_MOVE_THRESHOLD) {
+            if (dragOrder) updateItems(dragOrder);
+            resetTouchGesture(true);
+            return;
+        }
+
+        const targetItem = items.find((i) => i.id === itemId);
+        resetTouchGesture(true);
+        if (targetItem) {
+            startInlineEdit(targetItem);
         }
     }
 
     function handleItemPointerCancel(itemId) {
-        if (pointerSwipeRef.current.id === itemId) {
-            pointerSwipeRef.current = { active: false, id: null, startX: 0, startY: 0, directionLocked: false };
+        const gesture = touchGestureRef.current;
+        if (!gesture.active || gesture.id !== itemId) return;
+        if (gesture.held) {
+            // Keep activated visual state until rename/reorder/delete happens.
+            clearTimeout(touchHoldTimerRef.current);
+            touchGestureRef.current.active = false;
+            setTouchHoldId(null);
+            setIsTouchDragging(false);
+            setDraggingId(null);
             setDeletePreviewId(null);
+            setDragOrder(null);
+            return;
         }
+        resetTouchGesture();
     }
 
     return (
@@ -441,7 +577,7 @@ export default function TodoList({
                                         setIsMenuOpen(false);
                                     }}
                                 >
-                                    Add task
+                                    Add milestone
                                 </button>
 
                                 <button
@@ -490,11 +626,23 @@ export default function TodoList({
                 aria-hidden={isCollapsed}
             >
                 <div className="todoList__bodyInner">
-                    <ul className="todoList__items">
+                    <div className="todoList__milestonesRow">
+                        <div className="todoList__milestonesTitle">Milestones</div>
+                        <button
+                            type="button"
+                            className="todoList__milestonesAddBtn"
+                            onClick={openAdd}
+                        >
+                            + Add
+                        </button>
+                    </div>
+                    <ul className="todoList__items" style={{ touchAction: isTouchDragging ? "none" : undefined }}>
                         {visibleItems.map((item) => {
                             const classes = ["todoList__item"];
                             if (item.id === draggingId)
                                 classes.push("todoList__item--dragging");
+                            if (item.id === touchHoldId || item.id === touchActivatedId)
+                                classes.push("todoList__item--touchHold");
                             if (item.id === deletePreviewId)
                                 classes.push("todoList__item--deletePreview");
                             if (item.id === deletingId)
@@ -503,9 +651,9 @@ export default function TodoList({
                             return (
                                 <li
                                     key={item.id}
+                                    data-item-id={String(item.id)}
                                     className={classes.join(" ")}
                                     draggable={editingTaskId !== item.id}
-                                    style={{ touchAction: "pan-y" }}
                                     onDragStart={(e) => handleDragStart(e, item.id)}
                                     onDragOver={(e) => handleDragOver(e, item.id)}
                                     onDrag={(e) => handleDrag(e, item.id)}
@@ -579,7 +727,7 @@ export default function TodoList({
                     }}
                 >
                     <div className="todoList__modal">
-                        <div className="todoList__modalTitle">New task</div>
+                        <div className="todoList__modalTitle">New milestone</div>
 
                         <form
                             className="todoList__modalForm"
@@ -589,7 +737,7 @@ export default function TodoList({
                                 className="todoList__modalInput"
                                 value={newText}
                                 onChange={(e) => setNewText(e.target.value)}
-                                placeholder="e.g. Buy milk"
+                                placeholder="e.g. Buy milk this evening"
                                 autoFocus
                             />
 
