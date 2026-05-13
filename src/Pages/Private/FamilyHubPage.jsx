@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchCurrentPersona } from "../../api/persona.js";
-import { createFamily, joinFamily, generateJoinCode } from "../../api/families.js";
+import { createFamily, joinFamily } from "../../api/families.js";
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
 import EnterFamilyModal from "../../Components/EnterFamilyModal.jsx";
-import InviteCodeModal from "../../Components/InviteCodeModal.jsx";
 
 function FamilyHubPage() {
     const [loading, setLoading] = useState(true);
@@ -14,10 +13,6 @@ function FamilyHubPage() {
     const [enterOpen, setEnterOpen] = useState(false);
     const [enterSaving, setEnterSaving] = useState(false);
     const [enterError, setEnterError] = useState("");
-    const [inviteOpen, setInviteOpen] = useState(false);
-    const [inviteLoading, setInviteLoading] = useState(false);
-    const [inviteCode, setInviteCode] = useState("");
-    const [inviteExpiresAt, setInviteExpiresAt] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -69,24 +64,6 @@ function FamilyHubPage() {
             setEnterError(err.message || "Failed to join family");
         } finally {
             setEnterSaving(false);
-        }
-    }
-
-    async function handleInviteMembers() {
-        setInviteOpen(true);
-        setInviteLoading(true);
-        setInviteCode("");
-
-        try {
-            const result = await generateJoinCode();
-            setInviteCode(result?.code ?? "");
-            setInviteExpiresAt(result?.expiresAt ?? "");
-        } catch (err) {
-            setInviteCode("");
-            setInviteOpen(false);
-            console.error(err.message || "Failed to generate invite code");
-        } finally {
-            setInviteLoading(false);
         }
     }
 
@@ -163,12 +140,6 @@ function FamilyHubPage() {
                 onJoin={handleJoinFamily}
                 joining={enterSaving}
                 error={enterError}
-            />
-            <InviteCodeModal
-                isOpen={inviteOpen}
-                onClose={() => setInviteOpen(false)}
-                code={inviteCode}
-                expiresAt={inviteExpiresAt}
             />
         </>
     );

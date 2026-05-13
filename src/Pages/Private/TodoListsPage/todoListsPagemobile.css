@@ -4,13 +4,25 @@
         justify-content: stretch;
         gap: 12px;
     }
+
+    .todoListsPage_actions {
+        gap: 10px;
+    }
 }
 
 @media (max-width: 700px) {
-    .page__header .ctaButton {
-        width: 100%;
-        min-height: 44px;
-        justify-content: center;
+    .todoListsPage_actions {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .todoListsPage_actions .segmentedControl {
+        min-width: 0;
+        flex-shrink: 1;
+    }
+
+    .todoListsPage_actions .addButton {
+        flex-shrink: 0;
     }
 
     .todoListsPage_container {

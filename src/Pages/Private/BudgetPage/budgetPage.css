@@ -256,34 +256,9 @@
     color: #333;
 }
 
-.btn-add {
-    padding: 8px 16px;
-    background-color: #d4835c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.btn-add:hover {
-    background-color: #be6e49;
-}
-
 .section-actions {
     display: flex;
     gap: 10px;
-}
-
-.btn-add--soft {
-    background-color: #7a4e2c;
-}
-
-.btn-add--soft:hover {
-    background-color: #684024;
 }
 
 .transactions-list {

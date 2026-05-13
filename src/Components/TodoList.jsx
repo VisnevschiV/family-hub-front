@@ -131,7 +131,7 @@ export default function TodoList({
 
     function handleDeleteList() {
         const confirmed = window.confirm(
-            `Delete to-do list \"${title}\"? This cannot be undone.`
+            `Delete to-do list "${title}"? This cannot be undone.`
         );
         if (!confirmed) return;
         onDeleteList(listId);

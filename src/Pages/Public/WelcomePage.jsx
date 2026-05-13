@@ -106,9 +106,7 @@ function WelcomePage() {
         () => ["Elena", "Marta", "Sofia", "Lina", "Nora"],
         []
     );
-    const periodOwner = useMemo(() => {
-        return periodNames[Math.floor(Math.random() * periodNames.length)];
-    }, [periodNames]);
+    const periodOwner = periodNames[0] || "Family member";
 
     const weekDays = useMemo(() => {
         const start = new Date();

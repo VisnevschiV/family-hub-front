@@ -8,6 +8,7 @@ import {
 import { getFamilyMembers } from "../../api/families.js";
 import { fetchCurrentPersona } from "../../api/persona.js";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
+import AddButton from "../../Components/AddButton.jsx";
 import SegmentedControl from "../../Components/SegmentedControl.jsx";
 import {
     getFamilyPeriodMonth,
@@ -118,83 +119,6 @@ function addRangeToKeySet(targetSet, startDate, endDate) {
 function findOpenPeriodRecord(records) {
     if (!Array.isArray(records)) return null;
     return records.find((record) => Boolean(getRecordStartDate(record)) && !getRecordEndDate(record)) || null;
-}
-
-function normalizeFamilyPeriodProfiles(payload, membersById = new Map()) {
-    const rawProfiles = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.profiles)
-            ? payload.profiles
-            : Array.isArray(payload?.members)
-                ? payload.members
-                : Array.isArray(payload?.data)
-                    ? payload.data
-                    : Array.isArray(payload?.items)
-                        ? payload.items
-                        : [];
-
-    return rawProfiles
-        .map((entry) => {
-            if (!entry || typeof entry !== "object") return null;
-
-            const memberId =
-                entry.memberId ||
-                entry.personaId ||
-                entry.id ||
-                entry.persona?.id ||
-                entry.member?.id ||
-                null;
-
-            const resolvedNameFromList =
-                memberId != null ? membersById.get(String(memberId)) || membersById.get(Number(memberId)) : undefined;
-
-            const memberName =
-                resolvedNameFromList ||
-                entry.memberName ||
-                entry.name ||
-                entry.personaName ||
-                entry.fullName ||
-                [entry.firstName, entry.lastName].filter(Boolean).join(" ") ||
-                entry.persona?.name ||
-                entry.persona?.fullName ||
-                entry.member?.name ||
-                entry.member?.fullName ||
-                (memberId ? `Member ${memberId}` : "Family member");
-
-            const records = Array.isArray(entry.records)
-                ? entry.records
-                : Array.isArray(entry.periodRecords)
-                    ? entry.periodRecords
-                    : Array.isArray(entry.periods)
-                        ? entry.periods
-                        : Array.isArray(entry.history)
-                            ? entry.history
-                            : Array.isArray(entry.periodProfile?.records)
-                                ? entry.periodProfile.records
-                                : Array.isArray(entry.periodProfile?.periods)
-                                    ? entry.periodProfile.periods
-                                    : [];
-
-            const prediction =
-                entry.prediction ||
-                entry.periodPrediction ||
-                entry.periodProfile?.prediction ||
-                null;
-
-            const periodLengthDays =
-                Number(entry.periodLengthDays) ||
-                Number(entry.periodProfile?.periodLengthDays) ||
-                5;
-
-            return {
-                memberId,
-                memberName,
-                records,
-                prediction,
-                periodLengthDays,
-            };
-        })
-        .filter(Boolean);
 }
 
 function addMemberNameForDate(targetMap, dateKey, memberName) {
@@ -434,6 +358,9 @@ function FamilyCalendarPage() {
                 const nextFamilyPeriodNamesByDate = new Map();
 
                 const records = Array.isArray(monthData?.records) ? monthData.records : [];
+                const predictionStart =
+                    getRecordStartDate(monthData?.prediction) ||
+                    parseIsoDate(monthData?.prediction?.startDate);
                 const openRecord = findOpenPeriodRecord(records);
 
                 if (openRecord) {
@@ -1169,12 +1096,13 @@ function FamilyCalendarPage() {
                 )}
             </section>
 
-            <div style={{ display: "flex", justifyContent: "left" }}>
+            <div className="calendarView__actionsRow">
                 <SegmentedControl
                     options={["Mine", "Shared", "Partner"]}
                     value={calendarFilter}
                     onChange={setCalendarFilter}
                 />
+                <AddButton onClick={() => openCreateModalForDate(selectedDateKey)} />
             </div>
 
             <section ref={itinerarySectionRef} className="calendarItinerary">
