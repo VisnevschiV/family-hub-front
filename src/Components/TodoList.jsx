@@ -330,7 +330,7 @@ export default function TodoList({
     const TOUCH_HOLD_MS = 320;
     const TAP_MOVE_TOLERANCE = 8;
     const REORDER_MOVE_THRESHOLD = 12;
-    const DELETE_DIRECTION_BUFFER = 10;
+    const DELETE_DIRECTION_BUFFER = 28;
 
     function resetTouchGesture(clearActivated = false) {
         clearTimeout(touchHoldTimerRef.current);
@@ -441,7 +441,7 @@ export default function TodoList({
             return;
         }
 
-        const isIntentionalRightSwipe = dx > DELETE_THRESHOLD && dx > absDy + DELETE_DIRECTION_BUFFER;
+        const isIntentionalRightSwipe = !gesture.moved && dx > DELETE_THRESHOLD && dx > absDy + DELETE_DIRECTION_BUFFER;
         if (isIntentionalRightSwipe) {
             touchGestureRef.current.swipedRight = true;
             setDeletePreviewId(itemId);
