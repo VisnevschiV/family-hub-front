@@ -10,10 +10,10 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/frankfurter': {
+      '/api/exchange-rates': {
         target: 'https://api.frankfurter.app',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/frankfurter/, ''),
+        rewrite: (path) => path.replace(/^\/api\/exchange-rates/, '/latest'),
       },
     },
   },

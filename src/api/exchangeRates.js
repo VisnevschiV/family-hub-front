@@ -1,9 +1,7 @@
-// In dev the Vite proxy rewrites /frankfurter/* → https://api.frankfurter.app/*
-// In production the request goes directly to the public API (no CORS issue server-side).
-const FRANKFURTER_BASE =
-    import.meta.env.DEV
-        ? "/frankfurter"
-        : "https://api.frankfurter.app";
+// Always call the same-origin API route.
+// In dev Vite proxies /api/exchange-rates to Frankfurter.
+// In production Azure Static Web Apps serves /api/exchange-rates from an Azure Function.
+const EXCHANGE_RATES_ENDPOINT = "/api/exchange-rates";
 
 /**
  * In-memory cache: { [baseCurrency]: { rates: {[currency]: number}, fetchedAt: number } }
@@ -30,7 +28,7 @@ export async function fetchExchangeRates(baseCurrency) {
         return cached.rates;
     }
 
-    const response = await fetch(`${FRANKFURTER_BASE}/latest?from=${encodeURIComponent(key)}`);
+    const response = await fetch(`${EXCHANGE_RATES_ENDPOINT}?from=${encodeURIComponent(key)}`);
 
     if (!response.ok) {
         throw new Error(`Exchange rate fetch failed: ${response.status}`);
