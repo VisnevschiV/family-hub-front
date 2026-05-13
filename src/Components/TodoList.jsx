@@ -46,6 +46,7 @@ export default function TodoList({
         startY: 0,
         held: false,
         moved: false,
+        swipedRight: false,
     });
 
     const totalCount = items.length;
@@ -340,6 +341,7 @@ export default function TodoList({
             startY: 0,
             held: false,
             moved: false,
+            swipedRight: false,
         };
         setTouchHoldId(null);
         setIsTouchDragging(false);
@@ -387,6 +389,7 @@ export default function TodoList({
                 startY: e.clientY,
                 held: true,
                 moved: false,
+                swipedRight: false,
             };
             setTouchHoldId(itemId);
             setDraggingId(itemId);
@@ -404,6 +407,7 @@ export default function TodoList({
             startY: e.clientY,
             held: false,
             moved: false,
+            swipedRight: false,
         };
 
         clearTimeout(touchHoldTimerRef.current);
@@ -439,6 +443,7 @@ export default function TodoList({
 
         const isIntentionalRightSwipe = dx > DELETE_THRESHOLD && dx > absDy + DELETE_DIRECTION_BUFFER;
         if (isIntentionalRightSwipe) {
+            touchGestureRef.current.swipedRight = true;
             setDeletePreviewId(itemId);
         } else if (deletePreviewId === itemId) {
             setDeletePreviewId(null);
@@ -479,7 +484,7 @@ export default function TodoList({
             return;
         }
 
-        if (deletePreviewId === itemId) {
+        if (gesture.swipedRight) {
             resetTouchGesture(true);
             await runDelete(itemId);
             return;
