@@ -235,6 +235,18 @@ export default function TodoList({
         }
     }
 
+    async function handleDeleteItem(itemId) {
+        try {
+            if (typeof onDeleteTask === "function") {
+                await onDeleteTask(listId, itemId);
+            } else {
+                updateItems((prev) => prev.filter((item) => item.id !== itemId));
+            }
+        } catch (err) {
+            console.error(err.message || "Failed to delete task");
+        }
+    }
+
     // ----- Drag & drop logic -----
 
     const DELETE_THRESHOLD = 40; // px to the right
@@ -325,12 +337,11 @@ export default function TodoList({
         }
     }
 
-    // ----- Touch hold gestures (mobile): hold => enlarge, release => rename, move => reorder/delete -----
+    // ----- Touch hold gestures (mobile): hold => enlarge, release => rename, move vertical => reorder -----
 
     const TOUCH_HOLD_MS = 320;
     const TAP_MOVE_TOLERANCE = 8;
     const REORDER_MOVE_THRESHOLD = 12;
-    const DELETE_DIRECTION_BUFFER = 28;
 
     function resetTouchGesture(clearActivated = false) {
         clearTimeout(touchHoldTimerRef.current);
@@ -341,7 +352,6 @@ export default function TodoList({
             startY: 0,
             held: false,
             moved: false,
-            swipedRight: false,
         };
         setTouchHoldId(null);
         setIsTouchDragging(false);
@@ -351,24 +361,6 @@ export default function TodoList({
         if (clearActivated) {
             setTouchActivatedId(null);
         }
-    }
-
-    async function runDelete(itemId) {
-        setDeletingId(itemId);
-        setDeletePreviewId(null);
-        setTimeout(async () => {
-            try {
-                if (typeof onDeleteTask === "function") {
-                    await onDeleteTask(listId, itemId);
-                } else {
-                    updateItems((prev) => prev.filter((i) => i.id !== itemId));
-                }
-            } catch (err) {
-                console.error(err.message || "Failed to delete task");
-            } finally {
-                setDeletingId(null);
-            }
-        }, 300);
     }
 
     function handleItemPointerDown(e, itemId) {
@@ -389,7 +381,6 @@ export default function TodoList({
                 startY: e.clientY,
                 held: true,
                 moved: false,
-                swipedRight: false,
             };
             setTouchHoldId(itemId);
             setDraggingId(itemId);
@@ -407,7 +398,6 @@ export default function TodoList({
             startY: e.clientY,
             held: false,
             moved: false,
-            swipedRight: false,
         };
 
         clearTimeout(touchHoldTimerRef.current);
@@ -441,11 +431,8 @@ export default function TodoList({
             return;
         }
 
-        const isIntentionalRightSwipe = !gesture.moved && dx > DELETE_THRESHOLD && dx > absDy + DELETE_DIRECTION_BUFFER;
-        if (isIntentionalRightSwipe) {
-            touchGestureRef.current.swipedRight = true;
-            setDeletePreviewId(itemId);
-        } else if (deletePreviewId === itemId) {
+        // On mobile hold interaction we do not arm delete to avoid accidental data loss.
+        if (deletePreviewId === itemId) {
             setDeletePreviewId(null);
         }
 
@@ -476,17 +463,10 @@ export default function TodoList({
         clearTimeout(touchHoldTimerRef.current);
         if (!gesture.active || gesture.id !== itemId) return;
 
-        const dx = e.clientX - gesture.startX;
         const dy = Math.abs(e.clientY - gesture.startY);
 
         if (!gesture.held) {
             resetTouchGesture();
-            return;
-        }
-
-        if (gesture.swipedRight) {
-            resetTouchGesture(true);
-            await runDelete(itemId);
             return;
         }
 
@@ -507,7 +487,7 @@ export default function TodoList({
         const gesture = touchGestureRef.current;
         if (!gesture.active || gesture.id !== itemId) return;
         if (gesture.held) {
-            // Keep activated visual state until rename/reorder/delete happens.
+            // Keep activated visual state until rename/reorder happens.
             clearTimeout(touchHoldTimerRef.current);
             touchGestureRef.current.active = false;
             setTouchHoldId(null);
@@ -648,32 +628,15 @@ export default function TodoList({
                             + Add
                         </button>
                     </div>
-                    <ul className="todoList__items" style={{ touchAction: isTouchDragging ? "none" : undefined }}>
+                    <ul className="todoList__items">
                         {visibleItems.map((item) => {
                             const classes = ["todoList__item"];
-                            if (item.id === draggingId)
-                                classes.push("todoList__item--dragging");
-                            if (item.id === touchHoldId || item.id === touchActivatedId)
-                                classes.push("todoList__item--touchHold");
-                            if (item.id === deletePreviewId)
-                                classes.push("todoList__item--deletePreview");
-                            if (item.id === deletingId)
-                                classes.push("todoList__item--deleting");
 
                             return (
                                 <li
                                     key={item.id}
                                     data-item-id={String(item.id)}
                                     className={classes.join(" ")}
-                                    draggable={editingTaskId !== item.id}
-                                    onDragStart={(e) => handleDragStart(e, item.id)}
-                                    onDragOver={(e) => handleDragOver(e, item.id)}
-                                    onDrag={(e) => handleDrag(e, item.id)}
-                                    onDragEnd={(e) => handleDragEnd(e, item.id)}
-                                    onPointerDown={(e) => handleItemPointerDown(e, item.id)}
-                                    onPointerMove={(e) => handleItemPointerMove(e, item.id)}
-                                    onPointerUp={(e) => handleItemPointerUp(e, item.id)}
-                                    onPointerCancel={() => handleItemPointerCancel(item.id)}
                                 >
                                     <label className="todoList__label">
                                         <input
@@ -722,6 +685,23 @@ export default function TodoList({
                                             )}
                                         </span>
                                     </label>
+
+                                    <div className="todoList__taskActions">
+                                        <button
+                                            type="button"
+                                            className="todoList__taskActionBtn"
+                                            onClick={() => startInlineEdit(item)}
+                                        >
+                                            Modify
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="todoList__taskActionBtn todoList__taskActionBtn--danger"
+                                            onClick={() => handleDeleteItem(item.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </li>
                             );
                         })}

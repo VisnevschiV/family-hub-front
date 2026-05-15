@@ -52,4 +52,16 @@
         border-radius: 999px;
         margin: 0 auto 16px;
     }
+
+    /* Mobile hold interactions should never look like delete animations. */
+    .todoList__item--deletePreview,
+    .todoList__item--deleting {
+        transform: none;
+        opacity: 1;
+        background-color: inherit;
+    }
+
+    .todoList__item--deletePreview::before {
+        display: none;
+    }
 }

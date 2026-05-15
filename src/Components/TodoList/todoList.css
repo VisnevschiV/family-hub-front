@@ -276,7 +276,7 @@
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    cursor: grab;
+    cursor: default;
     position: relative;
     background-color: transparent;
     transition:
@@ -403,6 +403,33 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+}
+
+.todoList__taskActions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.todoList__taskActionBtn {
+    border: 1px solid var(--border);
+    background: #fffaf3;
+    color: var(--text);
+    border-radius: 999px;
+    min-height: 1.75rem;
+    padding: 0 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.todoList__taskActionBtn:hover {
+    background: #f6e9da;
+}
+
+.todoList__taskActionBtn--danger {
+    color: #9f3b2d;
 }
 
 .todoList__text--done {
