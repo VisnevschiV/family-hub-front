@@ -1,29 +1,35 @@
 @media (max-width: 900px) {
+    .profilePage {
+        max-width: 100%;
+        padding-top: 2px;
+        gap: 18px;
+    }
+
     .profileSection {
         gap: 12px;
     }
 
     .settingsSectionTitle {
-        font-size: 20px;
+        font-size: 16px;
     }
 
-    .profileCard {
-        gap: 14px;
+    .profileHero__title {
+        font-size: 38px;
     }
 
-    .profileCard__header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+    .profileHero__avatarWrap {
+        width: 72px;
+        height: 72px;
     }
 
-    .profileCard__status {
-        align-self: flex-start;
+    .profileRow {
+        padding: 13px 14px;
     }
 
     .profileForm {
         grid-template-columns: 1fr;
         gap: 12px;
+        padding: 12px;
     }
 
     .profileSave,
@@ -32,30 +38,25 @@
         min-height: 44px;
         text-align: center;
     }
-
-    .familyActionsLarge {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .familyActionButton {
-        width: 100%;
-        text-align: left;
-        padding: 14px 16px;
-    }
-
-    .accountLogoutButton,
-    .periodOpenButton {
-        width: 100%;
-        min-height: 44px;
-    }
-
-    .familyJoinCreateActions {
-        flex-direction: column;
-    }
 }
 
 @media (max-width: 560px) {
+    .profilePage {
+        gap: 16px;
+    }
+
+    .profileHero__title {
+        font-size: 34px;
+    }
+
+    .profileHero__subtitle {
+        font-size: 13px;
+    }
+
+    .profileHero__avatarWrap {
+        width: 64px;
+        height: 64px;
+    }
 
     .profileField input,
     .profileField select {

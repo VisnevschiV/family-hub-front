@@ -18,6 +18,14 @@ const emptyForm = {
     avatarUrl: "",
 };
 
+function getInitials(name) {
+    const value = String(name || "").trim();
+    if (!value) return "?";
+    const parts = value.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+    return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
+
 function ProfileSettingsPage() {
     const navigate = useNavigate();
     const [form, setForm] = useState(emptyForm);
@@ -43,6 +51,9 @@ function ProfileSettingsPage() {
     const [inviteCode, setInviteCode] = useState("");
     const [inviteExpiresAt, setInviteExpiresAt] = useState("");
     const [periodOpen, setPeriodOpen] = useState(false);
+    const [accountEmail, setAccountEmail] = useState("");
+    const [personalEditOpen, setPersonalEditOpen] = useState(false);
+    const [familyEditOpen, setFamilyEditOpen] = useState(false);
 
     async function handleLogout() {
         await logout();
@@ -65,6 +76,7 @@ function ProfileSettingsPage() {
                     gender: data?.gender ?? "",
                     avatarUrl: data?.avatarUrl ?? "",
                 });
+                setAccountEmail(data?.email ?? data?.user?.email ?? "");
             })
             .catch((err) => {
                 if (active) {
@@ -211,230 +223,259 @@ function ProfileSettingsPage() {
         }
     }
 
+    const displayName = form.name?.trim() || "No name yet";
+    const displayEmail = accountEmail?.trim() || "No email linked";
+
     return (
         <>
-            <div className="page">
-                <header className="page__header">
-                    <h1 className="page__title">Settings</h1>
-                    <p className="page__subtitle">
-                        Manage your account and your family in one place.
-                    </p>
+            <div className="page profilePage">
+                <header className="page__header profileHero">
+                    <div>
+                        <h1 className="page__title profileHero__title">Profile</h1>
+                        <p className="page__subtitle profileHero__subtitle">
+                            Manage your account and family settings.
+                        </p>
+                    </div>
+                    <div className="profileHero__avatarWrap" aria-hidden="true">
+                        {form.avatarUrl ? (
+                            <img src={form.avatarUrl} alt="" className="profileHero__avatar" />
+                        ) : (
+                            <span className="profileHero__avatarFallback">{getInitials(displayName)}</span>
+                        )}
+                    </div>
                 </header>
 
-                <section className="profileSection">
-                    <h2 className="settingsSectionTitle">MyProfile</h2>
-                    <div className="card profileCard">
-                        <div className="profileCard__header">
-                            <div>
-                                <h3 className="card__title">Personal info</h3>
-                                <p className="card__text">
-                                    Update your name, birthday, gender, and avatar.
-                                </p>
-                            </div>
-                            <div className="profileCard__status">
-                                {loading ? "Loading..." : "Ready"}
-                            </div>
-                        </div>
-
+                {(error || success || familyError || familySuccess || leaveError) && (
+                    <section className="profileSection">
                         {error && <div className="profileMessage profileMessage--error">{error}</div>}
-                        {success && (
-                            <div className="profileMessage profileMessage--success">
-                                {success}
-                            </div>
-                        )}
-
-                        <form className="profileForm" onSubmit={handleSubmit}>
-                            <label className="profileField">
-                                <span>Name</span>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={form.name}
-                                    onChange={handleChange}
-                                    maxLength={200}
-                                    placeholder="Your full name"
-                                    disabled={loading || saving}
-                                />
-                            </label>
-
-                            <label className="profileField">
-                                <span>Birthday</span>
-                                <input
-                                    type="date"
-                                    name="birthday"
-                                    value={form.birthday}
-                                    onChange={handleChange}
-                                    disabled={loading || saving}
-                                />
-                            </label>
-
-                            <label className="profileField">
-                                <span>Gender</span>
-                                <select
-                                    name="gender"
-                                    value={form.gender}
-                                    onChange={handleChange}
-                                    disabled={loading || saving}
-                                >
-                                    <option value="">Select gender</option>
-                                    <option value="MALE">Male</option>
-                                    <option value="FEMALE">Female</option>
-                                    <option value="OTHER">Other</option>
-                                </select>
-                            </label>
-
-                            <label className="profileField profileField--wide">
-                                <span>Avatar URL</span>
-                                <input
-                                    type="url"
-                                    name="avatarUrl"
-                                    value={form.avatarUrl}
-                                    onChange={handleChange}
-                                    maxLength={500}
-                                    placeholder="https://..."
-                                    disabled={loading || saving}
-                                />
-                            </label>
-
-                            <button
-                                type="submit"
-                                className="profileSave"
-                                disabled={loading || saving}
-                            >
-                                {saving ? "Saving..." : "Save changes"}
-                            </button>
-                        </form>
-                    </div>
-
-                    <div className="card">
-                        <h3 className="card__title">Period settings</h3>
-                        <p className="card__text">Manage your period profile, cycle details, and predictions.</p>
-                        <div className="accountActions">
-                            <button
-                                type="button"
-                                className="periodOpenButton"
-                                onClick={() => setPeriodOpen(true)}
-                            >
-                                Open period settings
-                            </button>
-                        </div>
-                    </div>
-                </section>
+                        {success && <div className="profileMessage profileMessage--success">{success}</div>}
+                        {familyError && <div className="profileMessage profileMessage--error">{familyError}</div>}
+                        {familySuccess && <div className="profileMessage profileMessage--success">{familySuccess}</div>}
+                        {leaveError && <div className="profileMessage profileMessage--error">{leaveError}</div>}
+                    </section>
+                )}
 
                 <section className="profileSection">
-                    <h2 className="settingsSectionTitle">MyFamily</h2>
-
-                    {!loading && !hasFamily && (
-                        <div className="card ctaCard">
-                            <div>
-                                <h3 className="card__title">Join or create family</h3>
-                                <p className="card__text">
-                                    Start a new family space or join an existing one.
-                                </p>
+                    <h2 className="settingsSectionTitle">Your account</h2>
+                    <div className="profilePanel">
+                        <div className="profileRow">
+                            <div className="profileRow__main">
+                                <span className="profileRow__label">Name</span>
+                                <span className="profileRow__value">{loading ? "Loading..." : displayName}</span>
                             </div>
-                            <div className="familyJoinCreateActions">
-                                <button
-                                    type="button"
-                                    className="ctaButton"
-                                    onClick={() => setEnterOpen(true)}
-                                >
-                                    Enter family
-                                </button>
-                                <button
-                                    type="button"
-                                    className="ctaButton"
-                                    onClick={() => setCreateOpen(true)}
-                                >
-                                    Create family
-                                </button>
-                            </div>
+                            <span className="profileRow__chevron" aria-hidden="true">›</span>
                         </div>
-                    )}
 
-                    {!loading && hasFamily && (
-                        <div className="card profileCard">
-                            <div className="profileCard__header">
-                                <div>
-                                    <h3 className="card__title">Family settings</h3>
-                                    <p className="card__text">
-                                        Update your family name and manage members.
-                                    </p>
-                                </div>
+                        <div className="profileRow">
+                            <div className="profileRow__main">
+                                <span className="profileRow__label">Email</span>
+                                <span className="profileRow__value">{loading ? "Loading..." : displayEmail}</span>
                             </div>
+                            <span className="profileRow__chevron" aria-hidden="true">›</span>
+                        </div>
 
-                            {familyError && (
-                                <div className="profileMessage profileMessage--error">
-                                    {familyError}
-                                </div>
-                            )}
-                            {familySuccess && (
-                                <div className="profileMessage profileMessage--success">
-                                    {familySuccess}
-                                </div>
-                            )}
+                        <div className="profileRow">
+                            <div className="profileRow__main">
+                                <span className="profileRow__label">Password</span>
+                                <span className="profileRow__value">••••••••</span>
+                            </div>
+                            <span className="profileRow__chevron" aria-hidden="true">›</span>
+                        </div>
 
-                            <form className="profileForm" onSubmit={handleFamilySubmit}>
-                                <label className="profileField profileField--wide">
-                                    <span>Family name</span>
+                        <button
+                            type="button"
+                            className="profileRow profileRow--action"
+                            onClick={() => setPersonalEditOpen((current) => !current)}
+                        >
+                            <span className="profileRow__label profileRow__label--accent">
+                                {personalEditOpen ? "Close personal info" : "Edit personal info"}
+                            </span>
+                            <span className="profileRow__chevron" aria-hidden="true">›</span>
+                        </button>
+
+                        {personalEditOpen && (
+                            <form className="profileForm" onSubmit={handleSubmit}>
+                                <label className="profileField">
+                                    <span>Name</span>
                                     <input
                                         type="text"
-                                        value={familyName}
-                                        onChange={(e) => setFamilyName(e.target.value)}
+                                        name="name"
+                                        value={form.name}
+                                        onChange={handleChange}
                                         maxLength={200}
-                                        placeholder="Your family name"
-                                        disabled={familySaving}
+                                        placeholder="Your full name"
+                                        disabled={loading || saving}
                                     />
                                 </label>
 
-                                <button
-                                    type="submit"
-                                    className="familySave"
-                                    disabled={familySaving}
-                                >
-                                    {familySaving ? "Saving..." : "Save changes"}
+                                <label className="profileField">
+                                    <span>Birthday</span>
+                                    <input
+                                        type="date"
+                                        name="birthday"
+                                        value={form.birthday}
+                                        onChange={handleChange}
+                                        disabled={loading || saving}
+                                    />
+                                </label>
+
+                                <label className="profileField">
+                                    <span>Gender</span>
+                                    <select
+                                        name="gender"
+                                        value={form.gender}
+                                        onChange={handleChange}
+                                        disabled={loading || saving}
+                                    >
+                                        <option value="">Select gender</option>
+                                        <option value="MALE">Male</option>
+                                        <option value="FEMALE">Female</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </label>
+
+                                <label className="profileField profileField--wide">
+                                    <span>Avatar URL</span>
+                                    <input
+                                        type="url"
+                                        name="avatarUrl"
+                                        value={form.avatarUrl}
+                                        onChange={handleChange}
+                                        maxLength={500}
+                                        placeholder="https://..."
+                                        disabled={loading || saving}
+                                    />
+                                </label>
+
+                                <button type="submit" className="profileSave" disabled={loading || saving}>
+                                    {saving ? "Saving..." : "Save changes"}
                                 </button>
                             </form>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                </section>
 
-                    {leaveError && (
-                        <div className="profileMessage profileMessage--error">
-                            {leaveError}
-                        </div>
-                    )}
+                <section className="profileSection">
+                    <h2 className="settingsSectionTitle">Family</h2>
 
-                    {hasFamily && (
-                        <div className="familyActionsLarge">
+                    {hasFamily ? (
+                        <div className="profilePanel">
+                            <div className="profileRow">
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">{familyName || "Your family"}</span>
+                                    <span className="profileRow__label">Shared household</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
+                            </div>
+
                             <button
                                 type="button"
-                                className="familyActionButton familyActionButton--invite"
+                                className="profileRow profileRow--action"
+                                onClick={() => setFamilyEditOpen((current) => !current)}
+                            >
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">Family details</span>
+                                    <span className="profileRow__label">Edit name and settings</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
+                            </button>
+
+                            {familyEditOpen && (
+                                <form className="profileForm" onSubmit={handleFamilySubmit}>
+                                    <label className="profileField profileField--wide">
+                                        <span>Family name</span>
+                                        <input
+                                            type="text"
+                                            value={familyName}
+                                            onChange={(e) => setFamilyName(e.target.value)}
+                                            maxLength={200}
+                                            placeholder="Your family name"
+                                            disabled={familySaving}
+                                        />
+                                    </label>
+
+                                    <button type="submit" className="familySave" disabled={familySaving}>
+                                        {familySaving ? "Saving..." : "Save changes"}
+                                    </button>
+                                </form>
+                            )}
+
+                            <button
+                                type="button"
+                                className="profileRow profileRow--action"
                                 onClick={handleInviteMembers}
                                 disabled={inviteLoading}
                             >
-                                Invite members
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">Invite to family</span>
+                                    <span className="profileRow__label">Send an invitation link</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
                             </button>
+
                             <button
                                 type="button"
-                                className="familyActionButton familyActionButton--danger"
+                                className="profileRow profileRow--action"
+                                onClick={() => setPeriodOpen(true)}
+                            >
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">Period settings</span>
+                                    <span className="profileRow__label">Cycle profile and predictions</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profileRow profileRow--action profileRow--danger"
                                 onClick={handleLeaveFamily}
                                 disabled={leaving}
                             >
-                                {leaving ? "Leaving..." : "Leave family"}
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">{leaving ? "Leaving..." : "Leave family"}</span>
+                                    <span className="profileRow__label">You will leave this family</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="profilePanel">
+                            <button
+                                type="button"
+                                className="profileRow profileRow--action"
+                                onClick={() => setCreateOpen(true)}
+                            >
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">Create family</span>
+                                    <span className="profileRow__label">Start a new household</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profileRow profileRow--action"
+                                onClick={() => setEnterOpen(true)}
+                            >
+                                <div className="profileRow__main">
+                                    <span className="profileRow__value">Enter family</span>
+                                    <span className="profileRow__label">Use an invitation code</span>
+                                </div>
+                                <span className="profileRow__chevron" aria-hidden="true">›</span>
                             </button>
                         </div>
                     )}
                 </section>
 
-                <section className="profileBottomActions">
-                    <div className="card profileCard">
-                        <h2 className="card__title">Session</h2>
-                        <p className="card__text">Use log off to securely sign out from this device.</p>
-                        <button
-                            type="button"
-                            className="accountLogoutButton"
-                            onClick={handleLogout}
-                        >
-                            Log Off
+                <section className="profileSection profileBottomActions">
+                    <h2 className="settingsSectionTitle">Account</h2>
+                    <div className="profilePanel">
+                        <button type="button" className="profileRow profileRow--action profileRow--danger" onClick={handleLogout}>
+                            <div className="profileRow__main">
+                                <span className="profileRow__value">Log off</span>
+                                <span className="profileRow__label">Sign out from your account</span>
+                            </div>
+                            <span className="profileRow__chevron" aria-hidden="true">›</span>
                         </button>
                     </div>
                 </section>
