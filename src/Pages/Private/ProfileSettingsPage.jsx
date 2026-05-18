@@ -215,46 +215,18 @@ function ProfileSettingsPage() {
         <>
             <div className="page">
                 <header className="page__header">
-                    <h1 className="page__title">Profile & Family</h1>
+                    <h1 className="page__title">Settings</h1>
                     <p className="page__subtitle">
-                        Manage your personal details and family settings in one place.
+                        Manage your account and your family in one place.
                     </p>
                 </header>
 
-                {!loading && !hasFamily && (
-                    <section className="profileSection">
-                        <div className="card ctaCard">
-                            <div>
-                                <h2 className="card__title">Join or create family</h2>
-                                <p className="card__text">
-                                    Start a new family space or join an existing one.
-                                </p>
-                            </div>
-                            <div style={{ display: "flex", gap: "12px" }}>
-                                <button
-                                    type="button"
-                                    className="ctaButton"
-                                    onClick={() => setEnterOpen(true)}
-                                >
-                                    Enter family
-                                </button>
-                                <button
-                                    type="button"
-                                    className="ctaButton"
-                                    onClick={() => setCreateOpen(true)}
-                                >
-                                    Create family
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-                )}
-
                 <section className="profileSection">
+                    <h2 className="settingsSectionTitle">MyProfile</h2>
                     <div className="card profileCard">
                         <div className="profileCard__header">
                             <div>
-                                <h2 className="card__title">Personal Info</h2>
+                                <h3 className="card__title">Personal info</h3>
                                 <p className="card__text">
                                     Update your name, birthday, gender, and avatar.
                                 </p>
@@ -333,14 +305,57 @@ function ProfileSettingsPage() {
                             </button>
                         </form>
                     </div>
+
+                    <div className="card">
+                        <h3 className="card__title">Period settings</h3>
+                        <p className="card__text">Manage your period profile, cycle details, and predictions.</p>
+                        <div className="accountActions">
+                            <button
+                                type="button"
+                                className="periodOpenButton"
+                                onClick={() => setPeriodOpen(true)}
+                            >
+                                Open period settings
+                            </button>
+                        </div>
+                    </div>
                 </section>
 
-                {!loading && hasFamily && (
-                    <section className="profileSection">
+                <section className="profileSection">
+                    <h2 className="settingsSectionTitle">MyFamily</h2>
+
+                    {!loading && !hasFamily && (
+                        <div className="card ctaCard">
+                            <div>
+                                <h3 className="card__title">Join or create family</h3>
+                                <p className="card__text">
+                                    Start a new family space or join an existing one.
+                                </p>
+                            </div>
+                            <div className="familyJoinCreateActions">
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setEnterOpen(true)}
+                                >
+                                    Enter family
+                                </button>
+                                <button
+                                    type="button"
+                                    className="ctaButton"
+                                    onClick={() => setCreateOpen(true)}
+                                >
+                                    Create family
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {!loading && hasFamily && (
                         <div className="card profileCard">
                             <div className="profileCard__header">
                                 <div>
-                                    <h2 className="card__title">Family Settings</h2>
+                                    <h3 className="card__title">Family settings</h3>
                                     <p className="card__text">
                                         Update your family name and manage members.
                                     </p>
@@ -380,13 +395,15 @@ function ProfileSettingsPage() {
                                 </button>
                             </form>
                         </div>
+                    )}
 
-                        {leaveError && (
-                            <div className="profileMessage profileMessage--error">
-                                {leaveError}
-                            </div>
-                        )}
+                    {leaveError && (
+                        <div className="profileMessage profileMessage--error">
+                            {leaveError}
+                        </div>
+                    )}
 
+                    {hasFamily && (
                         <div className="familyActionsLarge">
                             <button
                                 type="button"
@@ -405,38 +422,23 @@ function ProfileSettingsPage() {
                                 {leaving ? "Leaving..." : "Leave family"}
                             </button>
                         </div>
-                    </section>
-                )}
+                    )}
+                </section>
 
-                <section className="page__grid">
-                    <div className="card">
-                        <h2 className="card__title">Period settings</h2>
-                        <p className="card__text">Manage your period profile, cycle details, and predictions.</p>
-                        <div className="accountActions">
-                            <button
-                                type="button"
-                                className="periodOpenButton"
-                                onClick={() => setPeriodOpen(true)}
-                            >
-                                Open period settings
-                            </button>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <h2 className="card__title">Account settings</h2>
-                        <p className="card__text">
-                            Manage your session and sign out from this device.
-                        </p>
+                <section className="profileBottomActions">
+                    <div className="card profileCard">
+                        <h2 className="card__title">Session</h2>
+                        <p className="card__text">Use log off to securely sign out from this device.</p>
                         <button
                             type="button"
                             className="accountLogoutButton"
                             onClick={handleLogout}
                         >
-                            Log out
+                            Log Off
                         </button>
-                    </div >
-                </section >
-            </div >
+                    </div>
+                </section>
+            </div>
             <CreateFamilyModal
                 isOpen={createOpen}
                 onClose={() => setCreateOpen(false)}

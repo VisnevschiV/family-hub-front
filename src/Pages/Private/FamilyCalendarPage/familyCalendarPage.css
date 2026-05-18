@@ -26,6 +26,13 @@
     padding: 0;
 }
 
+.calendarView__monthNav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
 .calendarView__toolbarRight {
     display: flex;
     align-items: center;
@@ -47,6 +54,52 @@
     line-height: 1.1;
     letter-spacing: 0.01em;
     font-family: var(--font-display);
+    white-space: nowrap;
+}
+
+.calendarView__navButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(193, 169, 145, 0.82);
+    background: linear-gradient(180deg, #fffaf3 0%, #f3e4d4 100%);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 10px 18px rgba(70, 52, 38, 0.08);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.calendarView__navButton:hover {
+    background: linear-gradient(180deg, #fffdf9 0%, #efdcc8 100%);
+    box-shadow: 0 12px 20px rgba(70, 52, 38, 0.12);
+    transform: translateY(-1px);
+}
+
+.calendarView__navButton:focus-visible {
+    outline: 2px solid rgba(212, 131, 92, 0.45);
+    outline-offset: 2px;
+}
+
+.calendarView__navIcon {
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    display: block;
+}
+
+.calendarView__navIcon--left {
+    transform: rotate(225deg);
+    margin-left: 2px;
+}
+
+.calendarView__navIcon--right {
+    transform: rotate(45deg);
+    margin-right: 2px;
 }
 
 .calendarView__button {
@@ -66,6 +119,11 @@
     padding: 5px 9px;
     font-size: 12px;
     border-radius: 8px;
+}
+
+.calendarView--compact .calendarView__navButton {
+    width: 34px;
+    height: 34px;
 }
 
 .calendarView__button:hover {

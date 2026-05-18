@@ -3,6 +3,10 @@
         gap: 12px;
     }
 
+    .settingsSectionTitle {
+        font-size: 20px;
+    }
+
     .profileCard {
         gap: 14px;
     }
@@ -44,6 +48,10 @@
     .periodOpenButton {
         width: 100%;
         min-height: 44px;
+    }
+
+    .familyJoinCreateActions {
+        flex-direction: column;
     }
 }
 
