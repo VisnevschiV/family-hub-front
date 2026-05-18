@@ -276,7 +276,7 @@
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    cursor: default;
+    cursor: grab;
     position: relative;
     background-color: transparent;
     transition:
@@ -287,6 +287,7 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    touch-action: none;
 }
 
 .todoList__item::after {
@@ -316,10 +317,22 @@
 }
 
 .todoList__item--touchHold {
-    transform: scale(1.02);
-    background-color: #fff6ec;
-    box-shadow: 0 6px 14px rgba(122, 78, 44, 0.12);
+    transform: scale(1.04);
+    background: linear-gradient(180deg, #fff8f1 0%, #fff2e4 100%);
+    box-shadow: 0 10px 24px rgba(122, 78, 44, 0.16);
     z-index: 2;
+}
+
+.todoList__item--dragging {
+    opacity: 0.9;
+    background-color: #fff3e6;
+    cursor: grabbing;
+}
+
+.todoList__item--touchHold .todoList__dragHandle,
+.todoList__item--dragging .todoList__dragHandle {
+    transform: scale(1.06);
+    box-shadow: 0 8px 18px rgba(122, 78, 44, 0.12);
 }
 
 .todoList__item--deletePreview {
@@ -414,6 +427,10 @@
     flex-shrink: 0;
 }
 
+.todoList__taskActions--reorder {
+    gap: 0.35rem;
+}
+
 .todoList__taskActionBtn {
     border: 1px solid var(--border);
     background: #fffaf3;
@@ -431,6 +448,12 @@
     line-height: 0;
 }
 
+.todoList__taskActionBtn--move {
+    background: linear-gradient(180deg, #fffdf9 0%, #f4e6d7 100%);
+    border-color: rgba(193, 169, 145, 0.88);
+    color: #7a4e2c;
+}
+
 .todoList__taskActionBtn svg {
     width: 0.95rem;
     height: 0.95rem;
@@ -438,6 +461,16 @@
 
 .todoList__taskActionBtn:hover {
     background: #f6e9da;
+}
+
+.todoList__taskActionBtn--move:hover {
+    background: linear-gradient(180deg, #fffefb 0%, #edd8c5 100%);
+}
+
+.todoList__taskActionBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .todoList__taskActionBtn--danger {
