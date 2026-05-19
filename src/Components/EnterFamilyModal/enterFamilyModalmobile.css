@@ -1,5 +1,5 @@
-/* ===================================================
-   EnterFamilyModal — Mobile: bottom sheet pattern
+﻿/* ===================================================
+   EnterFamilyModal â€” Mobile: bottom sheet pattern
    =================================================== */
 
 @media (max-width: 640px) {
@@ -36,3 +36,4 @@
         font-size: 15px;
     }
 }
+

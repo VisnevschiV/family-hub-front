@@ -1,23 +1,31 @@
-/* ===================================================
-   LoginForm — Mobile adjustments (max-width: 480px)
+﻿/* ===================================================
+   LoginForm â€” Mobile adjustments (max-width: 480px)
    =================================================== */
 
 @media (max-width: 480px) {
     .loginForm__container {
-        padding: 16px;
+        padding: 14px;
         align-items: center;
         justify-content: center;
         min-height: 100dvh;
     }
 
     .loginForm__panel {
-        padding: 28px 20px;
-        border-radius: 16px;
+        padding: 30px 18px;
+        border-radius: 18px;
     }
 
     .loginForm__title {
-        font-size: 22px;
-        margin-bottom: 22px;
+        font-size: 26px;
+        margin-bottom: 20px;
+    }
+
+    .loginForm__labelText {
+        font-size: 12px;
+    }
+
+    .loginForm__toggleMode {
+        margin-top: 16px;
     }
 
     .loginForm__datePopover {

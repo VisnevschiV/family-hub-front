@@ -1,4 +1,4 @@
-.budget-page {
+﻿.budget-page {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
@@ -17,19 +17,19 @@
     min-height: 400px;
     padding: 20px;
     border-radius: 8px;
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background-color: var(--color-budget-loading-bg);
+    border: 1px solid var(--color-budget-modal-input-border);
 }
 
 .loading {
     font-size: 16px;
-    color: #666;
+    color: var(--color-budget-loading-text);
 }
 
 .error-message {
-    background-color: #fff3cd;
-    border-color: #ffc107;
-    color: #856404;
+    background-color: var(--color-budget-error-bg);
+    border-color: var(--color-budget-error-border);
+    color: var(--color-budget-error-text);
     flex-direction: column;
     gap: 12px;
     text-align: center;
@@ -44,12 +44,12 @@
 .no-budget h2 {
     margin: 0;
     font-size: 24px;
-    color: #333;
+    color: var(--color-budget-no-budget-title);
 }
 
 .no-budget p {
     margin: 0;
-    color: #666;
+    color: var(--color-budget-no-budget-text);
     font-size: 16px;
 }
 
@@ -60,9 +60,9 @@
 
 .btn-retry {
     padding: 8px 16px;
-    background-color: #fff;
-    border: 1px solid #ffc107;
-    color: #856404;
+    background-color: var(--color-budget-btn-retry-bg);
+    border: 1px solid var(--color-budget-btn-retry-border);
+    color: var(--color-budget-btn-retry-text);
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
@@ -70,7 +70,7 @@
 }
 
 .btn-retry:hover {
-    background-color: #fff8e1;
+    background-color: var(--color-budget-btn-retry-hover);
 }
 
 .budget-header {
@@ -82,7 +82,7 @@
     background: transparent;
     border: none;
     border-radius: 0;
-    color: #3a2a1e;
+    color: var(--color-budget-header-title);
     gap: 8px;
 }
 
@@ -112,9 +112,9 @@
     height: 40px;
     border: none;
     border-radius: 999px;
-    background: #f6dcc5;
-    border: 1px solid #edc9aa;
-    color: #7a4e2c;
+    background: var(--color-budget-back-button-bg);
+    border: 1px solid var(--color-budget-back-button-border);
+    color: var(--color-budget-back-button-text);
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
@@ -125,7 +125,7 @@
 }
 
 .budget-back-button:hover {
-    background: #f3cfb1;
+    background: var(--color-budget-back-button-hover);
 }
 
 .budget-title-touchArea {
@@ -139,7 +139,7 @@
 }
 
 .budget-title-touchArea:hover {
-    background: rgba(237, 201, 170, 0.28);
+    background: rgba(139, 111, 123, 0.15);
 }
 
 .budget-header h1 {
@@ -155,14 +155,14 @@
     margin: 0;
     font-size: 14px;
     opacity: 0.95;
-    color: #7a4e2c;
+    color: var(--color-budget-summary-label);
 }
 
 .budget-breadcrumb {
     margin: 10px 0 0;
     font-size: 13px;
     opacity: 0.95;
-    color: #8a5a35;
+    color: var(--color-budget-header-summary);
 }
 
 .budget-header-actions {
@@ -187,35 +187,35 @@
 }
 
 .budget-header .btn-icon {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(139, 111, 123, 0.15);
 }
 
 .budget-header .btn-icon:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(139, 111, 123, 0.25);
 }
 
 .summary-label {
     font-size: 14px;
-    color: #8a5a35;
+    color: var(--color-budget-summary-label);
     font-weight: 500;
 }
 
 .summary-value {
     font-size: 32px;
     font-weight: 700;
-    color: #3a2a1e;
+    color: var(--color-budget-summary-value);
 }
 
 .summary-breakdown {
     font-size: 12px;
-    color: #aaa;
+    color: var(--color-budget-summary-breakdown);
     font-weight: 500;
     letter-spacing: 0.01em;
 }
 
 .summary-count {
     font-size: 12px;
-    color: #999;
+    color: var(--color-budget-summary-breakdown);
 }
 
 .error-banner {
@@ -223,17 +223,17 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+    background-color: var(--color-budget-error-banner-bg);
+    border: 1px solid var(--color-budget-error-banner-border);
     border-radius: 4px;
-    color: #721c24;
+    color: var(--color-budget-error-banner-text);
     font-size: 14px;
 }
 
 .error-banner .close-button {
     width: 24px;
     height: 24px;
-    color: #721c24;
+    color: var(--color-budget-error-banner-text);
 }
 
 .transactions-section {
@@ -253,7 +253,7 @@
     margin: 0;
     font-size: 10px;
     font-weight: 600;
-    color: #333;
+    color: var(--color-budget-section-header-text);
 }
 
 .section-actions {
@@ -265,7 +265,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: #fafafa;
+    background: var(--color-budget-transaction-list-bg);
     border: none;
     border-radius: 8px;
     overflow: hidden;
@@ -277,7 +277,7 @@
     gap: 12px;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-budget-transaction-item-border);
     transition:
         transform 0.3s ease-out,
         opacity 0.3s ease-out,
@@ -297,12 +297,12 @@
 
 .transaction-item--dragging {
     opacity: 0.9;
-    background-color: #fff3e6;
+    background-color: var(--color-budget-transaction-dragging-bg);
     cursor: grabbing;
 }
 
 .transaction-item--deletePreview {
-    background-color: #fbe4db;
+    background-color: var(--color-budget-transaction-delete-preview-bg);
     transform: translateX(-12px);
 }
 
@@ -313,12 +313,12 @@
     left: auto;
     right: 0;
     width: 8px;
-    background: linear-gradient(to bottom, #d46b57, #9f3b2d);
+    background: var(--color-budget-transaction-delete-gradient);
     border-radius: 0 8px 8px 0;
 }
 
 .transaction-item--deleting {
-    background-color: #fbe4db;
+    background-color: var(--color-budget-transaction-delete-preview-bg);
     transform: translateX(-140%);
     opacity: 0;
 }
@@ -336,7 +336,7 @@
 }
 
 .transaction-item--clickable:focus-visible {
-    outline: 2px solid #0052a3;
+    outline: 2px solid var(--brand);
     outline-offset: -2px;
 }
 
@@ -350,15 +350,15 @@
     justify-content: center;
     padding: 4px 8px;
     border-radius: 999px;
-    background: #f6dcc5;
-    color: #7a4e2c;
+    background: var(--color-budget-sub-budget-tag-bg);
+    color: var(--color-budget-sub-budget-tag-text);
     font-size: 12px;
     font-weight: 600;
 }
 
 .subBudget-chevron {
     font-size: 22px;
-    color: #7a4e2c;
+    color: var(--color-budget-sub-budget-chevron-text);
     line-height: 1;
 }
 
@@ -371,32 +371,32 @@
 .transaction-name {
     font-size: 15px;
     font-weight: 500;
-    color: #333;
+    color: var(--color-budget-transaction-name-text);
 }
 
 .transaction-currency {
     font-size: 12px;
-    color: #999;
+    color: var(--color-budget-transaction-currency-text);
 }
 
 .transaction-currency--value {
     font-size: 16px;
     font-weight: 600;
-    color: #7a4e2c;
+    color: var(--color-budget-transaction-value-text);
 }
 
 .transaction-currency--value.is-income {
-    color: #2f7d38;
+    color: var(--color-budget-transaction-value-income);
 }
 
 .transaction-currency--value.is-expense {
-    color: #b43f3f;
+    color: var(--color-budget-transaction-value-expense);
 }
 
 .transaction-value {
     font-size: 16px;
     font-weight: 600;
-    color: #7a4e2c;
+    color: var(--color-budget-transaction-value-text);
     text-align: right;
     min-width: 100px;
 }
@@ -410,7 +410,7 @@
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #999;
+    color: var(--color-budget-empty-state-text);
     font-size: 14px;
 }
 

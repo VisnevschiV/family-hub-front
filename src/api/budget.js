@@ -193,7 +193,7 @@ export async function deleteBudget(budgetId) {
     }
 }
 
-export async function addTransaction(budgetId, description, amount, currencyISOCode) {
+export async function addTransaction(budgetId, description, amount, currencyIsoCode) {
     const path = `${BUDGET_API_BASE}/${budgetId}/transaction`;
     const { response, requestUrl, method } = await performBudgetRequest("addTransaction", path, {
         method: "POST",
@@ -204,7 +204,7 @@ export async function addTransaction(budgetId, description, amount, currencyISOC
             budgetId,
             description,
             amount,
-            currencyISOCode,
+            currencyIsoCode,
         }),
     });
 
@@ -231,7 +231,7 @@ export async function addTransaction(budgetId, description, amount, currencyISOC
     return await response.json();
 }
 
-export async function modifyTransaction(budgetId, transactionId, description, amount, currencyISOCode) {
+export async function modifyTransaction(budgetId, transactionId, description, amount, currencyIsoCode) {
     const path = `${BUDGET_API_BASE}/${budgetId}/transaction/${transactionId}`;
     const { response, requestUrl, method } = await performBudgetRequest("modifyTransaction", path, {
         method: "PATCH",
@@ -241,7 +241,7 @@ export async function modifyTransaction(budgetId, transactionId, description, am
         body: JSON.stringify({
             description,
             amount,
-            currencyISOCode,
+            currencyIsoCode,
         }),
     });
 

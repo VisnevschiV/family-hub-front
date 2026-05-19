@@ -1,10 +1,10 @@
-.modal-overlay {
+﻿.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--color-budget-modal-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,9 +13,9 @@
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-budget-modal-bg);
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -31,21 +31,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-budget-modal-input-border);
 }
 
 .modal-header h2 {
     margin: 0;
     font-size: 20px;
     font-weight: 600;
-    color: #333;
+    color: var(--color-budget-modal-header-text);
 }
 
 .close-button {
-    background: none;
+    background: var(--color-budget-modal-close-bg);
     border: none;
     font-size: 24px;
-    color: #999;
+    color: var(--color-budget-modal-close-text);
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -58,8 +58,8 @@
 }
 
 .close-button:hover {
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: var(--color-budget-modal-close-hover-bg);
+    color: var(--color-budget-modal-header-text);
 }
 
 .close-button:disabled {
@@ -90,7 +90,7 @@ form {
 .form-group label {
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--color-budget-modal-label-text);
     margin-bottom: 8px;
     display: block;
 }
@@ -98,7 +98,7 @@ form {
 .form-group input,
 .form-group select {
     padding: 10px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-budget-modal-input-border);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
@@ -108,13 +108,13 @@ form {
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #0066cc;
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    border-color: var(--color-budget-modal-input-focus-border);
+    box-shadow: 0 0 0 3px var(--color-budget-modal-input-focus-glow);
 }
 
 .form-group input:disabled,
 .form-group select:disabled {
-    background-color: #f5f5f5;
+    background-color: var(--color-budget-modal-input-bg);
     cursor: not-allowed;
     opacity: 0.7;
 }
@@ -125,7 +125,7 @@ form {
     gap: 12px;
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--color-budget-modal-input-border);
 }
 
 .btn-primary,
@@ -141,28 +141,28 @@ form {
 }
 
 .btn-primary {
-    background-color: #0066cc;
-    color: white;
+    background-color: var(--brand);
+    color: var(--text);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background-color: #0052a3;
+    background-color: var(--brand-strong);
     transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
-    background-color: #cccccc;
+    background-color: var(--text-muted-strong);
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
+    background-color: var(--color-budget-modal-btn-secondary-bg);
+    color: var(--text);
+    border: 1px solid var(--color-budget-modal-btn-secondary-border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: #eeeeee;
+    background-color: var(--color-budget-modal-btn-secondary-hover);
 }
 
 .btn-secondary:disabled {

@@ -1,6 +1,6 @@
-.addButton {
+﻿.addButton {
     padding: 8px 16px;
-    background-color: #d4835c;
+    background-color: var(--brand);
     color: white;
     border: none;
     border-radius: 4px;

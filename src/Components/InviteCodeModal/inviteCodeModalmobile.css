@@ -1,5 +1,5 @@
-/* ===================================================
-   InviteCodeModal — Mobile: bottom sheet pattern
+﻿/* ===================================================
+   InviteCodeModal â€” Mobile: bottom sheet pattern
    =================================================== */
 
 @media (max-width: 640px) {
@@ -35,3 +35,4 @@
         justify-content: center;
     }
 }
+

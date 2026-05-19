@@ -270,7 +270,7 @@ function FamilyCalendarPage() {
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
-    const [monthViewOpen, setMonthViewOpen] = useState(false);
+    const [monthViewOpen, setMonthViewOpen] = useState(true);
     const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
     const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
@@ -951,7 +951,25 @@ function FamilyCalendarPage() {
 
             <section className={`calendarView${monthViewOpen ? "" : " calendarView--compact"}`}>
                 <div className="calendarView__toolbar">
-                    <h2 className="calendarView__monthLabel">{monthLabel}</h2>
+                    <div className="calendarView__monthNav">
+                        <button
+                            type="button"
+                            className="calendarView__navButton"
+                            onClick={showPreviousMonth}
+                            aria-label="Previous month"
+                        >
+                            <span className="calendarView__navIcon calendarView__navIcon--left" aria-hidden="true" />
+                        </button>
+                        <h2 className="calendarView__monthLabel">{monthLabel}</h2>
+                        <button
+                            type="button"
+                            className="calendarView__navButton"
+                            onClick={showNextMonth}
+                            aria-label="Next month"
+                        >
+                            <span className="calendarView__navIcon calendarView__navIcon--right" aria-hidden="true" />
+                        </button>
+                    </div>
                     <div className="calendarView__toolbarRight">
                         <button type="button" className="calendarView__button" onClick={showCurrentMonth}>
                             Today
