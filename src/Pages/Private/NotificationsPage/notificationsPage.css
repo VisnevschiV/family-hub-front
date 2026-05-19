@@ -1,12 +1,12 @@
-.notificationsPage {
+﻿.notificationsPage {
     gap: 14px;
 }
 
 .notificationsPage__error {
     margin: 0;
-    background: #fde2d7;
-    color: #b8543e;
-    border: 1px solid #e9b7a4;
+    background: var(--color-notifications-error-bg);
+    color: var(--color-notifications-error-text);
+    border: 1px solid var(--color-notifications-error-border);
     border-radius: 12px;
     padding: 10px 12px;
     font-size: 14px;
@@ -29,8 +29,8 @@
 .notificationsPage__item {
     width: 100%;
     text-align: left;
-    border: 1px solid #e6b39a;
-    background: #fff3ea;
+    border: 1px solid var(--color-notifications-item-border);
+    background: var(--color-notifications-item-bg);
     border-radius: 14px;
     padding: 14px;
     display: grid;
@@ -70,9 +70,9 @@
 .notificationsPage__pill {
     font-size: 12px;
     font-weight: 700;
-    color: #8f1f1f;
-    background: #ffd9d9;
-    border: 1px solid #efb9b9;
+    color: var(--color-notifications-pill-text);
+    background: var(--color-notifications-pill-bg);
+    border: 1px solid var(--color-notifications-pill-border);
     border-radius: 999px;
     padding: 3px 9px;
 }
@@ -105,7 +105,7 @@
 }
 
 .notificationsPage__loadMore:hover {
-    background: #f3e6d8;
+    background: var(--color-notifications-item-bg);
 }
 
 .notificationsPage__meta {

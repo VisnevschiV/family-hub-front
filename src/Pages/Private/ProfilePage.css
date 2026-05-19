@@ -1,4 +1,4 @@
-.profileSection {
+﻿.profileSection {
     display: grid;
     gap: 16px;
 }
@@ -68,7 +68,7 @@
     padding: 10px 12px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    background: #fffaf3;
+    background: var(--surface);
     color: var(--text);
     font-size: 14px;
 }
@@ -88,7 +88,7 @@
     grid-column: 1 / -1;
     justify-self: start;
     background: linear-gradient(135deg, var(--brand), var(--brand-strong));
-    color: #fffaf3;
+    color: var(--text);
     padding: 10px 18px;
     border-radius: 999px;
     border: none;
@@ -106,7 +106,7 @@
     grid-column: 1 / -1;
     justify-self: start;
     background: linear-gradient(135deg, var(--brand), var(--brand-strong));
-    color: #fffaf3;
+    color: var(--text);
     padding: 10px 18px;
     border-radius: 999px;
     border: none;

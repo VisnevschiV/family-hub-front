@@ -1,5 +1,5 @@
-/* ===================================================
-   AppShell — Desktop layout (min-width: 901px)
+﻿/* ===================================================
+   AppShell â€” Desktop layout (min-width: 901px)
    Restores the fixed left sidebar and content margin
    =================================================== */
 
@@ -25,7 +25,7 @@
         gap: 24px;
         border-bottom: none;
         border-right: 1px solid var(--border);
-        background: linear-gradient(180deg, var(--surface) 0%, #fff5e8 100%);
+        background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
     }
 
     /* ---- Brand ---- */
@@ -65,7 +65,7 @@
         scrollbar-width: auto;
     }
 
-    /* Bottom nav is mobile-only — hide inside desktop sidebar */
+    /* Bottom nav is mobile-only â€” hide inside desktop sidebar */
     .appShell__bottomNav {
         display: none;
     }

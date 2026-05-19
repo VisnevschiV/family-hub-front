@@ -1,4 +1,4 @@
-.segmentedControl {
+﻿.segmentedControl {
     display: inline-flex;
     align-items: center;
     background: var(--bg-soft);
@@ -32,12 +32,12 @@
 }
 
 .segmentedControl__option:focus-visible {
-    outline: 2px solid rgba(212, 131, 92, 0.45);
+    outline: 2px solid var(--brand-focus);
     outline-offset: 1px;
 }
 
 .segmentedControl__option--selected {
-    color: var(--text);
+    color: var(--brand);
 }
 
 .segmentedControl__thumb {
@@ -46,8 +46,8 @@
     left: 3px;
     height: calc(100% - 6px);
     border-radius: 999px;
-    background: var(--surface-strong);
-    box-shadow: 0 2px 8px rgba(70, 52, 38, 0.1);
+    background: var(--color-segmented-thumb);
+    box-shadow: 0 2px 8px rgba(var(--color-shadow-rgb), 0.2);
     pointer-events: none;
     transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
         width 0.22s cubic-bezier(0.22, 1, 0.36, 1);

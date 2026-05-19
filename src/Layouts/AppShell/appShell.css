@@ -1,5 +1,5 @@
-/* ===================================================
-   AppShell — Base styles (mobile-first, no breakpoints)
+﻿/* ===================================================
+   AppShell â€” Base styles (mobile-first, no breakpoints)
    Desktop layout is in styledesktop.css
    =================================================== */
 
@@ -8,7 +8,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: radial-gradient(circle at top, #fdf7ef 0%, var(--bg) 55%);
+    background: var(--bg);
     color: var(--text);
 }
 
@@ -21,7 +21,7 @@
     width: 100%;
     height: 56px;
     z-index: 100;
-    background: linear-gradient(to right, var(--surface) 0%, #fff5e8 100%);
+    background: linear-gradient(to right, var(--surface) 0%, var(--surface-strong) 100%);
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: row;
@@ -46,19 +46,19 @@
 }
 
 .appShell__brand:hover {
-    background: #f3e6d8;
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .appShell__logo {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #f6dcc5;
+    background: rgba(255, 255, 255, 0.12);
     display: grid;
     place-items: center;
     font-size: 12px;
     font-weight: 700;
-    color: #8a4f2d;
+    color: var(--text);
     flex-shrink: 0;
 }
 
@@ -129,8 +129,8 @@
 }
 
 .appShell__navLink:hover {
-    background: #f3e6d8;
-    color: #6a3f24;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
 }
 
 .appShell__navLink--withIndicator {
@@ -145,13 +145,13 @@
     height: 8px;
     border-radius: 50%;
     background: #d43535;
-    box-shadow: 0 0 0 2px rgba(255, 250, 243, 0.9);
+    box-shadow: 0 0 0 2px rgba(13, 13, 18, 0.9);
     flex-shrink: 0;
 }
 
 .appShell__navLink.active {
-    background: #f6dcc5;
-    color: #6a3f24;
+    background: rgba(201, 75, 115, 0.18);
+    color: #ffffff;
 }
 
 /* ---- User link (avatar only on mobile) ---- */
@@ -171,7 +171,7 @@
 }
 
 .appShell__userLink:hover {
-    background: #f3e6d8;
+    background: rgba(255, 255, 255, 0.08);
     border-color: var(--border);
 }
 
@@ -179,8 +179,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #f6dcc5;
-    color: #6a3f24;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
     display: grid;
     place-items: center;
     font-size: 11px;
@@ -227,23 +227,23 @@
     height: 36px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    background: linear-gradient(170deg, #fffaf3 0%, #f6dcc5 100%);
-    color: #6a3f24;
+    background: var(--color-notifications-button-bg);
+    color: var(--text-muted);
     display: grid;
     place-items: center;
     text-decoration: none;
-    box-shadow: 0 6px 16px rgba(70, 52, 38, 0.14);
+    box-shadow: 0 8px 20px rgba(var(--color-shadow-rgb), 0.35);
     z-index: 130;
     transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .appShell__notificationsShortcut:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(70, 52, 38, 0.2);
+    box-shadow: 0 12px 24px rgba(var(--color-shadow-rgb), 0.48);
 }
 
 .appShell__notificationsShortcut--active {
-    background: linear-gradient(170deg, #ffe7d3 0%, #f3c9a8 100%);
+    background: var(--color-notifications-button-bg);
 }
 
 .appShell__notificationsShortcutIconWrap {
@@ -266,8 +266,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #d43535;
-    box-shadow: 0 0 0 2px rgba(255, 250, 243, 0.95);
+    background: var(--color-notifications-button-dot);
+    box-shadow: 0 0 0 2px rgba(13, 13, 18, 0.95);
 }
 
 /* ---- Top bar ---- */
@@ -308,12 +308,12 @@
 .appShell__toast {
     width: 100%;
     text-align: left;
-    border: 1px solid #e2b49c;
+    border: 1px solid var(--border);
     border-radius: 14px;
     padding: 12px 14px;
-    background: linear-gradient(160deg, #fff7ef 0%, #ffe9da 100%);
+    background: linear-gradient(160deg, var(--surface-strong) 0%, var(--surface) 100%);
     color: var(--text);
-    box-shadow: 0 12px 30px rgba(70, 52, 38, 0.2);
+    box-shadow: 0 12px 30px rgba(var(--color-shadow-rgb), 0.45);
     cursor: pointer;
     display: grid;
     gap: 2px;
@@ -402,30 +402,30 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
-    background: linear-gradient(135deg, rgba(212, 131, 92, 0.08), rgba(127, 157, 122, 0.08));
+    background: linear-gradient(135deg, var(--color-pink-glow), var(--color-purple-glow));
 }
 
 .ctaButton {
     background: linear-gradient(135deg, var(--brand), var(--brand-strong));
-    color: #fffaf3;
+    color: var(--text);
     padding: 11px 20px;
     border-radius: 999px;
     border: none;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 24px rgba(180, 101, 65, 0.25);
+    box-shadow: 0 10px 24px rgba(var(--color-shadow-rgb), 0.35), 0 0 18px var(--color-card-glow);
     white-space: nowrap;
     min-height: 44px;
     font-size: 15px;
 }
 
 .ctaButton:focus {
-    outline: 2px solid rgba(212, 131, 92, 0.35);
+    outline: 2px solid rgba(201, 75, 115, 0.3);
     outline-offset: 2px;
 }
 
 /* ===================================================
-   Bottom nav — hidden on desktop, shown on mobile via appShellmobile.css
+   Bottom nav â€” hidden on desktop, shown on mobile via appShellmobile.css
    =================================================== */
 
 .appShell__bottomNav {
@@ -497,8 +497,8 @@
     height: 24px;
     border-radius: 50%;
     overflow: hidden;
-    background: #f6dcc5;
-    color: #6a3f24;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
     display: grid;
     place-items: center;
     flex-shrink: 0;

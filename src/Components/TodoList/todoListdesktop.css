@@ -1,5 +1,5 @@
-/* ===================================================
-   TodoList — Desktop: multi-column flex sizing
+﻿/* ===================================================
+   TodoList â€” Desktop: multi-column flex sizing
    =================================================== */
 
 @media (min-width: 901px) {
@@ -10,3 +10,4 @@
         min-width: 260px;
     }
 }
+

@@ -1,5 +1,5 @@
-/* ===================================================
-   TodoList — Base styles (shared across all screen sizes)
+﻿/* ===================================================
+   TodoList â€” Base styles (shared across all screen sizes)
    On mobile defaults to full-width; desktop sizing in styledesktop.css
    =================================================== */
 
@@ -85,7 +85,7 @@
 .todoList__metaLabel {
     font-size: 12px;
     font-weight: 700;
-    color: #7a4e2c;
+    color: var(--brand);
     line-height: 1;
 }
 
@@ -98,7 +98,7 @@
     width: 4.5rem;
     height: 0.375rem;
     border-radius: 999px;
-    background: #f2e5d6;
+    background: var(--divider);
     overflow: hidden;
 }
 
@@ -110,7 +110,7 @@
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #d4835c 0%, #b46541 100%);
+    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-strong) 100%);
 }
 
 .todoList__headerActions {
@@ -126,7 +126,7 @@
     justify-content: center;
     width: auto;
     height: auto;
-    color: #7a4e2c;
+    color: var(--text-muted-strong);
     font-size: 18px;
     font-weight: 800;
     line-height: 1;
@@ -145,15 +145,15 @@
     padding: 0;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: #ffffff;
-    color: #7a4e2c;
+    background: var(--surface);
+    color: var(--text-muted-strong);
     font-weight: 900;
     line-height: 1;
     cursor: pointer;
 }
 
 .todoList__iconBtn:hover {
-    background: #f3e6d8;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .todoList__menuWrap {
@@ -166,8 +166,8 @@
     padding: 0;
     border-radius: 100%;
     border: 1px solid var(--border);
-    background: #ffffff;
-    color: #7a4e2c;
+    background: var(--surface);
+    color: var(--text-muted-strong);
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
@@ -177,7 +177,7 @@
 }
 
 .todoList__menuBtn:hover {
-    background: #f3e6d8;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .todoList__menu {
@@ -209,11 +209,11 @@
 }
 
 .todoList__menuItem:hover {
-    background: #f7f0e6;
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .todoList__menuItem--danger {
-    color: #9f3b2d;
+    color: var(--text-muted-strong);
 }
 
 /* ---- Task list ---- */
@@ -250,7 +250,7 @@
 
 .todoList__milestonesAddBtn {
     border: 1px solid var(--border);
-    background: #fffaf3;
+    background: var(--surface);
     color: var(--brand-strong);
     border-radius: 999px;
     min-height: 1.9rem;
@@ -261,7 +261,7 @@
 }
 
 .todoList__milestonesAddBtn:hover {
-    background: #f6e9da;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .todoList__items {
@@ -298,7 +298,7 @@
     bottom: 0;
     width: 2px;
     border-radius: 999px;
-    background: #eadfce;
+    background: var(--border);
     pointer-events: none;
 }
 
@@ -312,31 +312,31 @@
 
 .todoList__item--dragging {
     opacity: 0.9;
-    background-color: #fff3e6;
+    background-color: rgba(255, 255, 255, 0.06);
     cursor: grabbing;
 }
 
 .todoList__item--touchHold {
     transform: scale(1.04);
-    background: linear-gradient(180deg, #fff8f1 0%, #fff2e4 100%);
-    box-shadow: 0 10px 24px rgba(122, 78, 44, 0.16);
+    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
+    box-shadow: 0 10px 24px rgba(var(--color-shadow-rgb), 0.2);
     z-index: 2;
 }
 
 .todoList__item--dragging {
     opacity: 0.9;
-    background-color: #fff3e6;
+    background-color: rgba(255, 255, 255, 0.06);
     cursor: grabbing;
 }
 
 .todoList__item--touchHold .todoList__dragHandle,
 .todoList__item--dragging .todoList__dragHandle {
     transform: scale(1.06);
-    box-shadow: 0 8px 18px rgba(122, 78, 44, 0.12);
+    box-shadow: 0 8px 18px rgba(var(--color-shadow-rgb), 0.18);
 }
 
 .todoList__item--deletePreview {
-    background-color: #fbe4db;
+    background-color: rgba(201, 75, 115, 0.12);
     transform: translateX(6px);
 }
 
@@ -346,13 +346,13 @@
     inset: 0;
     left: 0;
     width: 8px;
-    background: linear-gradient(to bottom, #d46b57, #9f3b2d);
+    background: var(--brand);
     border-radius: 8px 0 0 8px;
 }
 
 
 .todoList__item--deleting {
-    background-color: #fbe4db;
+    background-color: rgba(201, 75, 115, 0.12);
     transform: translateX(140%);
     opacity: 0;
 }
@@ -373,9 +373,9 @@
     margin: 0;
     appearance: none;
     -webkit-appearance: none;
-    border: 2px solid #cda98e;
+    border: 2px solid var(--border);
     border-radius: 50%;
-    background: #fffaf3;
+    background: var(--surface);
     display: inline-grid;
     place-content: center;
     cursor: pointer;
@@ -389,8 +389,8 @@
     content: "";
     width: 4px;
     height: 8px;
-    border-right: 2px solid #ffffff;
-    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid var(--bg);
+    border-bottom: 2px solid var(--bg);
     transform: rotate(45deg) scale(0);
     transform-origin: center;
     transition: transform 0.16s ease;
@@ -433,7 +433,7 @@
 
 .todoList__taskActionBtn {
     border: 1px solid var(--border);
-    background: #fffaf3;
+    background: var(--surface);
     color: var(--text);
     border-radius: 999px;
     width: 1.9rem;
@@ -449,9 +449,9 @@
 }
 
 .todoList__taskActionBtn--move {
-    background: linear-gradient(180deg, #fffdf9 0%, #f4e6d7 100%);
-    border-color: rgba(193, 169, 145, 0.88);
-    color: #7a4e2c;
+    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
+    border-color: var(--border);
+    color: var(--text-muted-strong);
 }
 
 .todoList__taskActionBtn svg {
@@ -460,11 +460,11 @@
 }
 
 .todoList__taskActionBtn:hover {
-    background: #f6e9da;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .todoList__taskActionBtn--move:hover {
-    background: linear-gradient(180deg, #fffefb 0%, #edd8c5 100%);
+    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--bg-soft) 100%);
 }
 
 .todoList__taskActionBtn:disabled {
@@ -474,24 +474,24 @@
 }
 
 .todoList__taskActionBtn--danger {
-    color: #9f3b2d;
+    color: var(--text-muted-strong);
 }
 
 .todoList__text--done {
-    color: #a39182;
+    color: var(--text-muted);
 }
 
 .todoList__inlineEditInput {
     width: 100%;
     border: 1px solid var(--brand);
     border-radius: 8px;
-    background: #fffaf3;
+    background: var(--surface);
     color: var(--text);
     font-size: 13px;
     padding: 6px 8px;
     min-height: 34px;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(212, 131, 92, 0.14);
+    box-shadow: 0 0 0 2px rgba(201, 75, 115, 0.12);
     font-family: inherit;
 }
 
@@ -499,7 +499,7 @@
 .todoList__modalBackdrop {
     position: fixed;
     inset: 0;
-    background: rgba(58, 42, 30, 0.25);
+    background: rgba(var(--color-shadow-rgb), 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -542,7 +542,7 @@
 
 .todoList__modalInput:focus {
     border-color: var(--brand);
-    box-shadow: 0 0 0 1px rgba(212, 131, 92, 0.3);
+    box-shadow: 0 0 0 1px rgba(201, 75, 115, 0.24);
 }
 
 .todoList__modalActions {
@@ -561,19 +561,19 @@
 }
 
 .todoList__modalBtn--ghost {
-    background: #ffffff;
+    background: var(--surface);
     border-color: var(--border);
     color: var(--text-muted);
 }
 
 .todoList__modalBtn--ghost:hover {
-    background: #f7f0e6;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .todoList__modalBtn--primary {
     background: var(--brand);
     border-color: var(--brand);
-    color: #ffffff;
+    color: var(--text);
     font-weight: 600;
 }
 

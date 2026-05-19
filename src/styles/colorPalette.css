@@ -1,0 +1,251 @@
+﻿:root {
+    /* Core dark surfaces */
+    --color-bg: #181823;
+    --color-bg-soft: #1d1d2b;
+    --color-surface: #14141c;
+    --color-surface-strong: #1a1a24;
+
+    /* Text */
+    --color-text: #ffffff;
+    --color-text-muted: #b7b7c9;
+    --color-text-muted-strong: #7c7c92;
+
+    /* Accent hierarchy */
+    --color-brand: #c94b73;
+    --color-brand-strong: #df7a98;
+    --color-accent: #9b6dff;
+    --color-accent-blue: #6ea8ff;
+    --color-accent-green: #63d98a;
+
+    /* UI structure */
+    --color-border: #262635;
+    --color-divider: #1f1f2b;
+    --color-shadow-rgb: 0, 0, 0;
+    --color-card-glow: rgba(201, 75, 115, 0.07);
+    --color-soft-white: rgba(255, 255, 255, 0.08);
+    --color-soft-white-strong: rgba(255, 255, 255, 0.14);
+    --color-pink-glow: rgba(201, 75, 115, 0.06);
+    --color-brand-focus: rgba(201, 75, 115, 0.75);
+    --color-segmented-thumb: #4f2734;
+    --color-purple-glow: rgba(155, 109, 255, 0.16);
+    --color-blue-glow: rgba(110, 168, 255, 0.12);
+
+    /* Notifications */
+    --color-notifications-button-bg: #252129;
+    --color-notifications-button-dot: #8f7c8b;
+    --color-notifications-item-border: #3f3538;
+    --color-notifications-item-bg: #241f26;
+    --color-notifications-pill-text: #c9a7b8;
+    --color-notifications-pill-bg: #3a2835;
+    --color-notifications-pill-border: #7a5e70;
+    --color-notifications-error-bg: rgba(201, 75, 115, 0.16);
+    --color-notifications-error-text: #ffd0df;
+    --color-notifications-error-border: rgba(223, 122, 152, 0.3);
+
+    /* Welcome & Public Pages */
+    --color-welcome-logo-bg: #3a2835;
+    --color-welcome-logo-text: #d8a89e;
+    --color-welcome-ghost-bg: rgba(255, 250, 243, 0.1);
+    --color-welcome-shared-note-bg: #2b2330;
+    --color-welcome-shared-note-text: #d8a89e;
+    --color-welcome-preview-meta-bg: rgba(255, 255, 255, 0.08);
+    --color-welcome-mini-button-bg: #1d1a21;
+    --color-welcome-input-bg: rgba(255, 255, 255, 0.06);
+    --color-welcome-crumb-bg: rgba(255, 255, 255, 0.08);
+    --color-welcome-crumb-text: #d0c0b8;
+    --color-welcome-sub-budget-bg: #241f26;
+    --color-welcome-period-tracker-bg: rgba(255, 255, 255, 0.06);
+    --color-welcome-day-button-bg: rgba(255, 255, 255, 0.08);
+    --color-welcome-day-button-active-bg: #3a2835;
+    --color-welcome-day-button-active-border: #8f6d80;
+    --color-welcome-mock-item-bg: rgba(255, 255, 255, 0.1);
+    --color-welcome-budget-bar-bg: #3a2835;
+    --color-welcome-period-status-text: #d8a89e;
+    --color-welcome-line-delete-bg: #1d1a21;
+    --color-welcome-line-delete-text: #d97a75;
+    --color-welcome-blob-one: linear-gradient(circle at top, #5a3d4d, rgba(29, 29, 43, 0));
+    --color-welcome-blob-two: linear-gradient(circle at top, #3a4c42, rgba(13, 13, 18, 0));
+    --color-welcome-tour-shell-bg: #241f26;
+    --color-welcome-feature-card-bg: #241f26;
+    --color-welcome-feature-card-border: #4a3d47;
+
+    /* Login & Auth Pages */
+    --color-auth-bg-soft: #1a1820;
+    --color-auth-bg-warm: #2a1f28;
+    --color-auth-bg-accent: #4a3a45;
+    --color-auth-panel-border: rgba(139, 111, 123, 0.15);
+    --color-auth-input-bg: rgba(255, 255, 255, 0.04);
+    --color-auth-focus: rgba(201, 75, 115, 0.12);
+    --color-auth-panel-bg: linear-gradient(160deg, rgba(29, 29, 43, 0.95) 0%, rgba(42, 31, 40, 0.96) 100%);
+    --color-auth-input-placeholder: #8f7c8b;
+    --color-auth-input-border: rgba(139, 111, 123, 0.2);
+    --color-auth-input-disabled-bg: #2f2630;
+    --color-auth-error-bg: rgba(201, 75, 115, 0.16);
+    --color-auth-error-text: #ffd0df;
+    --color-auth-error-border: rgba(201, 75, 115, 0.2);
+    --color-auth-success-bg: rgba(99, 217, 138, 0.16);
+    --color-auth-success-text: #b8f5ca;
+    --color-auth-success-border: rgba(99, 217, 138, 0.2);
+    --color-auth-secondary-btn-bg: rgba(255, 255, 255, 0.08);
+    --color-auth-secondary-btn-border: rgba(201, 75, 115, 0.15);
+    --color-auth-secondary-btn-hover-bg: rgba(255, 255, 255, 0.12);
+    --color-auth-input-date-bg: #1d1a21;
+
+    /* Budget */
+    --color-budget-loading-bg: var(--surface);
+    --color-budget-loading-text: var(--text-muted);
+    --color-budget-error-bg: rgba(201, 75, 115, 0.16);
+    --color-budget-error-text: #ffd0df;
+    --color-budget-error-border: rgba(201, 75, 115, 0.2);
+    --color-budget-error-banner-bg: rgba(201, 75, 115, 0.12);
+    --color-budget-error-banner-text: #f0bfd2;
+    --color-budget-error-banner-border: rgba(201, 75, 115, 0.25);
+    --color-budget-no-budget-title: var(--text);
+    --color-budget-no-budget-text: var(--text-muted);
+    --color-budget-header-title: var(--text);
+    --color-budget-header-summary: var(--text-muted);
+    --color-budget-back-button-bg: #3a2835;
+    --color-budget-back-button-border: #8f6d80;
+    --color-budget-back-button-text: #d8a89e;
+    --color-budget-back-button-hover: #46313d;
+    --color-budget-summary-label: #d0b8c4;
+    --color-budget-summary-value: #f0f0f0;
+    --color-budget-summary-breakdown: #7c7c92;
+    --color-budget-section-header-text: var(--text-muted);
+    --color-budget-transaction-list-bg: #1d1a21;
+    --color-budget-transaction-item-border: #3a3238;
+    --color-budget-transaction-item-hover: #2a2530;
+    --color-budget-transaction-dragging-bg: #3a2835;
+    --color-budget-modal-overlay: rgba(16, 11, 19, 0.62);
+    --color-budget-modal-bg: var(--surface-strong);
+    --color-budget-modal-border: var(--border);
+    --color-budget-modal-header-text: var(--text);
+    --color-budget-modal-close-bg: transparent;
+    --color-budget-modal-close-text: var(--text-muted);
+    --color-budget-modal-close-hover-bg: var(--surface);
+    --color-budget-modal-label-text: var(--text-muted);
+    --color-budget-modal-input-bg: var(--surface);
+    --color-budget-modal-input-border: var(--border);
+    --color-budget-modal-input-focus-border: var(--brand);
+    --color-budget-modal-input-focus-glow: rgba(201, 75, 115, 0.12);
+    --color-budget-modal-btn-secondary-bg: var(--surface);
+    --color-budget-modal-btn-secondary-border: var(--border);
+    --color-budget-modal-btn-secondary-hover: #3a3238;
+    --color-budget-btn-retry-bg: var(--surface);
+    --color-budget-btn-retry-border: #8f6d80;
+    --color-budget-btn-retry-text: #d8a89e;
+    --color-budget-btn-retry-hover: #2a2530;
+
+    /* Budget Transactions */
+    --color-budget-transaction-delete-preview-bg: #4a2d3a;
+    --color-budget-transaction-delete-gradient: linear-gradient(to bottom, #c94b73, #9f3d62);
+    --color-budget-transaction-name-text: var(--text);
+    --color-budget-transaction-currency-text: var(--text-muted);
+    --color-budget-transaction-value-text: #d8a89e;
+    --color-budget-transaction-value-income: #63d98a;
+    --color-budget-transaction-value-expense: #ff6b6b;
+    --color-budget-sub-budget-tag-bg: #3a2835;
+    --color-budget-sub-budget-tag-text: #d8a89e;
+    --color-budget-sub-budget-chevron-text: #d8a89e;
+    --color-budget-empty-state-text: var(--text-muted);
+
+    /* Gradients */
+    --gradient-hero-main: linear-gradient(180deg,
+            rgba(155, 109, 255, 0.14) 0%,
+            rgba(201, 75, 115, 0.06) 36%,
+            rgba(13, 13, 18, 1) 100%);
+    --gradient-button-primary: linear-gradient(135deg, #c94b73 0%, #df7a98 100%);
+    --gradient-surface-soft: linear-gradient(155deg, rgba(26, 26, 36, 0.95) 0%, rgba(20, 20, 28, 0.92) 100%);
+
+    /* Profile theme */
+    --color-profile-bg-1: #181823;
+    --color-profile-bg-2: #1d1d2b;
+    --color-profile-bg-3: #181823;
+    --color-profile-glow-pink: rgba(201, 75, 115, 0.06);
+    --color-profile-glow-blue: rgba(110, 168, 255, 0.14);
+    --color-profile-surface-1: rgba(26, 26, 36, 0.94);
+    --color-profile-surface-2: rgba(20, 20, 28, 0.92);
+    --color-profile-text: #ffffff;
+    --color-profile-muted: rgba(183, 183, 201, 0.86);
+    --color-profile-soft: rgba(183, 183, 201, 0.7);
+    --color-profile-hot: #c94b73;
+    --color-profile-danger: #d96583;
+    --color-profile-danger-soft: #df7a98;
+
+    /* Feedback */
+    --color-success-bg: rgba(99, 217, 138, 0.18);
+    --color-success-border: rgba(99, 217, 138, 0.38);
+    --color-success-text: #b8f5ca;
+    --color-error-bg: rgba(201, 75, 115, 0.16);
+    --color-error-border: rgba(223, 122, 152, 0.3);
+    --color-error-text: #ffd0df;
+
+    /* Calendar */
+    --color-calendar-focus-ring: rgba(201, 75, 115, 0.34);
+    --color-calendar-error-bg: rgba(201, 75, 115, 0.16);
+    --color-calendar-error-text: #ffd0df;
+    --color-calendar-error-border: rgba(223, 122, 152, 0.3);
+    --color-calendar-button-hover-bg: #2b2330;
+    --color-calendar-button-hover-shadow: rgba(0, 0, 0, 0.28);
+    --color-calendar-button-active-bg: #332736;
+    --color-calendar-button-active-shadow: rgba(0, 0, 0, 0.24);
+    --color-calendar-weekend-text: #8f8597;
+    --color-calendar-five-day-selected-bg: #332736;
+    --color-calendar-family-period-text: #df7a98;
+    --color-calendar-family-period-muted-text: rgba(223, 122, 152, 0.72);
+    --color-calendar-event-dot-idle: #7c7c92;
+    --color-calendar-cell-hover-bg: #2a222d;
+    --color-calendar-cell-hover-shadow: rgba(0, 0, 0, 0.26);
+    --color-calendar-today-bg: #372531;
+    --color-calendar-today-shadow: rgba(201, 75, 115, 0.2);
+    --color-calendar-selected-bg: #24362d;
+    --color-calendar-selected-shadow: rgba(99, 217, 138, 0.2);
+    --gradient-calendar-today-selected: linear-gradient(180deg, #372531 0%, #24362d 100%);
+    --color-calendar-period-border: #8f4b67;
+    --color-calendar-period-inset: rgba(201, 75, 115, 0.34);
+    --color-calendar-period-event-bg: #2f2129;
+    --color-calendar-period-event-border: #9a5773;
+    --color-calendar-family-cell-bg: #372430;
+    --color-calendar-family-cell-inset: rgba(223, 122, 152, 0.24);
+    --color-calendar-family-cell-text: #f3bfd3;
+    --color-calendar-family-event-bg: #3b2633;
+    --color-calendar-family-event-border: #a76581;
+    --color-calendar-pill-text: #f3bfd3;
+    --color-calendar-pill-bg: #3b2531;
+    --color-calendar-pill-border: #a66480;
+    --color-calendar-pill-muted-text: #b9a3af;
+    --color-calendar-pill-muted-bg: #2b2328;
+    --color-calendar-pill-muted-border: #5f4f59;
+    --color-calendar-period-summary-border: #995875;
+    --gradient-calendar-period-summary: linear-gradient(160deg, #3a2532 0%, #2f202b 100%);
+    --color-calendar-period-summary-title: #efb9ce;
+    --color-calendar-period-summary-text: #cdaebc;
+    --color-calendar-hour-line: rgba(183, 183, 201, 0.2);
+    --color-calendar-now-line: #df7a98;
+    --color-calendar-now-label-text: #f7c8db;
+    --color-calendar-now-label-bg: #4b2a38;
+    --color-calendar-now-label-border: #ad6280;
+    --color-calendar-timeline-event-border: #8c6173;
+    --color-calendar-timeline-event-bg: #30252c;
+    --color-calendar-timeline-event-time: #ddb7c9;
+    --color-calendar-timeline-event-button-border: #986d80;
+    --color-calendar-timeline-event-button-bg: #3a2b35;
+    --color-calendar-timeline-event-button-text: #f0c9da;
+    --color-calendar-details-button-border: #966a7d;
+    --color-calendar-details-button-bg: #342830;
+    --color-calendar-details-button-text: #efc6d8;
+    --color-calendar-details-button-hover-bg: #3b2d36;
+    --color-calendar-details-button-hover-shadow: rgba(0, 0, 0, 0.28);
+    --color-calendar-modal-overlay: rgba(16, 11, 19, 0.62);
+    --color-calendar-modal-close-hover-bg: #2b2330;
+    --color-calendar-input-focus-glow: rgba(201, 75, 115, 0.22);
+    --color-calendar-modal-primary-shadow: rgba(201, 75, 115, 0.28);
+    --color-calendar-notice-bg: #3b2531;
+    --color-calendar-notice-text: #f0bfd2;
+    --color-calendar-notice-border: #a86682;
+    --color-calendar-period-button-bg: #4a2c39;
+    --color-calendar-period-button-text: #f3c5d7;
+    --color-calendar-period-button-border: #b2728d;
+    --gradient-calendar-event-bar: linear-gradient(90deg, #c94b73 0%, #df7a98 100%);
+    --gradient-calendar-event-bar-period: linear-gradient(90deg, #df7a98 0%, #f0b4cb 100%);
+}

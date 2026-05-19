@@ -1,4 +1,4 @@
-@media (max-width: 900px) {
+﻿@media (max-width: 900px) {
     .calendarView {
         gap: 12px;
     }
@@ -221,11 +221,11 @@
         width: 100%;
         height: 4px;
         border-radius: 999px;
-        background: linear-gradient(90deg, #f2bd91 0%, #e99f6b 100%);
+        background: var(--gradient-calendar-event-bar);
     }
 
     .calendarView__cell--period .calendarView__eventItem::before {
-        background: linear-gradient(90deg, #f8b8d2 0%, #e992b4 100%);
+        background: var(--gradient-calendar-event-bar-period);
     }
 
     .calendarView__eventTime,

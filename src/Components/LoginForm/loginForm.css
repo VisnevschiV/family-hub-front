@@ -1,22 +1,22 @@
-/* ===================================================
-   LoginForm — Base styles (shared across all screen sizes)
+﻿/* ===================================================
+   LoginForm â€” Base styles (shared across all screen sizes)
    =================================================== */
 
 .loginForm__container {
-    --login-bg-soft: #f7f6f3;
-    --login-bg-warm: #f2e2cd;
-    --login-bg-accent: #d8c4a8;
-    --login-panel-border: rgba(122, 96, 74, 0.18);
-    --login-input-bg: rgba(255, 255, 255, 0.86);
-    --login-focus: rgba(212, 131, 92, 0.22);
+    --login-bg-soft: var(--color-auth-bg-soft);
+    --login-bg-warm: var(--color-auth-bg-warm);
+    --login-bg-accent: var(--color-auth-bg-accent);
+    --login-panel-border: var(--color-auth-panel-border);
+    --login-input-bg: var(--color-auth-input-bg);
+    --login-focus: var(--color-auth-focus);
 
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     background:
-        radial-gradient(circle at 85% 10%, rgba(216, 196, 168, 0.5) 0%, rgba(216, 196, 168, 0) 48%),
-        radial-gradient(circle at 20% 90%, rgba(212, 131, 92, 0.16) 0%, rgba(212, 131, 92, 0) 50%),
+        radial-gradient(circle at 85% 10%, rgba(74, 58, 69, 0.3) 0%, rgba(74, 58, 69, 0) 48%),
+        radial-gradient(circle at 20% 90%, rgba(201, 75, 115, 0.12) 0%, rgba(201, 75, 115, 0) 50%),
         linear-gradient(160deg, var(--login-bg-soft) 0%, var(--login-bg-warm) 100%);
     padding: 28px;
     position: relative;
@@ -37,7 +37,7 @@
     height: 420px;
     top: -210px;
     left: -140px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0) 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
 }
 
 .loginForm__container::after {
@@ -45,15 +45,15 @@
     height: 360px;
     right: -90px;
     bottom: -150px;
-    background: radial-gradient(circle, rgba(212, 131, 92, 0.2) 0%, rgba(212, 131, 92, 0) 72%);
+    background: radial-gradient(circle, rgba(201, 75, 115, 0.1) 0%, rgba(201, 75, 115, 0) 72%);
 }
 
 .loginForm__panel {
     position: relative;
     z-index: 1;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 249, 240, 0.94) 100%);
+    background: var(--color-auth-panel-bg);
     border-radius: 22px;
-    box-shadow: 0 20px 45px rgba(91, 63, 42, 0.16);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     padding: 40px 34px;
@@ -95,7 +95,7 @@
     width: 100%;
     padding: 12px 14px;
     font-size: 16px;
-    border: 1px solid rgba(122, 96, 74, 0.24);
+    border: 1px solid var(--color-auth-input-border);
     border-radius: 11px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     box-sizing: border-box;
@@ -115,11 +115,11 @@
 .loginForm__input:disabled {
     opacity: 0.72;
     cursor: not-allowed;
-    background-color: #eee0cd;
+    background-color: var(--color-auth-input-disabled-bg);
 }
 
 .loginForm__input::placeholder {
-    color: #8d7b68;
+    color: var(--color-auth-input-placeholder);
 }
 
 .loginForm__dateWrapper {
@@ -147,16 +147,16 @@
     top: calc(100% + 8px);
     left: 0;
     z-index: 10;
-    background: rgba(255, 252, 246, 0.98);
-    border: 1px solid rgba(122, 96, 74, 0.2);
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
-    box-shadow: 0 16px 32px rgba(54, 39, 27, 0.2);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
 }
 
 .rdp {
     --rdp-accent-color: var(--brand);
-    --rdp-background-color: #f6dcc5;
+    --rdp-background-color: var(--surface);
     font-family: inherit;
 }
 
@@ -167,23 +167,23 @@
 }
 
 .loginForm__error {
-    background-color: #ffe9e0;
-    color: #b8543e;
+    background-color: var(--color-auth-error-bg);
+    color: var(--color-auth-error-text);
     padding: 11px 14px;
     border-radius: 10px;
     margin-bottom: 16px;
     font-size: 14px;
-    border: 1px solid rgba(184, 84, 62, 0.2);
+    border: 1px solid var(--color-auth-error-border);
 }
 
 .loginForm__success {
-    background-color: #e5f4e5;
-    color: #3a6b47;
+    background-color: var(--color-auth-success-bg);
+    color: var(--color-auth-success-text);
     padding: 11px 14px;
     border-radius: 10px;
     margin-bottom: 16px;
     font-size: 14px;
-    border: 1px solid rgba(58, 107, 71, 0.2);
+    border: 1px solid var(--color-auth-success-border);
 }
 
 .loginForm__submitBtn {
@@ -202,7 +202,7 @@
 
 .loginForm__submitBtn:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(180, 101, 65, 0.28);
+    box-shadow: 0 10px 22px rgba(201, 75, 115, 0.3);
 }
 
 .loginForm__submitBtn:active:not(:disabled) {
@@ -221,8 +221,8 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--brand-strong);
-    background-color: rgba(255, 255, 255, 0.65);
-    border: 1px solid rgba(157, 89, 59, 0.4);
+    background-color: var(--color-auth-secondary-btn-bg);
+    border: 1px solid var(--color-auth-secondary-btn-border);
     border-radius: 11px;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -230,7 +230,7 @@
 }
 
 .loginForm__secondaryBtn:hover:not(:disabled) {
-    background-color: #fff4e6;
+    background-color: var(--color-auth-secondary-btn-hover-bg);
 }
 
 .loginForm__secondaryBtn:disabled {

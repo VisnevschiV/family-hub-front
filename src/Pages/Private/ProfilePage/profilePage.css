@@ -1,11 +1,11 @@
-.profilePage {
-    --profile-bg: #050912;
+﻿.profilePage {
+    --profile-bg: var(--color-profile-bg-1);
     --profile-surface: rgba(12, 18, 34, 0.86);
     --profile-border: rgba(255, 255, 255, 0.08);
-    --profile-soft: rgba(255, 255, 255, 0.55);
-    --profile-muted: rgba(234, 239, 255, 0.68);
-    --profile-hot: #ff5f9f;
-    --profile-danger: #ff5a77;
+    --profile-soft: var(--color-profile-soft);
+    --profile-muted: var(--color-profile-muted);
+    --profile-hot: var(--color-profile-hot);
+    --profile-danger: var(--color-profile-danger);
 
     position: relative;
     gap: 22px;
@@ -21,9 +21,9 @@
     inset: 0;
     z-index: -1;
     background:
-        radial-gradient(circle at 18% -12%, rgba(255, 95, 159, 0.27), transparent 47%),
-        radial-gradient(circle at 92% 14%, rgba(95, 126, 255, 0.2), transparent 44%),
-        linear-gradient(170deg, #060913 0%, #03060d 45%, #02040a 100%);
+        radial-gradient(circle at 18% -12%, var(--color-profile-glow-pink), transparent 47%),
+        radial-gradient(circle at 92% 14%, var(--color-profile-glow-blue), transparent 44%),
+        linear-gradient(170deg, var(--color-profile-bg-1) 0%, var(--color-profile-bg-2) 45%, var(--color-profile-bg-3) 100%);
 }
 
 .profileSection {
@@ -88,7 +88,7 @@
 .profilePanel {
     border-radius: 14px;
     border: 1px solid var(--profile-border);
-    background: linear-gradient(165deg, rgba(18, 25, 46, 0.9) 0%, rgba(10, 16, 32, 0.88) 100%);
+    background: linear-gradient(165deg, var(--color-profile-surface-1) 0%, var(--color-profile-surface-2) 100%);
     box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
     backdrop-filter: blur(6px);
     overflow: hidden;
@@ -126,7 +126,7 @@
 
 .profileRow--danger .profileRow__value,
 .profileRow--danger .profileRow__label {
-    color: #ff9bb0;
+    color: var(--color-profile-danger-soft);
 }
 
 .profileRow__main {
@@ -168,15 +168,15 @@
 }
 
 .profileMessage--error {
-    background: rgba(255, 90, 119, 0.18);
-    color: #ffb4c2;
-    border-color: rgba(255, 120, 145, 0.34);
+    background: var(--color-error-bg);
+    color: var(--color-error-text);
+    border-color: var(--color-error-border);
 }
 
 .profileMessage--success {
-    background: rgba(71, 204, 145, 0.17);
-    color: #b8f8da;
-    border-color: rgba(126, 239, 186, 0.36);
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border-color: var(--color-success-border);
 }
 
 .profileForm {
