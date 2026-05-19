@@ -668,7 +668,7 @@ export default function BudgetPage() {
             <div className="budget-page">
                 <div className="error-message">
                     {error}
-                    <button onClick={loadBudget} className="btn-retry">
+                    <button onClick={loadBudget} className="btn-retry medium">
                         Retry
                     </button>
                 </div>
@@ -684,7 +684,7 @@ export default function BudgetPage() {
                     <p>Get started by creating your first budget</p>
                     <button
                         onClick={openAddBudgetModal}
-                        className="btn-primary btn-large"
+                        className="btn-primary long"
                     >
                         Create Budget
                     </button>

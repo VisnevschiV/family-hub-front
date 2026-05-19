@@ -106,19 +106,13 @@
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 11px;
-    padding: 9px 13px;
     cursor: pointer;
     font-weight: 600;
-    min-height: 40px;
     transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
 .calendarView--compact .calendarView__button {
-    min-height: 32px;
-    padding: 5px 9px;
     font-size: 12px;
-    border-radius: 8px;
 }
 
 .calendarView--compact .calendarView__navButton {
@@ -246,6 +240,13 @@
     color: var(--color-calendar-family-period-text);
 }
 
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
+    color: var(--brand);
+}
+
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName--muted {
     color: var(--color-calendar-family-period-muted-text);
 }
@@ -361,24 +362,19 @@
 }
 
 .calendarView__cell--period {
-    border-color: var(--color-calendar-period-border);
+    border-color: inherit;
     background: transparent;
-    box-shadow: inset 0 0 0 1px var(--color-calendar-period-inset);
+    box-shadow: none;
 }
 
 .calendarView__cell--period.calendarView__cell--weekend {
     background: transparent;
 }
 
-.calendarView__cell--period .calendarView__eventItem {
-    background: var(--color-calendar-period-event-bg);
-    border-color: var(--color-calendar-period-event-border);
-}
-
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod {
-    background: var(--color-calendar-family-cell-bg);
-    box-shadow: inset 0 0 0 1px var(--color-calendar-family-cell-inset);
-    color: var(--color-calendar-family-cell-text);
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
 }
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber,
@@ -389,9 +385,9 @@
     color: var(--color-calendar-family-cell-text);
 }
 
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventItem {
-    background: var(--color-calendar-family-event-bg);
-    border-color: var(--color-calendar-family-event-border);
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--period .calendarView__dayNumber,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber {
+    color: var(--brand);
 }
 
 .calendarView__dayNumber {

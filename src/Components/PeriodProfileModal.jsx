@@ -249,7 +249,7 @@ function PeriodProfileModal({ isOpen, onClose }) {
 
                             <button
                                 type="button"
-                                className="periodSaveButton"
+                                className="periodSaveButton long"
                                 onClick={handleSave}
                                 disabled={saving || !canSubmit}
                             >
@@ -261,7 +261,7 @@ function PeriodProfileModal({ isOpen, onClose }) {
                             <div className="periodDangerZone">
                                 <button
                                     type="button"
-                                    className="periodDeleteButton"
+                                    className="periodDeleteButton long"
                                     onClick={handleDeleteProfile}
                                     disabled={deleteLoading}
                                 >

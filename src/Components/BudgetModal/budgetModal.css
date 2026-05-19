@@ -14,7 +14,6 @@
 
 .modal-content {
     background: var(--color-budget-modal-bg);
-    border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     max-height: 90vh;
     overflow-y: auto;
@@ -53,7 +52,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
     transition: all 0.2s ease;
 }
 
@@ -99,7 +97,6 @@ form {
 .form-group select {
     padding: 10px 12px;
     border: 1px solid var(--color-budget-modal-input-border);
-    border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.2s ease;
@@ -130,9 +127,6 @@ form {
 
 .btn-primary,
 .btn-secondary {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 4px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -143,6 +137,7 @@ form {
 .btn-primary {
     background-color: var(--brand);
     color: var(--text);
+    border-color: transparent;
 }
 
 .btn-primary:hover:not(:disabled) {

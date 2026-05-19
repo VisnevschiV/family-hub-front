@@ -1055,20 +1055,6 @@ function FamilyCalendarPage() {
                                                             +{cell.dayEvents.length - 2} more
                                                         </div>
                                                     ) : null}
-                                                    {(cell.periodMemberNames || []).length > 0 ? (
-                                                        <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
-                                                            {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
-                                                                <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
-                                                                    {memberName.split(" ")[0] || memberName}
-                                                                </span>
-                                                            ))}
-                                                            {(cell.periodMemberNames || []).length > 2 ? (
-                                                                <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
-                                                                    +{(cell.periodMemberNames || []).length - 2}
-                                                                </span>
-                                                            ) : null}
-                                                        </div>
-                                                    ) : null}
                                                 </div>
                                             ) : null}
                                         </>
@@ -1129,7 +1115,7 @@ function FamilyCalendarPage() {
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
                         <p className="calendarItinerary__periodNames">
-                            On period: {selectedDatePeriodMembers.join(", ")}
+                            A family period is tracked on this day.
                         </p>
                     </div>
                 ) : null}

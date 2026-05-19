@@ -1,0 +1,50 @@
+:root {
+    --ui-radius: 10px;
+    --ui-border-width: 1px;
+    --ui-button-height: 40px;
+    --ui-control-height: 40px;
+    --ui-short-width: 7rem;
+    --ui-medium-width: 10rem;
+    --ui-long-width: 14rem;
+    --ui-button-padding-x: 14px;
+}
+
+.short {
+    width: var(--ui-short-width);
+}
+
+.medium {
+    width: var(--ui-medium-width);
+}
+
+.long {
+    width: var(--ui-long-width);
+}
+
+:where(.addButton, .btn-primary, .btn-secondary, .btn-retry, .periodSaveButton, .periodDeleteButton, .calendarView__button) {
+    min-height: var(--ui-button-height);
+    padding: 0 var(--ui-button-padding-x);
+    border-radius: var(--ui-radius);
+    border-width: var(--ui-border-width);
+    border-style: solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+:where(.segmentedControl, .segmentedControl__thumb, .segmentedControl__option) {
+    border-radius: var(--ui-radius);
+}
+
+:where(.segmentedControl, .segmentedControl__thumb) {
+    border-width: var(--ui-border-width);
+}
+
+:where(.modal-content, .close-button, .form-group input, .form-group select, .loginForm__input, .profileField input, .profileField select) {
+    border-radius: var(--ui-radius);
+}
+
+:where(.form-group input, .form-group select, .loginForm__input, .profileField input, .profileField select) {
+    min-height: var(--ui-control-height);
+    border-width: var(--ui-border-width);
+}

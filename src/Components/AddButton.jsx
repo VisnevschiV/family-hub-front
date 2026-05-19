@@ -5,10 +5,11 @@ export default function AddButton({
     children = "+ Add",
     type = "button",
     className = "",
+    size = "short",
     disabled = false,
     ariaLabel,
 }) {
-    const classes = ["addButton", className].filter(Boolean).join(" ");
+    const classes = ["addButton", size, className].filter(Boolean).join(" ");
 
     return (
         <button

@@ -1,18 +1,12 @@
 ﻿.addButton {
-    padding: 0 12px;
     background: var(--surface);
     color: var(--text-muted-strong);
     border: 1px solid var(--border);
-    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    min-height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .addButton:hover {

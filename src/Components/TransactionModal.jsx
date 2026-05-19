@@ -121,10 +121,10 @@ export default function TransactionModal({
                     </div>
 
                     <div className="modal-buttons">
-                        <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary">
+                        <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium">
                             Cancel
                         </button>
-                        <button type="submit" disabled={isLoading} className="btn-primary">
+                        <button type="submit" disabled={isLoading} className="btn-primary medium">
                             {isLoading ? "Saving..." : mode === "add" ? "Add" : "Update"}
                         </button>
                     </div>
