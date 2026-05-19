@@ -493,10 +493,9 @@ export default function TodoListsPage() {
     return (
         <div className="page">
             <header className="page__header todoListsPage_header">
-                <h1 className="page__title">Our Priorities,</h1>
-                <h1 className="page__title">Our Future</h1>
+                <h1 className="page__title">Our Priorities</h1>
                 <p className="page__subtitle">
-                    Focus on what trully Matters.
+                    Focus on what truly matters.
                 </p>
             </header>
 
