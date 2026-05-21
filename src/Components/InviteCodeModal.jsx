@@ -52,7 +52,7 @@ function InviteCodeModal({ isOpen, onClose, code, expiresAt }) {
                 <div className="modalHeader">
                     <div>
                         <h2 className="modalTitle">Family invitation code</h2>
-                        <p className="modalSubtitle">
+                        <p className="modalSubtitle text-medium">
                             Share this code with family members to let them join.
                         </p>
                     </div>

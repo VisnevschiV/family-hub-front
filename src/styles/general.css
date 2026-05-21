@@ -7,6 +7,21 @@
     --ui-medium-width: 10rem;
     --ui-long-width: 14rem;
     --ui-button-padding-x: 14px;
+    --ui-text-small: 12px;
+    --ui-text-medium: 14px;
+    --ui-text-big: 16px;
+}
+
+.text-small {
+    font-size: var(--ui-text-small) !important;
+}
+
+.text-medium {
+    font-size: var(--ui-text-medium) !important;
+}
+
+.text-big {
+    font-size: var(--ui-text-big) !important;
 }
 
 .short {

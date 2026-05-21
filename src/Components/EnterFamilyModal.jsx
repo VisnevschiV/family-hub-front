@@ -27,7 +27,7 @@ function EnterFamilyModal({ isOpen, onClose, onJoin, joining, error }) {
                 <div className="modalHeader">
                     <div>
                         <h2 className="modalTitle">Enter family</h2>
-                        <p className="modalSubtitle">
+                        <p className="modalSubtitle text-medium">
                             Ask a family member for the invitation code.
                         </p>
                     </div>

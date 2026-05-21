@@ -224,7 +224,6 @@
     border-right: none;
 }
 
-.calendarView__grid--fiveDay .calendarView__cell--today,
 .calendarView__grid--fiveDay .calendarView__cell--selected,
 .calendarView__grid--fiveDay .calendarView__cell--period,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod {
@@ -244,7 +243,7 @@
 .calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayNumber,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
-    color: var(--brand);
+    color: #d93368;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName--muted {
@@ -346,18 +345,20 @@
     opacity: 0.5;
 }
 
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today {
-    background: var(--color-calendar-today-bg);
-    box-shadow: 0 8px 16px var(--color-calendar-today-shadow);
+.calendarView__cell--pastMonth {
+    opacity: 0.1;
+}
+
+.calendarView__cell--pastCurrentMonth {
+    opacity: 0.3;
+}
+
+.calendarView__cell--nextMonth {
+    opacity: 0.6;
 }
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--selected {
     background: var(--color-calendar-selected-bg);
-    box-shadow: 0 10px 20px var(--color-calendar-selected-shadow);
-}
-
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today.calendarView__cell--selected {
-    background: var(--gradient-calendar-today-selected);
     box-shadow: 0 10px 20px var(--color-calendar-selected-shadow);
 }
 
@@ -387,7 +388,7 @@
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--period .calendarView__dayNumber,
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber {
-    color: var(--brand);
+    color: #d93368;
 }
 
 .calendarView__dayNumber {

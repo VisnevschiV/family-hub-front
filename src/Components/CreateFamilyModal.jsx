@@ -27,7 +27,7 @@ function CreateFamilyModal({ isOpen, onClose, onCreate, saving, error }) {
                 <div className="modalHeader">
                     <div>
                         <h2 className="modalTitle">Create your family</h2>
-                        <p className="modalSubtitle">
+                        <p className="modalSubtitle text-medium">
                             Pick a name so everyone knows this shared space.
                         </p>
                     </div>

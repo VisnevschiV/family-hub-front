@@ -67,7 +67,7 @@ export default function ListNameModal({
                             {participantsDropdownOpen ? (
                                 <div className="listNameModalParticipants__menu">
                                     {familyMembers.length === 0 ? (
-                                        <p className="listNameModalParticipants__empty">
+                                        <p className="listNameModalParticipants__empty text-medium">
                                             No family members available
                                         </p>
                                     ) : (

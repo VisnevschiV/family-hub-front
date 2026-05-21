@@ -150,7 +150,7 @@ function PeriodProfileModal({ isOpen, onClose }) {
                 <div className="periodModalHeader">
                     <div>
                         <h2 className="periodModalTitle">Period settings</h2>
-                        <p className="periodModalSubtitle">
+                        <p className="periodModalSubtitle text-medium">
                             Manage your cycle details and predictions.
                         </p>
                     </div>
@@ -159,11 +159,11 @@ function PeriodProfileModal({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {error && <p className="periodModalError">{error}</p>}
-                {success && <p className="periodModalSuccess">{success}</p>}
+                {error && <p className="periodModalError text-medium">{error}</p>}
+                {success && <p className="periodModalSuccess text-medium">{success}</p>}
 
                 {loading ? (
-                    <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Loading...</p>
+                    <p className="text-medium" style={{ color: "var(--text-muted)" }}>Loading...</p>
                 ) : (
                     <>
                         {profile && (

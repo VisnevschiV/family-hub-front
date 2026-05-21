@@ -232,7 +232,7 @@ function ProfileSettingsPage() {
                 <header className="page__header profileHero">
                     <div>
                         <h1 className="page__title profileHero__title">Profile</h1>
-                        <p className="page__subtitle profileHero__subtitle">
+                        <p className="page__subtitle profileHero__subtitle text-medium">
                             Manage your account and family settings.
                         </p>
                     </div>
