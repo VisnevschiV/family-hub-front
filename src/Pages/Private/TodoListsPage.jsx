@@ -512,7 +512,6 @@ export default function TodoListsPage() {
     return (
         <div className="page">
             <header className="page__header todoListsPage_header">
-                <h1 className="page__title">Overall Data</h1>
                 <div className="todoListsPage_summaryBar" aria-label="Overall goals data">
                     <div className="todoListsPage_summaryMetric">
                         <span className="todoListsPage_summaryLabel">Goals completed</span>
