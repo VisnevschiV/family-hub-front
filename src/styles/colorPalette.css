@@ -233,9 +233,9 @@
     --color-calendar-cell-hover-shadow: rgba(0, 0, 0, 0.26);
     --color-calendar-today-bg: #372531;
     --color-calendar-today-shadow: var(--shared-brand-20);
-    --color-calendar-selected-bg: #24362d;
-    --color-calendar-selected-shadow: var(--shared-success-20);
-    --gradient-calendar-today-selected: linear-gradient(180deg, #372531 0%, #24362d 100%);
+    --color-calendar-selected-bg: var(--shared-calendar-active-bg);
+    --color-calendar-selected-shadow: var(--shared-brand-20);
+    --gradient-calendar-today-selected: linear-gradient(180deg, #372531 0%, var(--shared-calendar-active-bg) 100%);
     --color-calendar-period-border: #8f4b67;
     --color-calendar-period-inset: var(--shared-brand-34);
     --color-calendar-period-event-bg: #2f2129;

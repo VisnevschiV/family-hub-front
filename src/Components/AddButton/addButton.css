@@ -1,7 +1,7 @@
 ﻿.addButton {
-    background: var(--surface);
-    color: var(--text-muted-strong);
-    border: 1px solid var(--border);
+    background: var(--gradient-button-primary);
+    color: var(--text);
+    border: 1px solid var(--brand);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -10,8 +10,8 @@
 }
 
 .addButton:hover {
-    background: var(--surface-strong);
-    border-color: var(--border);
+    filter: brightness(1.04);
+    border-color: var(--brand-strong);
     color: var(--text);
 }
 
@@ -20,7 +20,7 @@
 }
 
 .addButton:focus-visible {
-    outline: 2px solid var(--border);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
 }
 
