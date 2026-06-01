@@ -310,7 +310,7 @@ function WelcomePage() {
                         <h1 className="welcome__headline">
                             See what your family can do before creating an account.
                         </h1>
-                        <p className="welcome__lead">
+                        <p className="welcome__lead text-big">
                             One app for priorities, calendar, budget, notifications, and
                             profile/family settings.
                         </p>
@@ -503,14 +503,14 @@ function WelcomePage() {
                 <section className="welcome__grid" aria-label="All functionalities">
                     <article className="welcome__panel">
                         <h2 className="welcome__panelTitle">What is included</h2>
-                        <p className="welcome__panelText">
+                        <p className="welcome__panelText text-medium">
                             Family Hub, Priorities, Our Calendar, Budget &amp; Savings,
                             Notifications, and Profile &amp; Family settings.
                         </p>
                     </article>
                     <article className="welcome__panel">
                         <h2 className="welcome__panelTitle">Family sharing</h2>
-                        <p className="welcome__panelText">
+                        <p className="welcome__panelText text-medium">
                             Priorities, events, budget changes, and alerts are shared with
                             your family so everyone stays aligned.
                         </p>
@@ -520,7 +520,7 @@ function WelcomePage() {
                 <section className="welcome__ctaPanel">
                     <div>
                         <h2 className="welcome__panelTitle">Ready to bring everyone in?</h2>
-                        <p className="welcome__panelText">
+                        <p className="welcome__panelText text-medium">
                             Start with a free account and invite your family when you are
                             ready.
                         </p>

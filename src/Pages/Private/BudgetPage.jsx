@@ -668,7 +668,7 @@ export default function BudgetPage() {
             <div className="budget-page">
                 <div className="error-message">
                     {error}
-                    <button onClick={loadBudget} className="btn-retry">
+                    <button onClick={loadBudget} className="btn-retry medium">
                         Retry
                     </button>
                 </div>
@@ -681,10 +681,10 @@ export default function BudgetPage() {
             <div className="budget-page">
                 <div className="no-budget">
                     <h2>No Budget Created Yet</h2>
-                    <p>Get started by creating your first budget</p>
+                    <p className="text-big">Get started by creating your first budget</p>
                     <button
                         onClick={openAddBudgetModal}
-                        className="btn-primary btn-large"
+                        className="btn-primary long"
                     >
                         Create Budget
                     </button>
@@ -720,7 +720,7 @@ export default function BudgetPage() {
                         </div>
                     </div>
                     {budgetBreadcrumb.length > 1 && (
-                        <p className="budget-breadcrumb">{budgetBreadcrumb.join(" / ")}</p>
+                        <p className="budget-breadcrumb text-small">{budgetBreadcrumb.join(" / ")}</p>
                     )}
                 </div>
                 <div className="budget-header-summary">
@@ -857,7 +857,7 @@ export default function BudgetPage() {
                     </div>
                 ) : (
                     <div className="empty-state">
-                        <p>No sub-budgets or transactions yet. Start tracking your finances!</p>
+                        <p className="text-medium">No sub-budgets or transactions yet. Start tracking your finances!</p>
                     </div>
                 )}
             </div>

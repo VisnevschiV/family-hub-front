@@ -219,18 +219,18 @@ export default function NotificationsPage() {
         <div className="page notificationsPage">
             <header className="page__header">
                 <h1 className="page__title">Notifications</h1>
-                <p className="page__subtitle">
+                <p className="page__subtitle text-medium">
                     Stay up to date with family activity and reminders.
                 </p>
             </header>
 
-            {error && <p className="notificationsPage__error">{error}</p>}
+            {error && <p className="notificationsPage__error text-medium">{error}</p>}
 
             <section className="notificationsPage__list" aria-live="polite">
-                {loading && <p className="notificationsPage__empty">Loading notifications...</p>}
+                {loading && <p className="notificationsPage__empty text-medium">Loading notifications...</p>}
 
                 {!loading && items.length === 0 && (
-                    <p className="notificationsPage__empty">You have no notifications yet.</p>
+                    <p className="notificationsPage__empty text-medium">You have no notifications yet.</p>
                 )}
 
                 {!loading &&
@@ -247,8 +247,8 @@ export default function NotificationsPage() {
                                 <h2 className="notificationsPage__itemTitle">{notification.title}</h2>
                                 {!notification.isRead && <span className="notificationsPage__pill">Unread</span>}
                             </div>
-                            <p className="notificationsPage__itemMessage">{notification.message}</p>
-                            <p className="notificationsPage__itemTime">{notification.createdAtLabel}</p>
+                            <p className="notificationsPage__itemMessage text-medium">{notification.message}</p>
+                            <p className="notificationsPage__itemTime text-small">{notification.createdAtLabel}</p>
                         </button>
                     ))}
             </section>
@@ -267,7 +267,7 @@ export default function NotificationsPage() {
             )}
 
             {!loading && items.length > 0 && (
-                <p className="notificationsPage__meta">
+                <p className="notificationsPage__meta text-small">
                     Showing {items.length} of {totalElements} notifications.
                 </p>
             )}

@@ -193,7 +193,7 @@ function LoginForm({ onLoginSuccess, initialMode = "login" }) {
                 )}
 
                 {isConfirmStep && (
-                    <p className="loginForm__helperText">
+                    <p className="loginForm__helperText text-big">
                         Confirming account for {email}
                     </p>
                 )}

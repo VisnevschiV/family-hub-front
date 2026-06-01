@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import AddButton from "./AddButton";
+import AddMilestoneModal from "./TodoList/AddMilestoneModal";
 import "./TodoList/todoList.css";
 import "./TodoList/todoListdesktop.css";
 import "./TodoList/todoListmobile.css";
@@ -434,17 +436,6 @@ export default function TodoList({
                                 role="menu"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <button
-                                    type="button"
-                                    className="todoList__menuItem"
-                                    role="menuitem"
-                                    onClick={() => {
-                                        openAdd();
-                                        setIsMenuOpen(false);
-                                    }}
-                                >
-                                    Add milestone
-                                </button>
 
                                 <button
                                     type="button"
@@ -494,13 +485,9 @@ export default function TodoList({
                 <div className="todoList__bodyInner">
                     <div className="todoList__milestonesRow">
                         <div className="todoList__milestonesTitle">Milestones</div>
-                        <button
-                            type="button"
-                            className="todoList__milestonesAddBtn"
-                            onClick={openAdd}
-                        >
+                        <AddButton onClick={openAdd} ariaLabel="Add milestone">
                             + Add
-                        </button>
+                        </AddButton>
                     </div>
                     <ul className="todoList__items">
                         {visibleItems.map((item) => {
@@ -609,49 +596,14 @@ export default function TodoList({
                 </div>
             </div>
 
-            {isAddOpen && !isCollapsed && (
-                <div
-                    className="todoList__modalBackdrop"
-                    role="dialog"
-                    aria-modal="true"
-                    onMouseDown={(e) => {
-                        if (e.target === e.currentTarget) closeAdd();
-                    }}
-                >
-                    <div className="todoList__modal">
-                        <div className="todoList__modalTitle">New milestone</div>
-
-                        <form
-                            className="todoList__modalForm"
-                            onSubmit={submitAdd}
-                        >
-                            <input
-                                className="todoList__modalInput"
-                                value={newText}
-                                onChange={(e) => setNewText(e.target.value)}
-                                placeholder="e.g. Buy milk this evening"
-                                autoFocus
-                            />
-
-                            <div className="todoList__modalActions">
-                                <button
-                                    type="button"
-                                    className="todoList__modalBtn todoList__modalBtn--ghost"
-                                    onClick={closeAdd}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="todoList__modalBtn todoList__modalBtn--primary"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <AddMilestoneModal
+                isOpen={isAddOpen}
+                isCollapsed={isCollapsed}
+                onClose={closeAdd}
+                onSubmit={submitAdd}
+                value={newText}
+                onChange={setNewText}
+            />
         </section>
     );
 }

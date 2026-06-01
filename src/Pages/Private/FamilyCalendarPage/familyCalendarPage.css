@@ -61,27 +61,31 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
+    width: var(--ui-button-height);
+    height: var(--ui-button-height);
     padding: 0;
-    border-radius: 999px;
+    border-radius: var(--ui-radius);
     border: 1px solid var(--border);
-    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
-    color: var(--text);
+    background: var(--surface);
+    color: var(--text-muted-strong);
+    font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 18px rgba(var(--color-shadow-rgb), 0.28);
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    transition: all 0.2s ease;
 }
 
 .calendarView__navButton:hover {
-    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--bg-soft) 100%);
-    box-shadow: 0 12px 20px rgba(var(--color-shadow-rgb), 0.38);
-    transform: translateY(-1px);
+    background: var(--surface-strong);
+    border-color: var(--border);
+    color: var(--text);
 }
 
 .calendarView__navButton:focus-visible {
-    outline: 2px solid var(--color-calendar-focus-ring);
+    outline: 2px solid var(--border);
     outline-offset: 2px;
+}
+
+.calendarView__navButton:active {
+    transform: scale(0.95);
 }
 
 .calendarView__navIcon {
@@ -105,20 +109,14 @@
 .calendarView__button {
     background: var(--surface);
     border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 11px;
-    padding: 9px 13px;
+    color: var(--text-muted-strong);
     cursor: pointer;
     font-weight: 600;
-    min-height: 40px;
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    transition: all 0.2s ease;
 }
 
 .calendarView--compact .calendarView__button {
-    min-height: 32px;
-    padding: 5px 9px;
     font-size: 12px;
-    border-radius: 8px;
 }
 
 .calendarView--compact .calendarView__navButton {
@@ -127,19 +125,23 @@
 }
 
 .calendarView__button:hover {
-    background: var(--color-calendar-button-hover-bg);
-    box-shadow: 0 8px 16px var(--color-calendar-button-hover-shadow);
-    transform: translateY(-1px);
+    background: var(--surface-strong);
+    border-color: var(--border);
+    color: var(--text);
 }
 
 .calendarView__button:focus-visible {
-    outline: 2px solid var(--color-calendar-focus-ring);
-    outline-offset: 1px;
+    outline: 2px solid var(--border);
+    outline-offset: 2px;
+}
+
+.calendarView__button:active {
+    transform: scale(0.95);
 }
 
 .calendarView__button--active {
-    background: var(--color-calendar-button-active-bg);
-    box-shadow: inset 0 2px 4px var(--color-calendar-button-active-shadow);
+    background: var(--surface-strong);
+    color: var(--text);
 }
 
 .calendarView__weekHeader {
@@ -230,7 +232,6 @@
     border-right: none;
 }
 
-.calendarView__grid--fiveDay .calendarView__cell--today,
 .calendarView__grid--fiveDay .calendarView__cell--selected,
 .calendarView__grid--fiveDay .calendarView__cell--period,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod {
@@ -244,6 +245,13 @@
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
     color: var(--color-calendar-family-period-text);
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
+    color: #d93368;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName--muted {
@@ -345,9 +353,16 @@
     opacity: 0.5;
 }
 
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today {
-    background: var(--color-calendar-today-bg);
-    box-shadow: 0 8px 16px var(--color-calendar-today-shadow);
+.calendarView__cell--pastMonth {
+    opacity: 0.1;
+}
+
+.calendarView__cell--pastCurrentMonth {
+    opacity: 0.3;
+}
+
+.calendarView__cell--nextMonth {
+    opacity: 0.6;
 }
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--selected {
@@ -355,30 +370,20 @@
     box-shadow: 0 10px 20px var(--color-calendar-selected-shadow);
 }
 
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--today.calendarView__cell--selected {
-    background: var(--gradient-calendar-today-selected);
-    box-shadow: 0 10px 20px var(--color-calendar-selected-shadow);
-}
-
 .calendarView__cell--period {
-    border-color: var(--color-calendar-period-border);
+    border-color: inherit;
     background: transparent;
-    box-shadow: inset 0 0 0 1px var(--color-calendar-period-inset);
+    box-shadow: none;
 }
 
 .calendarView__cell--period.calendarView__cell--weekend {
     background: transparent;
 }
 
-.calendarView__cell--period .calendarView__eventItem {
-    background: var(--color-calendar-period-event-bg);
-    border-color: var(--color-calendar-period-event-border);
-}
-
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod {
-    background: var(--color-calendar-family-cell-bg);
-    box-shadow: inset 0 0 0 1px var(--color-calendar-family-cell-inset);
-    color: var(--color-calendar-family-cell-text);
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
 }
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber,
@@ -389,9 +394,9 @@
     color: var(--color-calendar-family-cell-text);
 }
 
-.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventItem {
-    background: var(--color-calendar-family-event-bg);
-    border-color: var(--color-calendar-family-event-border);
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--period .calendarView__dayNumber,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber {
+    color: #d93368;
 }
 
 .calendarView__dayNumber {

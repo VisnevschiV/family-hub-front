@@ -50,7 +50,7 @@ function NoFamilyBanner({ onFamilyJoined }) {
             <div className="page">
                 <header className="page__header">
                     <h1 className="page__title">No family yet</h1>
-                    <p className="page__subtitle">
+                    <p className="page__subtitle text-medium">
                         This page is shared with your family. Create or join a family first to get started.
                     </p>
                 </header>
@@ -59,7 +59,7 @@ function NoFamilyBanner({ onFamilyJoined }) {
                     <div className="card ctaCard">
                         <div>
                             <h2 className="card__title">Join or create a family</h2>
-                            <p className="card__text">
+                            <p className="card__text text-medium">
                                 Start a new family space or enter an invite code to join an existing one.
                             </p>
                         </div>

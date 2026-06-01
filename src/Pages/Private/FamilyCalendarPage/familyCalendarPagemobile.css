@@ -28,8 +28,8 @@
     }
 
     .calendarView__navButton {
-        width: 38px;
-        height: 38px;
+        width: var(--ui-button-height);
+        height: var(--ui-button-height);
     }
 
     .calendarView__toolbarRight {
@@ -41,17 +41,13 @@
     }
 
     .calendarView__button {
-        min-height: 42px;
         font-size: 13px;
         padding: 8px 11px;
-        border-radius: 10px;
     }
 
     .calendarView--compact .calendarView__button {
-        min-height: 27px;
         font-size: 12px;
         padding: 6px 9px;
-        border-radius: 8px;
     }
 
     .calendarView__cell {

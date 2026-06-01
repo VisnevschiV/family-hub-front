@@ -495,6 +495,7 @@ function FamilyCalendarPage() {
         const daysInPreviousMonth = new Date(year, month, 0).getDate();
 
         const cells = [];
+        const todayKey = toDateKey(new Date());
 
         for (let index = 0; index < firstWeekday; index += 1) {
             const dayNumber = daysInPreviousMonth - firstWeekday + index + 1;
@@ -507,6 +508,8 @@ function FamilyCalendarPage() {
             cells.push({
                 key: `empty-start-${index}`,
                 isCurrentMonth: false,
+                monthRelation: "previous",
+                isPastCurrentMonth: false,
                 dayNumber,
                 isToday: false,
                 dateKey,
@@ -515,13 +518,7 @@ function FamilyCalendarPage() {
             });
         }
 
-        const today = new Date();
-        const todayYear = today.getFullYear();
-        const todayMonth = today.getMonth();
-        const todayDate = today.getDate();
-
         for (let day = 1; day <= daysInMonth; day += 1) {
-            const isToday = year === todayYear && month === todayMonth && day === todayDate;
             const dateKey = toDateKey(new Date(year, month, day));
             const dayEvents = events
                 .filter((eventItem) => eventItem.dateKey === dateKey)
@@ -530,8 +527,9 @@ function FamilyCalendarPage() {
             cells.push({
                 key: `day-${day}`,
                 isCurrentMonth: true,
+                monthRelation: "current",
+                isPastCurrentMonth: dateKey < todayKey,
                 dayNumber: day,
-                isToday,
                 dateKey,
                 dayEvents,
                 periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
@@ -552,6 +550,8 @@ function FamilyCalendarPage() {
             cells.push({
                 key: `empty-end-${index}`,
                 isCurrentMonth: false,
+                monthRelation: "next",
+                isPastCurrentMonth: false,
                 dayNumber,
                 isToday: false,
                 dateKey,
@@ -569,17 +569,22 @@ function FamilyCalendarPage() {
         return [-2, -1, 0, 1, 2].map((offset) => {
             const date = new Date(sy, sm - 1, sd + offset);
             const dateKey = toDateKey(date);
-            const isToday = dateKey === todayKey;
             const dayEvents = events
                 .filter((eventItem) => eventItem.dateKey === dateKey)
                 .sort((a, b) => a.timestamp - b.timestamp);
             const isCurrentMonth = date.getMonth() === sm - 1;
+            const monthRelation = !isCurrentMonth
+                ? date < new Date(sy, sm - 1, 1)
+                    ? "previous"
+                    : "next"
+                : "current";
             return {
                 key: `fiveday-${dateKey}`,
                 isCurrentMonth,
+                monthRelation,
+                isPastCurrentMonth: isCurrentMonth && dateKey < todayKey,
                 dayNumber: date.getDate(),
                 dayName: date.toLocaleDateString(undefined, { weekday: "short" }),
-                isToday,
                 dateKey,
                 dayEvents,
                 periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
@@ -946,8 +951,8 @@ function FamilyCalendarPage() {
 
     return (
         <div className="page">
-            {calendarError ? <p className="calendarView__error">{calendarError}</p> : null}
-            {calendarNotice ? <p className="calendarView__notice">{calendarNotice}</p> : null}
+            {calendarError ? <p className="calendarView__error text-medium">{calendarError}</p> : null}
+            {calendarNotice ? <p className="calendarView__notice text-medium">{calendarNotice}</p> : null}
 
             <section className={`calendarView${monthViewOpen ? "" : " calendarView--compact"}`}>
                 <div className="calendarView__toolbar">
@@ -1006,8 +1011,11 @@ function FamilyCalendarPage() {
                                 <div
                                     key={cell.key}
                                     className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
-                                        } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                        } ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
                                         } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
+                                        } ${cell.monthRelation === "previous" ? "calendarView__cell--pastMonth" : ""
+                                        } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
+                                        } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
                                         } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
                                         } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
                                         }`}
@@ -1055,20 +1063,6 @@ function FamilyCalendarPage() {
                                                             +{cell.dayEvents.length - 2} more
                                                         </div>
                                                     ) : null}
-                                                    {(cell.periodMemberNames || []).length > 0 ? (
-                                                        <div className="calendarView__periodMembers" title={`On period: ${(cell.periodMemberNames || []).join(", ")}`}>
-                                                            {(cell.periodMemberNames || []).slice(0, 2).map((memberName) => (
-                                                                <span key={`${cell.dateKey}-${memberName}`} className="calendarView__periodMemberPill">
-                                                                    {memberName.split(" ")[0] || memberName}
-                                                                </span>
-                                                            ))}
-                                                            {(cell.periodMemberNames || []).length > 2 ? (
-                                                                <span className="calendarView__periodMemberPill calendarView__periodMemberPill--muted">
-                                                                    +{(cell.periodMemberNames || []).length - 2}
-                                                                </span>
-                                                            ) : null}
-                                                        </div>
-                                                    ) : null}
                                                 </div>
                                             ) : null}
                                         </>
@@ -1084,7 +1078,10 @@ function FamilyCalendarPage() {
                                 <div
                                     key={cell.key}
                                     className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
-                                        } ${cell.isToday ? "calendarView__cell--today" : ""} ${cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                        } ${cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                        } ${cell.monthRelation === "previous" ? "calendarView__cell--pastMonth" : ""
+                                        } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
+                                        } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
                                         } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
                                         } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
                                         }`}
@@ -1128,8 +1125,8 @@ function FamilyCalendarPage() {
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
-                        <p className="calendarItinerary__periodNames">
-                            On period: {selectedDatePeriodMembers.join(", ")}
+                        <p className="calendarItinerary__periodNames text-medium">
+                            A family period is tracked on this day.
                         </p>
                     </div>
                 ) : null}
@@ -1165,7 +1162,7 @@ function FamilyCalendarPage() {
                         ) : null}
 
                         {selectedDateTimelineEvents.length === 0 ? (
-                            <p className="calendarItinerary__timelineEmpty">No events planned for this day yet.</p>
+                            <p className="calendarItinerary__timelineEmpty text-medium">No events planned for this day yet.</p>
                         ) : (
                             selectedDateTimelineEvents.map((eventItem) => (
                                 <article
@@ -1188,7 +1185,7 @@ function FamilyCalendarPage() {
                                     <div className="calendarItinerary__timelineEventTime">{eventItem.timeLabel}</div>
                                     <h3 className="calendarItinerary__timelineEventTitle">{eventItem.title}</h3>
                                     {eventItem.participantNames.length > 0 ? (
-                                        <p className="calendarItinerary__timelineEventMeta">
+                                        <p className="calendarItinerary__timelineEventMeta text-small">
                                             With: {eventItem.participantNames.join(", ")}
                                         </p>
                                     ) : null}
@@ -1207,7 +1204,7 @@ function FamilyCalendarPage() {
                                 <h2 className="calendarModalTitle">
                                     {editingEventId ? "Edit event" : "Create new event"}
                                 </h2>
-                                <p className="calendarModalSubtitle">
+                                <p className="calendarModalSubtitle text-medium">
                                     {editingEventId
                                         ? "Update title, description, and date/time."
                                         : "Date is set from your selected day. Add title, details, and time."}
@@ -1293,7 +1290,7 @@ function FamilyCalendarPage() {
                                 {participantsDropdownOpen ? (
                                     <div className="calendarParticipants__menu">
                                         {familyMembers.length === 0 ? (
-                                            <p className="calendarParticipants__empty">
+                                            <p className="calendarParticipants__empty text-medium">
                                                 No family members available
                                             </p>
                                         ) : (

@@ -1,12 +1,15 @@
 ﻿.segmentedControl {
+    --segmented-inline-pad: 2px;
+    --segmented-inner-radius: calc(var(--ui-radius) - var(--ui-border-width) - var(--segmented-inline-pad));
     display: inline-flex;
     align-items: center;
-    background: var(--bg-soft);
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 3px;
+    padding: 0 var(--segmented-inline-pad);
     position: relative;
     gap: 0;
+    height: var(--ui-button-height);
+    border-radius: var(--ui-radius);
 }
 
 .segmentedControl__track {
@@ -18,38 +21,44 @@
     z-index: 1;
     background: transparent;
     border: none;
-    border-radius: 999px;
-    padding: 5px 14px;
+    padding: 0 var(--ui-button-padding-x);
     font: inherit;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text-muted-strong);
     cursor: pointer;
     transition: color 0.18s ease;
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
+    min-height: 0;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--segmented-inner-radius);
 }
 
 .segmentedControl__option:focus-visible {
-    outline: 2px solid var(--brand-focus);
-    outline-offset: 1px;
+    outline: 2px solid var(--shared-border-warm);
+    outline-offset: 0px;
 }
 
 .segmentedControl__option--selected {
-    color: var(--brand);
+    color: var(--shared-pill-text);
+    text-shadow: none;
 }
 
 .segmentedControl__thumb {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    height: calc(100% - 6px);
-    border-radius: 999px;
-    background: var(--color-segmented-thumb);
-    box-shadow: 0 2px 8px rgba(var(--color-shadow-rgb), 0.2);
+    top: var(--ui-border-width);
+    left: calc(var(--ui-border-width) + var(--segmented-inline-pad));
+    height: calc(100% - (2 * var(--ui-border-width)));
+    background: var(--shared-surface-panel);
+    box-shadow: none;
     pointer-events: none;
     transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
         width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, width;
+    border: 1px solid var(--shared-border-warm);
+    border-radius: var(--segmented-inner-radius);
 }

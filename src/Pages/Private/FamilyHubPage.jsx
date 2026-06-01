@@ -72,7 +72,7 @@ function FamilyHubPage() {
             <div className="page">
                 <header className="page__header">
                     <h1 className="page__title">happywifehappylife</h1>
-                    <p className="page__subtitle">
+                    <p className="page__subtitle text-medium">
                         Manage your family group and shared spaces.
                     </p>
                 </header>
@@ -82,7 +82,7 @@ function FamilyHubPage() {
                         <div className="card ctaCard">
                             <div>
                                 <h2 className="card__title">Join or create family</h2>
-                                <p className="card__text">
+                                <p className="card__text text-medium">
                                     Start a new family space or join an existing one.
                                 </p>
                             </div>
@@ -109,19 +109,19 @@ function FamilyHubPage() {
                 <section className="page__grid">
                     <div className="card">
                         <h2 className="card__title">Invitation Code</h2>
-                        <p className="card__text">
+                        <p className="card__text text-medium">
                             Create or join a family using a code.
                         </p>
                     </div>
                     <div className="card">
                         <h2 className="card__title">Members</h2>
-                        <p className="card__text">
+                        <p className="card__text text-medium">
                             View members and admin actions for the group.
                         </p>
                     </div>
                     <div className="card">
                         <h2 className="card__title">Shared Spaces</h2>
-                        <p className="card__text">
+                        <p className="card__text text-medium">
                             Quick links to the shared calendar and priorities.
                         </p>
                     </div>
