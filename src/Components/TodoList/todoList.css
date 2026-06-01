@@ -287,32 +287,6 @@
     color: var(--text-muted);
 }
 
-.todoList__milestonesAddBtn {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-muted-strong);
-    border-radius: 8px;
-    min-height: 32px;
-    padding: 0 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.todoList__milestonesAddBtn:hover {
-    background: var(--surface-strong);
-    border-color: var(--border);
-    color: var(--text);
-}
-
-.todoList__milestonesAddBtn:active {
-    transform: scale(0.95);
-}
-
 .todoList__items {
     list-style: none;
     margin: 0;

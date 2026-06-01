@@ -1,11 +1,15 @@
 ﻿.segmentedControl {
+    --segmented-inline-pad: 2px;
+    --segmented-inner-radius: calc(var(--ui-radius) - var(--ui-border-width) - var(--segmented-inline-pad));
     display: inline-flex;
     align-items: center;
     background: var(--surface);
     border: 1px solid var(--border);
-    padding: 4px;
+    padding: 0 var(--segmented-inline-pad);
     position: relative;
     gap: 0;
+    height: var(--ui-button-height);
+    border-radius: var(--ui-radius);
 }
 
 .segmentedControl__track {
@@ -17,7 +21,7 @@
     z-index: 1;
     background: transparent;
     border: none;
-    padding: 6px 14px;
+    padding: 0 var(--ui-button-padding-x);
     font: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -27,9 +31,11 @@
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
-    min-height: var(--ui-button-height);
+    min-height: 0;
+    height: 100%;
     display: inline-flex;
     align-items: center;
+    border-radius: var(--segmented-inner-radius);
 }
 
 .segmentedControl__option:focus-visible {
@@ -43,9 +49,9 @@
 
 .segmentedControl__thumb {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    height: calc(100% - 8px);
+    top: var(--ui-border-width);
+    left: calc(var(--ui-border-width) + var(--segmented-inline-pad));
+    height: calc(100% - (2 * var(--ui-border-width)));
     background: var(--surface-strong);
     box-shadow: none;
     pointer-events: none;
@@ -53,4 +59,5 @@
         width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, width;
     border: 1px solid var(--border);
+    border-radius: var(--segmented-inner-radius);
 }

@@ -37,7 +37,7 @@
 }
 
 :where(.addButton, .btn-primary, .btn-secondary, .btn-retry, .periodSaveButton, .periodDeleteButton, .calendarView__button) {
-    min-height: var(--ui-button-height);
+    height: var(--ui-button-height);
     padding: 0 var(--ui-button-padding-x);
     border-radius: var(--ui-radius);
     border-width: var(--ui-border-width);

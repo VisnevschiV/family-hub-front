@@ -1,30 +1,65 @@
 ﻿:root {
+    /* Shared repeated tones (single-source literals) */
+    --shared-bg-main: #181823;
+    --shared-bg-soft: #1d1d2b;
+    --shared-white: #ffffff;
+    --shared-text-muted-strong: #7c7c92;
+    --shared-brand: #c94b73;
+    --shared-brand-soft: #df7a98;
+    --shared-success: #63d98a;
+    --shared-white-08: rgba(255, 255, 255, 0.08);
+    --shared-white-06: rgba(255, 255, 255, 0.06);
+    --shared-brand-06: rgba(201, 75, 115, 0.06);
+    --shared-brand-12: rgba(201, 75, 115, 0.12);
+    --shared-brand-20: rgba(201, 75, 115, 0.2);
+    --shared-brand-34: rgba(201, 75, 115, 0.34);
+    --shared-brand-error-bg: rgba(201, 75, 115, 0.16);
+    --shared-brand-soft-30: rgba(223, 122, 152, 0.3);
+    --shared-input-placeholder: #8f7c8b;
+    --shared-surface-chip: #1d1a21;
+    --shared-surface-panel: #241f26;
+    --shared-surface-hover: #2b2330;
+    --shared-surface-raise: #2a2530;
+    --shared-border-soft: #3a3238;
+    --shared-border-warm: #8f6d80;
+    --shared-mauve-700: #3a2835;
+    --shared-rose-text: #d8a89e;
+    --shared-error-text: #ffd0df;
+    --shared-success-soft: #b8f5ca;
+    --shared-success-20: rgba(99, 217, 138, 0.2);
+    --shared-modal-overlay: rgba(16, 11, 19, 0.62);
+    --shared-shadow-28: rgba(0, 0, 0, 0.28);
+    --shared-calendar-active-bg: #332736;
+    --shared-pill-text: #f3bfd3;
+    --shared-pill-bg: #3b2531;
+    --shared-notice-text: #f0bfd2;
+
     /* Core dark surfaces */
-    --color-bg: #181823;
-    --color-bg-soft: #1d1d2b;
+    --color-bg: var(--shared-bg-main);
+    --color-bg-soft: var(--shared-bg-soft);
     --color-surface: #14141c;
     --color-surface-strong: #1a1a24;
 
     /* Text */
-    --color-text: #ffffff;
+    --color-text: var(--shared-white);
     --color-text-muted: #b7b7c9;
-    --color-text-muted-strong: #7c7c92;
+    --color-text-muted-strong: var(--shared-text-muted-strong);
 
     /* Accent hierarchy */
-    --color-brand: #c94b73;
-    --color-brand-strong: #df7a98;
+    --color-brand: var(--shared-brand);
+    --color-brand-strong: var(--shared-brand-soft);
     --color-accent: #9b6dff;
     --color-accent-blue: #6ea8ff;
-    --color-accent-green: #63d98a;
+    --color-accent-green: var(--shared-success);
 
     /* UI structure */
     --color-border: #262635;
     --color-divider: #1f1f2b;
     --color-shadow-rgb: 0, 0, 0;
     --color-card-glow: rgba(201, 75, 115, 0.07);
-    --color-soft-white: rgba(255, 255, 255, 0.08);
+    --color-soft-white: var(--shared-white-08);
     --color-soft-white-strong: rgba(255, 255, 255, 0.14);
-    --color-pink-glow: rgba(201, 75, 115, 0.06);
+    --color-pink-glow: var(--shared-brand-06);
     --color-brand-focus: rgba(201, 75, 115, 0.75);
     --color-segmented-thumb: #4f2734;
     --color-purple-glow: rgba(155, 109, 255, 0.16);
@@ -32,41 +67,41 @@
 
     /* Notifications */
     --color-notifications-button-bg: #252129;
-    --color-notifications-button-dot: #8f7c8b;
+    --color-notifications-button-dot: var(--shared-input-placeholder);
     --color-notifications-item-border: #3f3538;
-    --color-notifications-item-bg: #241f26;
+    --color-notifications-item-bg: var(--shared-surface-panel);
     --color-notifications-pill-text: #c9a7b8;
-    --color-notifications-pill-bg: #3a2835;
+    --color-notifications-pill-bg: var(--shared-mauve-700);
     --color-notifications-pill-border: #7a5e70;
-    --color-notifications-error-bg: rgba(201, 75, 115, 0.16);
-    --color-notifications-error-text: #ffd0df;
-    --color-notifications-error-border: rgba(223, 122, 152, 0.3);
+    --color-notifications-error-bg: var(--shared-brand-error-bg);
+    --color-notifications-error-text: var(--shared-error-text);
+    --color-notifications-error-border: var(--shared-brand-soft-30);
 
     /* Welcome & Public Pages */
-    --color-welcome-logo-bg: #3a2835;
-    --color-welcome-logo-text: #d8a89e;
+    --color-welcome-logo-bg: var(--shared-mauve-700);
+    --color-welcome-logo-text: var(--shared-rose-text);
     --color-welcome-ghost-bg: rgba(255, 250, 243, 0.1);
-    --color-welcome-shared-note-bg: #2b2330;
-    --color-welcome-shared-note-text: #d8a89e;
-    --color-welcome-preview-meta-bg: rgba(255, 255, 255, 0.08);
-    --color-welcome-mini-button-bg: #1d1a21;
-    --color-welcome-input-bg: rgba(255, 255, 255, 0.06);
-    --color-welcome-crumb-bg: rgba(255, 255, 255, 0.08);
+    --color-welcome-shared-note-bg: var(--shared-surface-hover);
+    --color-welcome-shared-note-text: var(--shared-rose-text);
+    --color-welcome-preview-meta-bg: var(--shared-white-08);
+    --color-welcome-mini-button-bg: var(--shared-surface-chip);
+    --color-welcome-input-bg: var(--shared-white-06);
+    --color-welcome-crumb-bg: var(--shared-white-08);
     --color-welcome-crumb-text: #d0c0b8;
-    --color-welcome-sub-budget-bg: #241f26;
-    --color-welcome-period-tracker-bg: rgba(255, 255, 255, 0.06);
-    --color-welcome-day-button-bg: rgba(255, 255, 255, 0.08);
-    --color-welcome-day-button-active-bg: #3a2835;
-    --color-welcome-day-button-active-border: #8f6d80;
+    --color-welcome-sub-budget-bg: var(--shared-surface-panel);
+    --color-welcome-period-tracker-bg: var(--shared-white-06);
+    --color-welcome-day-button-bg: var(--shared-white-08);
+    --color-welcome-day-button-active-bg: var(--shared-mauve-700);
+    --color-welcome-day-button-active-border: var(--shared-border-warm);
     --color-welcome-mock-item-bg: rgba(255, 255, 255, 0.1);
-    --color-welcome-budget-bar-bg: #3a2835;
-    --color-welcome-period-status-text: #d8a89e;
-    --color-welcome-line-delete-bg: #1d1a21;
+    --color-welcome-budget-bar-bg: var(--shared-mauve-700);
+    --color-welcome-period-status-text: var(--shared-rose-text);
+    --color-welcome-line-delete-bg: var(--shared-surface-chip);
     --color-welcome-line-delete-text: #d97a75;
     --color-welcome-blob-one: linear-gradient(circle at top, #5a3d4d, rgba(29, 29, 43, 0));
     --color-welcome-blob-two: linear-gradient(circle at top, #3a4c42, rgba(13, 13, 18, 0));
-    --color-welcome-tour-shell-bg: #241f26;
-    --color-welcome-feature-card-bg: #241f26;
+    --color-welcome-tour-shell-bg: var(--shared-surface-panel);
+    --color-welcome-feature-card-bg: var(--shared-surface-panel);
     --color-welcome-feature-card-border: #4a3d47;
 
     /* Login & Auth Pages */
@@ -75,48 +110,48 @@
     --color-auth-bg-accent: #4a3a45;
     --color-auth-panel-border: rgba(139, 111, 123, 0.15);
     --color-auth-input-bg: rgba(255, 255, 255, 0.04);
-    --color-auth-focus: rgba(201, 75, 115, 0.12);
+    --color-auth-focus: var(--shared-brand-12);
     --color-auth-panel-bg: linear-gradient(160deg, rgba(29, 29, 43, 0.95) 0%, rgba(42, 31, 40, 0.96) 100%);
-    --color-auth-input-placeholder: #8f7c8b;
+    --color-auth-input-placeholder: var(--shared-input-placeholder);
     --color-auth-input-border: rgba(139, 111, 123, 0.2);
     --color-auth-input-disabled-bg: #2f2630;
-    --color-auth-error-bg: rgba(201, 75, 115, 0.16);
-    --color-auth-error-text: #ffd0df;
-    --color-auth-error-border: rgba(201, 75, 115, 0.2);
+    --color-auth-error-bg: var(--shared-brand-error-bg);
+    --color-auth-error-text: var(--shared-error-text);
+    --color-auth-error-border: var(--shared-brand-20);
     --color-auth-success-bg: rgba(99, 217, 138, 0.16);
-    --color-auth-success-text: #b8f5ca;
-    --color-auth-success-border: rgba(99, 217, 138, 0.2);
-    --color-auth-secondary-btn-bg: rgba(255, 255, 255, 0.08);
+    --color-auth-success-text: var(--shared-success-soft);
+    --color-auth-success-border: var(--shared-success-20);
+    --color-auth-secondary-btn-bg: var(--shared-white-08);
     --color-auth-secondary-btn-border: rgba(201, 75, 115, 0.15);
     --color-auth-secondary-btn-hover-bg: rgba(255, 255, 255, 0.12);
-    --color-auth-input-date-bg: #1d1a21;
+    --color-auth-input-date-bg: var(--shared-surface-chip);
 
     /* Budget */
     --color-budget-loading-bg: var(--surface);
     --color-budget-loading-text: var(--text-muted);
-    --color-budget-error-bg: rgba(201, 75, 115, 0.16);
-    --color-budget-error-text: #ffd0df;
-    --color-budget-error-border: rgba(201, 75, 115, 0.2);
-    --color-budget-error-banner-bg: rgba(201, 75, 115, 0.12);
-    --color-budget-error-banner-text: #f0bfd2;
+    --color-budget-error-bg: var(--shared-brand-error-bg);
+    --color-budget-error-text: var(--shared-error-text);
+    --color-budget-error-border: var(--shared-brand-20);
+    --color-budget-error-banner-bg: var(--shared-brand-12);
+    --color-budget-error-banner-text: var(--shared-notice-text);
     --color-budget-error-banner-border: rgba(201, 75, 115, 0.25);
     --color-budget-no-budget-title: var(--text);
     --color-budget-no-budget-text: var(--text-muted);
     --color-budget-header-title: var(--text);
     --color-budget-header-summary: var(--text-muted);
-    --color-budget-back-button-bg: #3a2835;
-    --color-budget-back-button-border: #8f6d80;
-    --color-budget-back-button-text: #d8a89e;
+    --color-budget-back-button-bg: var(--shared-mauve-700);
+    --color-budget-back-button-border: var(--shared-border-warm);
+    --color-budget-back-button-text: var(--shared-rose-text);
     --color-budget-back-button-hover: #46313d;
     --color-budget-summary-label: #d0b8c4;
     --color-budget-summary-value: #f0f0f0;
-    --color-budget-summary-breakdown: #7c7c92;
+    --color-budget-summary-breakdown: var(--shared-text-muted-strong);
     --color-budget-section-header-text: var(--text-muted);
-    --color-budget-transaction-list-bg: #1d1a21;
-    --color-budget-transaction-item-border: #3a3238;
-    --color-budget-transaction-item-hover: #2a2530;
-    --color-budget-transaction-dragging-bg: #3a2835;
-    --color-budget-modal-overlay: rgba(16, 11, 19, 0.62);
+    --color-budget-transaction-list-bg: var(--shared-surface-chip);
+    --color-budget-transaction-item-border: var(--shared-border-soft);
+    --color-budget-transaction-item-hover: var(--shared-surface-raise);
+    --color-budget-transaction-dragging-bg: var(--shared-mauve-700);
+    --color-budget-modal-overlay: var(--shared-modal-overlay);
     --color-budget-modal-bg: var(--surface-strong);
     --color-budget-modal-border: var(--border);
     --color-budget-modal-header-text: var(--text);
@@ -127,26 +162,26 @@
     --color-budget-modal-input-bg: var(--surface);
     --color-budget-modal-input-border: var(--border);
     --color-budget-modal-input-focus-border: var(--brand);
-    --color-budget-modal-input-focus-glow: rgba(201, 75, 115, 0.12);
+    --color-budget-modal-input-focus-glow: var(--shared-brand-12);
     --color-budget-modal-btn-secondary-bg: var(--surface);
     --color-budget-modal-btn-secondary-border: var(--border);
-    --color-budget-modal-btn-secondary-hover: #3a3238;
+    --color-budget-modal-btn-secondary-hover: var(--shared-border-soft);
     --color-budget-btn-retry-bg: var(--surface);
-    --color-budget-btn-retry-border: #8f6d80;
-    --color-budget-btn-retry-text: #d8a89e;
-    --color-budget-btn-retry-hover: #2a2530;
+    --color-budget-btn-retry-border: var(--shared-border-warm);
+    --color-budget-btn-retry-text: var(--shared-rose-text);
+    --color-budget-btn-retry-hover: var(--shared-surface-raise);
 
     /* Budget Transactions */
     --color-budget-transaction-delete-preview-bg: #4a2d3a;
-    --color-budget-transaction-delete-gradient: linear-gradient(to bottom, #c94b73, #9f3d62);
+    --color-budget-transaction-delete-gradient: linear-gradient(to bottom, var(--shared-brand), #9f3d62);
     --color-budget-transaction-name-text: var(--text);
     --color-budget-transaction-currency-text: var(--text-muted);
-    --color-budget-transaction-value-text: #d8a89e;
-    --color-budget-transaction-value-income: #63d98a;
+    --color-budget-transaction-value-text: var(--shared-rose-text);
+    --color-budget-transaction-value-income: var(--shared-success);
     --color-budget-transaction-value-expense: #ff6b6b;
-    --color-budget-sub-budget-tag-bg: #3a2835;
-    --color-budget-sub-budget-tag-text: #d8a89e;
-    --color-budget-sub-budget-chevron-text: #d8a89e;
+    --color-budget-sub-budget-tag-bg: var(--shared-mauve-700);
+    --color-budget-sub-budget-tag-text: var(--shared-rose-text);
+    --color-budget-sub-budget-chevron-text: var(--shared-rose-text);
     --color-budget-empty-state-text: var(--text-muted);
 
     /* Gradients */
@@ -154,64 +189,64 @@
             rgba(155, 109, 255, 0.14) 0%,
             rgba(201, 75, 115, 0.06) 36%,
             rgba(13, 13, 18, 1) 100%);
-    --gradient-button-primary: linear-gradient(135deg, #c94b73 0%, #df7a98 100%);
+    --gradient-button-primary: linear-gradient(135deg, var(--shared-brand) 0%, var(--shared-brand-soft) 100%);
     --gradient-surface-soft: linear-gradient(155deg, rgba(26, 26, 36, 0.95) 0%, rgba(20, 20, 28, 0.92) 100%);
 
     /* Profile theme */
-    --color-profile-bg-1: #181823;
-    --color-profile-bg-2: #1d1d2b;
-    --color-profile-bg-3: #181823;
-    --color-profile-glow-pink: rgba(201, 75, 115, 0.06);
+    --color-profile-bg-1: var(--shared-bg-main);
+    --color-profile-bg-2: var(--shared-bg-soft);
+    --color-profile-bg-3: var(--shared-bg-main);
+    --color-profile-glow-pink: var(--shared-brand-06);
     --color-profile-glow-blue: rgba(110, 168, 255, 0.14);
     --color-profile-surface-1: rgba(26, 26, 36, 0.94);
     --color-profile-surface-2: rgba(20, 20, 28, 0.92);
-    --color-profile-text: #ffffff;
+    --color-profile-text: var(--shared-white);
     --color-profile-muted: rgba(183, 183, 201, 0.86);
     --color-profile-soft: rgba(183, 183, 201, 0.7);
-    --color-profile-hot: #c94b73;
+    --color-profile-hot: var(--shared-brand);
     --color-profile-danger: #d96583;
-    --color-profile-danger-soft: #df7a98;
+    --color-profile-danger-soft: var(--shared-brand-soft);
 
     /* Feedback */
     --color-success-bg: rgba(99, 217, 138, 0.18);
     --color-success-border: rgba(99, 217, 138, 0.38);
-    --color-success-text: #b8f5ca;
-    --color-error-bg: rgba(201, 75, 115, 0.16);
-    --color-error-border: rgba(223, 122, 152, 0.3);
-    --color-error-text: #ffd0df;
+    --color-success-text: var(--shared-success-soft);
+    --color-error-bg: var(--shared-brand-error-bg);
+    --color-error-border: var(--shared-brand-soft-30);
+    --color-error-text: var(--shared-error-text);
 
     /* Calendar */
-    --color-calendar-focus-ring: rgba(201, 75, 115, 0.34);
-    --color-calendar-error-bg: rgba(201, 75, 115, 0.16);
-    --color-calendar-error-text: #ffd0df;
-    --color-calendar-error-border: rgba(223, 122, 152, 0.3);
-    --color-calendar-button-hover-bg: #2b2330;
-    --color-calendar-button-hover-shadow: rgba(0, 0, 0, 0.28);
-    --color-calendar-button-active-bg: #332736;
+    --color-calendar-focus-ring: var(--shared-brand-34);
+    --color-calendar-error-bg: var(--shared-brand-error-bg);
+    --color-calendar-error-text: var(--shared-error-text);
+    --color-calendar-error-border: var(--shared-brand-soft-30);
+    --color-calendar-button-hover-bg: var(--shared-surface-hover);
+    --color-calendar-button-hover-shadow: var(--shared-shadow-28);
+    --color-calendar-button-active-bg: var(--shared-calendar-active-bg);
     --color-calendar-button-active-shadow: rgba(0, 0, 0, 0.24);
     --color-calendar-weekend-text: #8f8597;
-    --color-calendar-five-day-selected-bg: #332736;
-    --color-calendar-family-period-text: #df7a98;
+    --color-calendar-five-day-selected-bg: var(--shared-calendar-active-bg);
+    --color-calendar-family-period-text: var(--shared-brand-soft);
     --color-calendar-family-period-muted-text: rgba(223, 122, 152, 0.72);
-    --color-calendar-event-dot-idle: #7c7c92;
+    --color-calendar-event-dot-idle: var(--shared-text-muted-strong);
     --color-calendar-cell-hover-bg: #2a222d;
     --color-calendar-cell-hover-shadow: rgba(0, 0, 0, 0.26);
     --color-calendar-today-bg: #372531;
-    --color-calendar-today-shadow: rgba(201, 75, 115, 0.2);
+    --color-calendar-today-shadow: var(--shared-brand-20);
     --color-calendar-selected-bg: #24362d;
-    --color-calendar-selected-shadow: rgba(99, 217, 138, 0.2);
+    --color-calendar-selected-shadow: var(--shared-success-20);
     --gradient-calendar-today-selected: linear-gradient(180deg, #372531 0%, #24362d 100%);
     --color-calendar-period-border: #8f4b67;
-    --color-calendar-period-inset: rgba(201, 75, 115, 0.34);
+    --color-calendar-period-inset: var(--shared-brand-34);
     --color-calendar-period-event-bg: #2f2129;
     --color-calendar-period-event-border: #9a5773;
     --color-calendar-family-cell-bg: #372430;
     --color-calendar-family-cell-inset: rgba(223, 122, 152, 0.24);
-    --color-calendar-family-cell-text: #f3bfd3;
+    --color-calendar-family-cell-text: var(--shared-pill-text);
     --color-calendar-family-event-bg: #3b2633;
     --color-calendar-family-event-border: #a76581;
-    --color-calendar-pill-text: #f3bfd3;
-    --color-calendar-pill-bg: #3b2531;
+    --color-calendar-pill-text: var(--shared-pill-text);
+    --color-calendar-pill-bg: var(--shared-pill-bg);
     --color-calendar-pill-border: #a66480;
     --color-calendar-pill-muted-text: #b9a3af;
     --color-calendar-pill-muted-bg: #2b2328;
@@ -221,7 +256,7 @@
     --color-calendar-period-summary-title: #efb9ce;
     --color-calendar-period-summary-text: #cdaebc;
     --color-calendar-hour-line: rgba(183, 183, 201, 0.2);
-    --color-calendar-now-line: #df7a98;
+    --color-calendar-now-line: var(--shared-brand-soft);
     --color-calendar-now-label-text: #f7c8db;
     --color-calendar-now-label-bg: #4b2a38;
     --color-calendar-now-label-border: #ad6280;
@@ -235,17 +270,17 @@
     --color-calendar-details-button-bg: #342830;
     --color-calendar-details-button-text: #efc6d8;
     --color-calendar-details-button-hover-bg: #3b2d36;
-    --color-calendar-details-button-hover-shadow: rgba(0, 0, 0, 0.28);
-    --color-calendar-modal-overlay: rgba(16, 11, 19, 0.62);
-    --color-calendar-modal-close-hover-bg: #2b2330;
+    --color-calendar-details-button-hover-shadow: var(--shared-shadow-28);
+    --color-calendar-modal-overlay: var(--shared-modal-overlay);
+    --color-calendar-modal-close-hover-bg: var(--shared-surface-hover);
     --color-calendar-input-focus-glow: rgba(201, 75, 115, 0.22);
     --color-calendar-modal-primary-shadow: rgba(201, 75, 115, 0.28);
-    --color-calendar-notice-bg: #3b2531;
-    --color-calendar-notice-text: #f0bfd2;
+    --color-calendar-notice-bg: var(--shared-pill-bg);
+    --color-calendar-notice-text: var(--shared-notice-text);
     --color-calendar-notice-border: #a86682;
     --color-calendar-period-button-bg: #4a2c39;
     --color-calendar-period-button-text: #f3c5d7;
     --color-calendar-period-button-border: #b2728d;
-    --gradient-calendar-event-bar: linear-gradient(90deg, #c94b73 0%, #df7a98 100%);
-    --gradient-calendar-event-bar-period: linear-gradient(90deg, #df7a98 0%, #f0b4cb 100%);
+    --gradient-calendar-event-bar: linear-gradient(90deg, var(--shared-brand) 0%, var(--shared-brand-soft) 100%);
+    --gradient-calendar-event-bar-period: linear-gradient(90deg, var(--shared-brand-soft) 0%, #f0b4cb 100%);
 }

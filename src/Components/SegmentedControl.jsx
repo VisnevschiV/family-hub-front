@@ -18,11 +18,12 @@ export default function SegmentedControl({ options, value, onChange }) {
         const selectedButton = optionRefs.current[selectedIndex];
         if (!selectedButton) return;
 
-        const containerRect = container.getBoundingClientRect();
-        const buttonRect = selectedButton.getBoundingClientRect();
+        const styles = window.getComputedStyle(container);
+        const borderLeft = parseFloat(styles.borderLeftWidth) || 0;
+        const paddingLeft = parseFloat(styles.paddingLeft) || 0;
 
-        thumb.style.width = `${buttonRect.width}px`;
-        thumb.style.transform = `translateX(${buttonRect.left - containerRect.left - 3}px)`;
+        thumb.style.width = `${selectedButton.offsetWidth}px`;
+        thumb.style.transform = `translateX(${selectedButton.offsetLeft - borderLeft - paddingLeft}px)`;
     }, [value, options]);
 
     return (

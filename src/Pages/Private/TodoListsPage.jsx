@@ -270,6 +270,25 @@ export default function TodoListsPage() {
         });
     }, [lists, todoFilter]);
 
+    const overallData = useMemo(() => {
+        const allGoals = visibleLists.flatMap((list) =>
+            Array.isArray(list.items) ? list.items : []
+        );
+
+        const goalsCompleted = allGoals.filter((goal) => goal.done).length;
+        const activeGoals = allGoals.length - goalsCompleted;
+        const progressPercent =
+            allGoals.length > 0
+                ? Math.round((goalsCompleted / allGoals.length) * 100)
+                : 0;
+
+        return {
+            goalsCompleted,
+            activeGoals,
+            progressPercent,
+        };
+    }, [visibleLists]);
+
     async function handleSubmitListName(name) {
         const title = name.trim();
         if (!title) return;
@@ -493,10 +512,31 @@ export default function TodoListsPage() {
     return (
         <div className="page">
             <header className="page__header todoListsPage_header">
-                <h1 className="page__title">Our Priorities</h1>
-                <p className="page__subtitle text-medium">
-                    Focus on what truly matters.
-                </p>
+                <h1 className="page__title">Overall Data</h1>
+                <div className="todoListsPage_summaryBar" aria-label="Overall goals data">
+                    <div className="todoListsPage_summaryMetric">
+                        <span className="todoListsPage_summaryLabel">Goals completed</span>
+                        <strong className="todoListsPage_summaryValue">{overallData.goalsCompleted}</strong>
+                    </div>
+
+                    <div className="todoListsPage_summaryMetric">
+                        <span className="todoListsPage_summaryLabel">Active goals</span>
+                        <strong className="todoListsPage_summaryValue">{overallData.activeGoals}</strong>
+                    </div>
+
+                    <div className="todoListsPage_summaryMetric todoListsPage_summaryMetric--progress">
+                        <div className="todoListsPage_summaryText">
+                            <span className="todoListsPage_summaryLabel">Overall progress</span>
+                        </div>
+                        <div
+                            className="todoListsPage_progressCircle"
+                            style={{ "--progress": `${overallData.progressPercent}%` }}
+                            aria-hidden="true"
+                        >
+                            <span className="todoListsPage_progressCircleValue">{overallData.progressPercent}%</span>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <div className="todoListsPage_actions">
