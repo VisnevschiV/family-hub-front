@@ -1,62 +1,4 @@
-﻿.periodModalOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(30, 24, 18, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 60;
-}
-
-.periodModalCard {
-    width: min(680px, 100%);
-    background: var(--surface-strong);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-    display: grid;
-    gap: 14px;
-}
-
-.periodModalHeader {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.periodModalTitle {
-    margin: 0;
-    font-size: 20px;
-    font-family: var(--font-display);
-}
-
-.periodModalSubtitle {
-    margin: 4px 0 0;
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-.periodModalClose {
-    border: none;
-    background: transparent;
-    font-size: 22px;
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: inline-grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-
-.periodModalClose:hover {
-    background: #f3e6d8;
-}
-
-.periodModalError {
+﻿.periodModalError {
     margin: 0;
     background: #fde2d7;
     color: #b8543e;
@@ -112,36 +54,6 @@
     gap: 14px;
 }
 
-.periodField {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--text);
-}
-
-.periodField span {
-    color: var(--text-muted);
-    font-weight: 600;
-}
-
-.periodField input[type="number"],
-.periodField input[type="date"] {
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-}
-
-.periodField input:focus {
-    outline: none;
-    border-color: #e7a7bf;
-    box-shadow: 0 0 0 3px rgba(231, 167, 191, 0.2);
-}
-
 .periodField--wide {
     grid-column: 1 / -1;
 }
@@ -162,16 +74,7 @@
     grid-column: 1 / -1;
     background: linear-gradient(135deg, #e7a7bf, #cf6e93);
     color: #fff;
-    border: none;
     font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 10px 24px rgba(180, 101, 65, 0.2);
-}
-
-.periodSaveButton:disabled,
-.periodDeleteButton:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
 }
 
 .periodDangerZone {
@@ -184,7 +87,6 @@
     color: #b8543e;
     border: 1px solid #e9b7a4;
     font-weight: 700;
-    cursor: pointer;
 }
 
 .periodDeleteButton:hover:not(:disabled) {

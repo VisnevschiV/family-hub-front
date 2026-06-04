@@ -1,3 +1,6 @@
+import UniversalModal from "../UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalHeader } from "../UniversalModal/ModalPrimitives.jsx";
+
 export default function AddMilestoneModal({
     isOpen,
     isCollapsed,
@@ -13,46 +16,51 @@ export default function AddMilestoneModal({
     if (!isOpen || isCollapsed) return null;
 
     return (
-        <div
-            className="todoList__modalBackdrop"
-            role="dialog"
-            aria-modal="true"
-            onMouseDown={(e) => {
-                if (e.target === e.currentTarget) onClose();
-            }}
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="todoList__modalBackdrop universalModal__addOverlay"
+            dialogClassName="todoList__modal universalModal__addSurface"
         >
-            <div className="todoList__modal">
-                <div className="todoList__modalTitle">{title}</div>
+            <ModalHeader
+                title={title}
+                subtitle="Add a short task and save it."
+                onClose={onClose}
+                className="todoList__modalHeader"
+                titleAs="div"
+                titleClassName="todoList__modalTitle"
+                subtitleClassName="text-medium"
+                closeButtonClassName="todoList__modalClose"
+            />
 
-                <form
-                    className="todoList__modalForm"
-                    onSubmit={onSubmit}
-                >
-                    <input
-                        className="todoList__modalInput"
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
-                        placeholder={placeholder}
-                        autoFocus
-                    />
+            <form
+                className="todoList__modalForm universalModal__body"
+                onSubmit={onSubmit}
+            >
+                <input
+                    className="todoList__modalInput universalModal__input"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    autoFocus
+                />
 
-                    <div className="todoList__modalActions">
-                        <button
-                            type="button"
-                            className="todoList__modalBtn todoList__modalBtn--ghost"
-                            onClick={onClose}
-                        >
-                            {cancelLabel}
-                        </button>
-                        <button
-                            type="submit"
-                            className="todoList__modalBtn todoList__modalBtn--primary"
-                        >
-                            {submitLabel}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <ModalActions className="todoList__modalActions universalModal__addActions">
+                    <button
+                        type="button"
+                        className="btn-secondary medium universalModal__button universalModal__button--ghost"
+                        onClick={onClose}
+                    >
+                        {cancelLabel}
+                    </button>
+                    <button
+                        type="submit"
+                        className="addButton medium universalModal__button"
+                    >
+                        {submitLabel}
+                    </button>
+                </ModalActions>
+            </form>
+        </UniversalModal>
     );
 }

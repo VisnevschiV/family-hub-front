@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalField, ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./TransactionModal/transactionModal.css";
 import "./TransactionModal/transactionModaldesktop.css";
 import "./TransactionModal/transactionModalmobile.css";
@@ -66,70 +68,75 @@ export default function TransactionModal({
     const title = mode === "add" ? "Add Transaction" : "Edit Transaction";
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content transaction-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>{title}</h2>
-                    <button className="close-button" onClick={onClose} disabled={isLoading}>
-                        ×
-                    </button>
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="modal-overlay universalModal__addOverlay"
+            dialogClassName="modal-content transaction-modal universalModal__addSurface"
+        >
+            <ModalHeader
+                title={title}
+                subtitle="Fill in details for this transaction."
+                onClose={onClose}
+                className="modal-header"
+                subtitleClassName="text-medium"
+                closeButtonClassName="close-button"
+            />
+
+            <form className="universalModal__body" onSubmit={handleSubmit}>
+                <ModalField label="Description" htmlFor="transaction-description" className="form-group">
+                    <input
+                        className="universalModal__input"
+                        id="transaction-description"
+                        type="text"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="e.g., Grocery shopping, Gas"
+                        disabled={isLoading}
+                        autoFocus
+                    />
+                </ModalField>
+
+                <div className="form-row">
+                    <ModalField label="Amount" htmlFor="transaction-amount" className="form-group">
+                        <input
+                            className="universalModal__input"
+                            id="transaction-amount"
+                            type="number"
+                            step="0.01"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            placeholder="0.00"
+                            disabled={isLoading}
+                        />
+                    </ModalField>
+
+                    <ModalField label="Currency" htmlFor="transaction-currency" className="form-group">
+                        <select
+                            className="universalModal__select"
+                            id="transaction-currency"
+                            value={currencyISOCode}
+                            onChange={(e) => setCurrencyISOCode(e.target.value)}
+                            disabled={isLoading}
+                        >
+                            {COMMON_CURRENCIES.map((curr) => (
+                                <option key={curr.code} value={curr.code}>
+                                    {curr.code}
+                                </option>
+                            ))}
+                        </select>
+                    </ModalField>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="transaction-description">Description</label>
-                        <input
-                            id="transaction-description"
-                            type="text"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="e.g., Grocery shopping, Gas"
-                            disabled={isLoading}
-                            autoFocus
-                        />
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="transaction-amount">Amount</label>
-                            <input
-                                id="transaction-amount"
-                                type="number"
-                                step="0.01"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0.00"
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="transaction-currency">Currency</label>
-                            <select
-                                id="transaction-currency"
-                                value={currencyISOCode}
-                                onChange={(e) => setCurrencyISOCode(e.target.value)}
-                                disabled={isLoading}
-                            >
-                                {COMMON_CURRENCIES.map((curr) => (
-                                    <option key={curr.code} value={curr.code}>
-                                        {curr.code}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="modal-buttons">
-                        <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium">
-                            Cancel
-                        </button>
-                        <button type="submit" disabled={isLoading} className="btn-primary medium">
-                            {isLoading ? "Saving..." : mode === "add" ? "Add" : "Update"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <ModalActions className="modal-buttons universalModal__addActions">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium universalModal__button universalModal__button--ghost">
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={isLoading} className="addButton medium universalModal__button">
+                        {isLoading ? "Saving..." : mode === "add" ? "Add" : "Update"}
+                    </button>
+                </ModalActions>
+            </form>
+        </UniversalModal>
     );
 }

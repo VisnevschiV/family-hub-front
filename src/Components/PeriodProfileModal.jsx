@@ -5,6 +5,8 @@ import {
     getPeriodProfile,
     updatePeriodProfile,
 } from "../api/periodProfile.js";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalField, ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./PeriodProfileModal/periodProfileModal.css";
 import "./PeriodProfileModal/periodProfileModaldesktop.css";
 import "./PeriodProfileModal/periodProfileModalmobile.css";
@@ -145,134 +147,136 @@ function PeriodProfileModal({ isOpen, onClose }) {
     }
 
     return (
-        <div className="periodModalOverlay" onClick={onClose}>
-            <div className="periodModalCard" onClick={(e) => e.stopPropagation()}>
-                <div className="periodModalHeader">
-                    <div>
-                        <h2 className="periodModalTitle">Period settings</h2>
-                        <p className="periodModalSubtitle text-medium">
-                            Manage your cycle details and predictions.
-                        </p>
-                    </div>
-                    <button type="button" className="periodModalClose" onClick={onClose}>
-                        ✕
-                    </button>
-                </div>
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="periodModalOverlay"
+            dialogClassName="periodModalCard"
+        >
+            <ModalHeader
+                title="Period settings"
+                subtitle="Manage your cycle details and predictions."
+                onClose={onClose}
+                closeIcon="✕"
+                className="periodModalHeader"
+                titleClassName="periodModalTitle"
+                subtitleClassName="periodModalSubtitle text-medium"
+                closeButtonClassName="periodModalClose"
+            />
 
-                {error && <p className="periodModalError text-medium">{error}</p>}
-                {success && <p className="periodModalSuccess text-medium">{success}</p>}
+            {error && <p className="periodModalError text-medium">{error}</p>}
+            {success && <p className="periodModalSuccess text-medium">{success}</p>}
 
-                {loading ? (
-                    <p className="text-medium" style={{ color: "var(--text-muted)" }}>Loading...</p>
-                ) : (
-                    <>
-                        {profile && (
-                            <div className="periodStats">
-                                <div className="periodStatItem">
-                                    <span className="periodStatItem__label">Effective cycle</span>
-                                    <span className="periodStatItem__value">
-                                        {profile.effectiveCycleLengthDays ?? "—"} days
-                                    </span>
-                                </div>
-                                <div className="periodStatItem">
-                                    <span className="periodStatItem__label">Learned cycle</span>
-                                    <span className="periodStatItem__value">
-                                        {profile.learnedCycleLengthDays != null
-                                            ? `${profile.learnedCycleLengthDays} days`
-                                            : "Not yet"}
-                                    </span>
-                                </div>
-                                <div className="periodStatItem">
-                                    <span className="periodStatItem__label">Samples</span>
-                                    <span className="periodStatItem__value">
-                                        {profile.learningSamples ?? 0}
-                                    </span>
-                                </div>
-                                <div className="periodStatItem">
-                                    <span className="periodStatItem__label">Next predicted</span>
-                                    <span className="periodStatItem__value">
-                                        {formatDate(profile.nextPredictedStartDate)}
-                                    </span>
-                                </div>
+            {loading ? (
+                <p className="text-medium" style={{ color: "var(--text-muted)" }}>Loading...</p>
+            ) : (
+                <>
+                    {profile && (
+                        <div className="periodStats">
+                            <div className="periodStatItem">
+                                <span className="periodStatItem__label">Effective cycle</span>
+                                <span className="periodStatItem__value">
+                                    {profile.effectiveCycleLengthDays ?? "—"} days
+                                </span>
                             </div>
-                        )}
+                            <div className="periodStatItem">
+                                <span className="periodStatItem__label">Learned cycle</span>
+                                <span className="periodStatItem__value">
+                                    {profile.learnedCycleLengthDays != null
+                                        ? `${profile.learnedCycleLengthDays} days`
+                                        : "Not yet"}
+                                </span>
+                            </div>
+                            <div className="periodStatItem">
+                                <span className="periodStatItem__label">Samples</span>
+                                <span className="periodStatItem__value">
+                                    {profile.learningSamples ?? 0}
+                                </span>
+                            </div>
+                            <div className="periodStatItem">
+                                <span className="periodStatItem__label">Next predicted</span>
+                                <span className="periodStatItem__value">
+                                    {formatDate(profile.nextPredictedStartDate)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
 
-                        <div className="periodForm">
-                            <label className="periodField">
-                                <span>Cycle length (days)</span>
-                                <input
-                                    type="number"
-                                    name="cycleLengthDays"
-                                    value={form.cycleLengthDays}
-                                    onChange={handleChange}
-                                    min={15}
-                                    max={60}
-                                    disabled={saving}
-                                />
-                            </label>
+                    <div className="periodForm">
+                        <ModalField label="Cycle length (days)" className="periodField">
+                            <input
+                                className="universalModal__input"
+                                type="number"
+                                name="cycleLengthDays"
+                                value={form.cycleLengthDays}
+                                onChange={handleChange}
+                                min={15}
+                                max={60}
+                                disabled={saving}
+                            />
+                        </ModalField>
 
-                            <label className="periodField">
-                                <span>Period length (days)</span>
-                                <input
-                                    type="number"
-                                    name="periodLengthDays"
-                                    value={form.periodLengthDays}
-                                    onChange={handleChange}
-                                    min={1}
-                                    max={15}
-                                    disabled={saving}
-                                />
-                            </label>
+                        <ModalField label="Period length (days)" className="periodField">
+                            <input
+                                className="universalModal__input"
+                                type="number"
+                                name="periodLengthDays"
+                                value={form.periodLengthDays}
+                                onChange={handleChange}
+                                min={1}
+                                max={15}
+                                disabled={saving}
+                            />
+                        </ModalField>
 
-                            <label className="periodField periodField--wide">
-                                <span>Last period start date</span>
-                                <input
-                                    type="date"
-                                    name="lastPeriodStartDate"
-                                    value={form.lastPeriodStartDate}
-                                    onChange={handleChange}
-                                    max={todayIso()}
-                                    disabled={saving}
-                                />
-                            </label>
+                        <ModalField label="Last period start date" className="periodField periodField--wide">
+                            <input
+                                className="universalModal__input"
+                                type="date"
+                                name="lastPeriodStartDate"
+                                value={form.lastPeriodStartDate}
+                                onChange={handleChange}
+                                max={todayIso()}
+                                disabled={saving}
+                            />
+                        </ModalField>
 
-                            <label className="periodField periodField--wide periodCheckbox">
-                                <input
-                                    type="checkbox"
-                                    name="predictionEnabled"
-                                    checked={form.predictionEnabled}
-                                    onChange={handleChange}
-                                    disabled={saving}
-                                />
-                                <span>Enable predictions</span>
-                            </label>
+                        <label className="periodField periodField--wide periodCheckbox">
+                            <input
+                                type="checkbox"
+                                name="predictionEnabled"
+                                checked={form.predictionEnabled}
+                                onChange={handleChange}
+                                disabled={saving}
+                            />
+                            <span>Enable predictions</span>
+                        </label>
 
+                        <button
+                            type="button"
+                            className="periodSaveButton long universalModal__button"
+                            onClick={handleSave}
+                            disabled={saving || !canSubmit}
+                        >
+                            {saving ? "Saving..." : "Save settings"}
+                        </button>
+                    </div>
+
+                    {profile && (
+                        <div className="periodDangerZone">
                             <button
                                 type="button"
-                                className="periodSaveButton long"
-                                onClick={handleSave}
-                                disabled={saving || !canSubmit}
+                                className="periodDeleteButton long universalModal__button universalModal__button--danger"
+                                onClick={handleDeleteProfile}
+                                disabled={deleteLoading}
                             >
-                                {saving ? "Saving..." : "Save settings"}
+                                {deleteLoading ? "Deleting..." : "Delete period profile"}
                             </button>
                         </div>
-
-                        {profile && (
-                            <div className="periodDangerZone">
-                                <button
-                                    type="button"
-                                    className="periodDeleteButton long"
-                                    onClick={handleDeleteProfile}
-                                    disabled={deleteLoading}
-                                >
-                                    {deleteLoading ? "Deleting..." : "Delete period profile"}
-                                </button>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-        </div>
+                    )}
+                </>
+            )}
+        </UniversalModal>
     );
 }
 

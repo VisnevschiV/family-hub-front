@@ -1,0 +1,175 @@
+.universalModal__overlay {
+    position: fixed;
+    inset: 0;
+    min-height: var(--universal-modal-viewport-height, 100vh);
+    z-index: 5000 !important;
+    display: flex;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    background: var(--shared-modal-overlay, rgba(16, 11, 19, 0.62));
+}
+
+.universalModal__dialog {
+    width: 100%;
+    max-width: min(520px, calc(100vw - 32px));
+    max-height: calc(var(--universal-modal-viewport-height, 100vh) - 32px);
+    overflow: auto;
+    animation: universalModal-fadeIn 0.16s ease-out;
+}
+
+.universalModal__panel {
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: var(--ui-radius) !important;
+    padding: 18px !important;
+    box-shadow: var(--shadow);
+}
+
+.universalModal__header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.universalModal__headerContent {
+    width: 100%;
+    text-align: center;
+}
+
+.universalModal__title {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.2;
+    font-family: var(--font-display);
+    color: var(--text);
+}
+
+.universalModal__subtitle {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.universalModal__body {
+    margin-top: 16px;
+    display: grid;
+    gap: 14px;
+}
+
+.universalModal__field {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.universalModal__fieldLabel {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.universalModal__input,
+.universalModal__textarea,
+.universalModal__select,
+.universalModal__field input,
+.universalModal__field textarea,
+.universalModal__field select {
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    min-height: 44px;
+    font-family: inherit;
+}
+
+.universalModal__textarea {
+    resize: vertical;
+}
+
+.universalModal__input:focus,
+.universalModal__textarea:focus,
+.universalModal__select:focus,
+.universalModal__field input:focus,
+.universalModal__field textarea:focus,
+.universalModal__field select:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(212, 131, 92, 0.14);
+}
+
+.universalModal__actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.universalModal__button {
+    background: var(--gradient-button-primary);
+    color: var(--text);
+    border: 1px solid var(--brand);
+    border-radius: var(--ui-radius) !important;
+    padding: 0 var(--ui-button-padding-x);
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(180, 101, 65, 0.2);
+}
+
+.universalModal__button--ghost {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.universalModal__button,
+.universalModal__button--ghost,
+.universalModal__button--danger {
+    min-width: 120px;
+    width: auto !important;
+}
+
+.universalModal__button--danger {
+    background: #fde2d7;
+    color: #b8543e;
+    border: 1px solid #e9b7a4;
+    box-shadow: none;
+}
+
+.universalModal__button:disabled,
+.universalModal__button--ghost:disabled,
+.universalModal__button--danger:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .universalModal__overlay {
+        padding: 12px;
+    }
+
+    .universalModal__dialog {
+        max-width: calc(100vw - 24px);
+    }
+}
+
+@keyframes universalModal-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

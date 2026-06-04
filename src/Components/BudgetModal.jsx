@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalField, ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./BudgetModal/budgetModal.css";
 import "./BudgetModal/budgetModaldesktop.css";
 import "./BudgetModal/budgetModalmobile.css";
@@ -57,55 +59,60 @@ export default function BudgetModal({
     const title = mode === "add" ? "Create Budget" : "Edit Budget";
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content budget-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>{title}</h2>
-                    <button className="close-button" onClick={onClose} disabled={isLoading}>
-                        ×
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="modal-overlay universalModal__addOverlay"
+            dialogClassName="modal-content budget-modal universalModal__addSurface"
+        >
+            <ModalHeader
+                title={title}
+                subtitle="Set the budget name and currency."
+                onClose={onClose}
+                className="modal-header"
+                subtitleClassName="text-medium"
+                closeButtonClassName="close-button"
+            />
+
+            <form className="universalModal__body" onSubmit={handleSubmit}>
+                <ModalField label="Budget Name" htmlFor="budget-name" className="form-group">
+                    <input
+                        className="universalModal__input"
+                        id="budget-name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g., Monthly Budget, Emergency Fund"
+                        disabled={isLoading}
+                        autoFocus
+                    />
+                </ModalField>
+
+                <ModalField label="Currency" htmlFor="budget-currency" className="form-group">
+                    <select
+                        className="universalModal__select"
+                        id="budget-currency"
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        disabled={isLoading}
+                    >
+                        {COMMON_CURRENCIES.map((curr) => (
+                            <option key={curr.code} value={curr.code}>
+                                {curr.label}
+                            </option>
+                        ))}
+                    </select>
+                </ModalField>
+
+                <ModalActions className="modal-buttons universalModal__addActions">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium universalModal__button universalModal__button--ghost">
+                        Cancel
                     </button>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="budget-name">Budget Name</label>
-                        <input
-                            id="budget-name"
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g., Monthly Budget, Emergency Fund"
-                            disabled={isLoading}
-                            autoFocus
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="budget-currency">Currency</label>
-                        <select
-                            id="budget-currency"
-                            value={currency}
-                            onChange={(e) => setCurrency(e.target.value)}
-                            disabled={isLoading}
-                        >
-                            {COMMON_CURRENCIES.map((curr) => (
-                                <option key={curr.code} value={curr.code}>
-                                    {curr.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="modal-buttons">
-                        <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium">
-                            Cancel
-                        </button>
-                        <button type="submit" disabled={isLoading} className="btn-primary medium">
-                            {isLoading ? "Saving..." : mode === "add" ? "Create" : "Update"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                    <button type="submit" disabled={isLoading} className="addButton medium universalModal__button">
+                        {isLoading ? "Saving..." : mode === "add" ? "Create" : "Update"}
+                    </button>
+                </ModalActions>
+            </form>
+        </UniversalModal>
     );
 }

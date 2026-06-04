@@ -236,59 +236,6 @@
         font-size: 9px;
     }
 
-    .calendarModalOverlay {
-        align-items: flex-end;
-        padding: 0 0 calc(56px + env(safe-area-inset-bottom, 0px));
-    }
-
-    .calendarModalCard {
-        width: 100%;
-        max-width: 100%;
-        max-height: calc(100svh - (56px + env(safe-area-inset-bottom, 0px)));
-        max-height: calc(100dvh - (56px + env(safe-area-inset-bottom, 0px)));
-        border-radius: 20px 20px 0 0;
-        padding: 14px 14px calc(10px + env(safe-area-inset-bottom, 0px));
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .calendarModalCard::before {
-        content: '';
-        display: block;
-        width: 36px;
-        height: 4px;
-        background: var(--border);
-        border-radius: 999px;
-        margin: 0 auto 14px;
-    }
-
-    .calendarModalActions {
-        flex-direction: column-reverse;
-        position: sticky;
-        bottom: 0;
-        background: var(--surface-strong);
-        padding-top: 10px;
-        padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-        z-index: 2;
-    }
-
-    .calendarModalButton,
-    .calendarModalButton--ghost,
-    .calendarModalButton--danger {
-        width: 100%;
-        text-align: center;
-    }
-
-    .calendarModalBody {
-        margin-top: 10px;
-        overflow-y: auto;
-        max-height: calc(100svh - 220px);
-        max-height: calc(100dvh - 220px);
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    }
-
     .calendarModalField input,
     .calendarModalField textarea {
         font-size: 16px;

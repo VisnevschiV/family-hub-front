@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./ListNameModal/listNameModal.css";
 import "./ListNameModal/listNameModaldesktop.css";
 import "./ListNameModal/listNameModalmobile.css";
@@ -33,84 +35,89 @@ export default function ListNameModal({
     }
 
     return (
-        <div
-            className="listNameModal__backdrop"
-            role="dialog"
-            aria-modal="true"
-            onMouseDown={(e) => {
-                if (e.target === e.currentTarget) onCancel();
-            }}
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onCancel}
+            overlayClassName="listNameModal__backdrop"
+            dialogClassName="listNameModal"
         >
-            <div className="listNameModal">
-                <div className="listNameModal__title">{title}</div>
+            <ModalHeader
+                title={title}
+                subtitle="Name your list and confirm changes."
+                onClose={onCancel}
+                className="listNameModal__header"
+                titleAs="div"
+                titleClassName="listNameModal__title"
+                subtitleClassName="text-medium"
+                closeButtonClassName="listNameModal__close"
+            />
 
-                <form className="listNameModal__form" onSubmit={handleSubmit}>
-                    <input
-                        className="listNameModal__input"
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        placeholder="e.g. Home"
-                        autoFocus
-                    />
+            <form className="listNameModal__form universalModal__body" onSubmit={handleSubmit}>
+                <input
+                    className="listNameModal__input universalModal__input"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder="e.g. Home"
+                    autoFocus
+                />
 
-                    {showParticipants ? (
-                        <div className="listNameModal__participants">
-                            <span className="listNameModal__participantsLabel">Participants</span>
-                            <button
-                                type="button"
-                                className="listNameModalParticipants__trigger"
-                                onClick={onToggleParticipantsDropdown}
-                            >
-                                {selectedParticipantLabel}
-                            </button>
-
-                            {participantsDropdownOpen ? (
-                                <div className="listNameModalParticipants__menu">
-                                    {familyMembers.length === 0 ? (
-                                        <p className="listNameModalParticipants__empty text-medium">
-                                            No family members available
-                                        </p>
-                                    ) : (
-                                        familyMembers.map((member) => {
-                                            const isSelected = selectedParticipantIds.includes(member.id);
-
-                                            return (
-                                                <label
-                                                    key={member.id}
-                                                    className="listNameModalParticipants__option"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => onToggleParticipant(member.id)}
-                                                    />
-                                                    <span>{member.name}</span>
-                                                </label>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-
-                    <div className="listNameModal__actions">
+                {showParticipants ? (
+                    <div className="listNameModal__participants">
+                        <span className="listNameModal__participantsLabel">Participants</span>
                         <button
                             type="button"
-                            className="listNameModal__btn listNameModal__btn--ghost"
-                            onClick={onCancel}
+                            className="listNameModalParticipants__trigger"
+                            onClick={onToggleParticipantsDropdown}
                         >
-                            Cancel
+                            {selectedParticipantLabel}
                         </button>
-                        <button
-                            type="submit"
-                            className="listNameModal__btn listNameModal__btn--primary"
-                        >
-                            {confirmLabel}
-                        </button>
+
+                        {participantsDropdownOpen ? (
+                            <div className="listNameModalParticipants__menu">
+                                {familyMembers.length === 0 ? (
+                                    <p className="listNameModalParticipants__empty text-medium">
+                                        No family members available
+                                    </p>
+                                ) : (
+                                    familyMembers.map((member) => {
+                                        const isSelected = selectedParticipantIds.includes(member.id);
+
+                                        return (
+                                            <label
+                                                key={member.id}
+                                                className="listNameModalParticipants__option"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => onToggleParticipant(member.id)}
+                                                />
+                                                <span>{member.name}</span>
+                                            </label>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        ) : null}
                     </div>
-                </form>
-            </div>
-        </div>
+                ) : null}
+
+                <ModalActions className="listNameModal__actions">
+                    <button
+                        type="button"
+                        className="btn-secondary medium universalModal__button universalModal__button--ghost"
+                        onClick={onCancel}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="addButton medium universalModal__button"
+                    >
+                        {confirmLabel}
+                    </button>
+                </ModalActions>
+            </form>
+        </UniversalModal>
     );
 }
