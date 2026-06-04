@@ -416,15 +416,10 @@ export default function TodoListsPage() {
             return;
         }
 
-        const nextCompleted = !targetTask.done;
+        const previousCompleted = !!targetTask.done;
+        const nextCompleted = !previousCompleted;
 
-        await updateTask(
-            backendListId,
-            backendTaskId,
-            targetTask.text,
-            nextCompleted
-        );
-
+        // Local-first: reflect the toggle immediately, then sync with backend.
         setLists((prev) =>
             prev.map((list) => {
                 if (list.id !== listId) return list;
@@ -437,6 +432,31 @@ export default function TodoListsPage() {
                 };
             })
         );
+
+        try {
+            await updateTask(
+                backendListId,
+                backendTaskId,
+                targetTask.text,
+                nextCompleted
+            );
+        } catch (err) {
+            // Roll back if persistence fails.
+            setLists((prev) =>
+                prev.map((list) => {
+                    if (list.id !== listId) return list;
+
+                    return {
+                        ...list,
+                        items: list.items.map((item) =>
+                            item.id === taskId ? { ...item, done: previousCompleted } : item
+                        ),
+                    };
+                })
+            );
+
+            console.error(err.message || "Failed to toggle task");
+        }
     }
 
     async function handleAddTask(listId, taskName) {
