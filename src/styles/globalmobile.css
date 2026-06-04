@@ -1,8 +1,15 @@
 ﻿@media (max-width: 900px) {
+
   /* Prevent content from overflowing viewport width */
   img,
   video {
     max-width: 100%;
   }
-}
 
+  /* iOS Safari zooms focused controls below 16px. Keep typing stable on mobile. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

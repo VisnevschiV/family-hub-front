@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { fetchCurrentPersona } from "../api/persona.js";
 import {
     createNotificationsSseClient,
@@ -12,12 +12,40 @@ import "./AppShell/appShellmobile.css";
 
 function AppShell() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [persona, setPersona] = useState(null);
     const [personaLoading, setPersonaLoading] = useState(true);
     const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
     const [notificationToasts, setNotificationToasts] = useState([]);
+    const [isMobileTopbarMinimized, setIsMobileTopbarMinimized] = useState(false);
     const toastTimersRef = useRef(new Map());
     const sseClientRef = useRef(null);
+    const topbarTimerRef = useRef(null);
+    const lastScrollYRef = useRef(0);
+
+    const isProfilePage = location.pathname === "/app/profile";
+
+    function clearTopbarTimer() {
+        if (topbarTimerRef.current) {
+            window.clearTimeout(topbarTimerRef.current);
+            topbarTimerRef.current = null;
+        }
+    }
+
+    function scheduleTopbarAutoMinimize(duration = 2200) {
+        clearTopbarTimer();
+        if (isProfilePage) return;
+
+        topbarTimerRef.current = window.setTimeout(() => {
+            setIsMobileTopbarMinimized(true);
+            topbarTimerRef.current = null;
+        }, duration);
+    }
+
+    function revealTopbarTemporarily(duration = 2600) {
+        setIsMobileTopbarMinimized(false);
+        scheduleTopbarAutoMinimize(duration);
+    }
 
     useEffect(() => {
         let active = true;
@@ -101,6 +129,7 @@ function AppShell() {
         function handleIncomingNotification(event) {
             showIncomingToast(event?.detail || null);
             setHasUnreadNotifications(true);
+            revealTopbarTemporarily();
             window.dispatchEvent(new Event("notifications:changed"));
         }
 
@@ -122,6 +151,89 @@ function AppShell() {
             window.removeEventListener("notifications:clear", handleNotificationsClear);
         };
     }, []);
+
+    useEffect(() => {
+        const mobileMedia = window.matchMedia("(max-width: 900px), (max-width: 1024px) and (hover: none) and (pointer: coarse)");
+
+        const handleScroll = () => {
+            if (!mobileMedia.matches) {
+                setIsMobileTopbarMinimized(false);
+                lastScrollYRef.current = window.scrollY;
+                clearTopbarTimer();
+                return;
+            }
+
+            if (isProfilePage) {
+                setIsMobileTopbarMinimized(false);
+                lastScrollYRef.current = window.scrollY;
+                clearTopbarTimer();
+                return;
+            }
+
+            const currentY = window.scrollY;
+            const delta = currentY - lastScrollYRef.current;
+
+            if (delta > 6) {
+                setIsMobileTopbarMinimized(true);
+                clearTopbarTimer();
+            } else if (delta < -4) {
+                setIsMobileTopbarMinimized(false);
+                scheduleTopbarAutoMinimize();
+            }
+
+            lastScrollYRef.current = currentY;
+        };
+
+        const handleMediaChange = () => {
+            if (!mobileMedia.matches) {
+                setIsMobileTopbarMinimized(false);
+                clearTopbarTimer();
+            }
+        };
+
+        lastScrollYRef.current = window.scrollY;
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        mobileMedia.addEventListener("change", handleMediaChange);
+
+        handleScroll();
+        if (mobileMedia.matches && !isProfilePage) {
+            scheduleTopbarAutoMinimize();
+        }
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            mobileMedia.removeEventListener("change", handleMediaChange);
+            clearTopbarTimer();
+        };
+    }, [isProfilePage]);
+
+    useEffect(() => {
+        if (isProfilePage) {
+            setIsMobileTopbarMinimized(false);
+            clearTopbarTimer();
+        }
+    }, [isProfilePage]);
+
+    useEffect(() => {
+        return () => {
+            clearTopbarTimer();
+        };
+    }, []);
+
+    const sidebarClassName = [
+        "appShell__sidebar",
+        isMobileTopbarMinimized ? "appShell__sidebar--minimized" : "",
+        isProfilePage ? "appShell__sidebar--pinned" : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    const mainClassName = [
+        "appShell__main",
+        isMobileTopbarMinimized ? "appShell__main--topbarMinimized" : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     useEffect(() => {
         function stopSseAndClear() {
@@ -197,7 +309,7 @@ function AppShell() {
 
     return (
         <div className="appShell">
-            <aside className="appShell__sidebar">
+            <aside className={sidebarClassName}>
                 <NavLink to="/app" end className="appShell__brand">
                     <div className="appShell__logo">
                         <img src="/logo.png" alt="happywifehappylife logo" className="appShell__logoImage" />
@@ -286,11 +398,18 @@ function AppShell() {
                 </NavLink>
             </aside>
 
-            <div className="appShell__main">
+            <div className={mainClassName}>
                 <NavLink
                     to="/app/notifications"
                     className={({ isActive }) =>
-                        `appShell__notificationsShortcut${isActive ? " appShell__notificationsShortcut--active" : ""}`
+                        [
+                            "appShell__notificationsShortcut",
+                            isActive ? "appShell__notificationsShortcut--active" : "",
+                            isMobileTopbarMinimized ? "appShell__notificationsShortcut--topbarMinimized" : "",
+                            isProfilePage ? "appShell__notificationsShortcut--pinned" : "",
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
                     }
                     aria-label="Notifications"
                     title="Notifications"

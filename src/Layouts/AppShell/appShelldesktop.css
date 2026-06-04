@@ -3,7 +3,7 @@
    Restores the fixed left sidebar and content margin
    =================================================== */
 
-@media (min-width: 901px) {
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
 
     /* ---- Container ---- */
     .appShell {
