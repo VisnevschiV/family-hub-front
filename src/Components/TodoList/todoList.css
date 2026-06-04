@@ -310,7 +310,7 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    touch-action: none;
+    touch-action: pan-y;
 }
 
 .todoList__item::after {
@@ -344,12 +344,14 @@
     background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
     box-shadow: 0 10px 24px rgba(var(--color-shadow-rgb), 0.2);
     z-index: 2;
+    touch-action: none;
 }
 
 .todoList__item--dragging {
     opacity: 0.9;
     background-color: rgba(255, 255, 255, 0.06);
     cursor: grabbing;
+    touch-action: none;
 }
 
 .todoList__item--touchHold .todoList__dragHandle,

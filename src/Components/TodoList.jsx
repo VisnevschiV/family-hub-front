@@ -293,7 +293,9 @@ export default function TodoList({
         if (editingTaskId || deletingId) return;
         if (e.button != null && e.button !== 0) return;
 
-        e.preventDefault();
+        if (e.pointerType !== "touch") {
+            e.preventDefault();
+        }
         clearEditLongPressTimer();
 
         if (e.pointerType !== "touch") {
