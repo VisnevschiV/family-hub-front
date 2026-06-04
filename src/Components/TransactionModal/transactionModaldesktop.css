@@ -1,9 +1,4 @@
 ﻿@media (min-width: 768px) {
-    .transaction-modal {
-        width: 100%;
-        max-width: 550px;
-    }
-
     .form-row {
         display: grid;
         grid-template-columns: 2fr 1fr;

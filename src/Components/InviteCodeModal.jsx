@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./InviteCodeModal/inviteCodeModal.css";
 import "./InviteCodeModal/inviteCodeModaldesktop.css";
 import "./InviteCodeModal/inviteCodeModalmobile.css";
@@ -47,54 +49,50 @@ function InviteCodeModal({ isOpen, onClose, code, expiresAt }) {
     if (!isOpen) return null;
 
     return (
-        <div className="modalOverlay" role="dialog" aria-modal="true">
-            <div className="modalCard">
-                <div className="modalHeader">
-                    <div>
-                        <h2 className="modalTitle">Family invitation code</h2>
-                        <p className="modalSubtitle text-medium">
-                            Share this code with family members to let them join.
-                        </p>
-                    </div>
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="modalOverlay"
+            dialogClassName="modalCard"
+        >
+            <ModalHeader
+                title="Family invitation code"
+                subtitle="Share this code with family members to let them join."
+                onClose={onClose}
+                className="modalHeader"
+                titleClassName="modalTitle"
+                subtitleClassName="modalSubtitle text-medium"
+                closeButtonClassName="modalClose"
+            />
+
+            <div className="modalBody universalModal__body">
+                <div className="codeContainer">
+                    <div className="codeDisplay">{code}</div>
                     <button
                         type="button"
-                        className="modalClose"
-                        onClick={onClose}
-                        aria-label="Close"
+                        className="copyButton universalModal__button"
+                        onClick={handleCopy}
                     >
-                        ×
+                        {copied ? "Copied!" : "Copy"}
                     </button>
                 </div>
 
-                <div className="modalBody">
-                    <div className="codeContainer">
-                        <div className="codeDisplay">{code}</div>
-                        <button
-                            type="button"
-                            className="copyButton"
-                            onClick={handleCopy}
-                        >
-                            {copied ? "Copied!" : "Copy"}
-                        </button>
+                <div className="timerContainer">
+                    <div className="timerLabel">Expires in</div>
+                    <div className={`timerValue ${timeLeft === "Expired" ? "expired" : ""}`}>
+                        {timeLeft}
                     </div>
-
-                    <div className="timerContainer">
-                        <div className="timerLabel">Expires in</div>
-                        <div className={`timerValue ${timeLeft === "Expired" ? "expired" : ""}`}>
-                            {timeLeft}
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        className="modalButton"
-                        onClick={onClose}
-                    >
-                        Done
-                    </button>
                 </div>
+
+                <button
+                    type="button"
+                    className="modalButton universalModal__button"
+                    onClick={onClose}
+                >
+                    Done
+                </button>
             </div>
-        </div>
+        </UniversalModal>
     );
 }
 

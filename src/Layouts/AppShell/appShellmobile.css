@@ -2,7 +2,8 @@
    AppShell â€” Mobile: bottom icon navigation (max-width: 900px)
    =================================================== */
 
-@media (max-width: 900px) {
+@media (max-width: 900px),
+(max-width: 1024px) and (hover: none) and (pointer: coarse) {
 
     /* Slim top bar â€” brand + avatar only, no text nav */
     .appShell__sidebar {
@@ -23,6 +24,25 @@
         box-shadow: 0 2px 10px rgba(var(--color-shadow-rgb), 0.28);
         z-index: 100;
         overflow: visible;
+        transition: top 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+        will-change: top;
+    }
+
+    .appShell__sidebar.appShell__sidebar--minimized:not(.appShell__sidebar--pinned) {
+        top: -44px;
+        opacity: 0.95;
+        box-shadow: 0 1px 5px rgba(var(--color-shadow-rgb), 0.22);
+    }
+
+    .appShell__notificationsShortcut {
+        transition: top 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+        will-change: top;
+    }
+
+    .appShell__notificationsShortcut.appShell__notificationsShortcut--topbarMinimized:not(.appShell__notificationsShortcut--pinned) {
+        top: -36px;
+        opacity: 0.9;
+        box-shadow: 0 1px 5px rgba(var(--color-shadow-rgb), 0.22);
     }
 
     /* Hide the text-based nav links on mobile */
@@ -38,31 +58,38 @@
     /* Main: offset for top bar + bottom nav */
     .appShell__main {
         padding-top: 56px;
-        padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+        transition: padding-top 0.22s ease;
+    }
+
+    .appShell__main.appShell__main--topbarMinimized {
+        padding-top: 12px;
     }
 
     /* Bottom nav bar */
     .appShell__bottomNav {
         display: flex;
         flex-direction: row;
-        align-items: stretch;
+        align-items: center;
+        justify-content: center;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: calc(60px + env(safe-area-inset-bottom, 0px));
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        left: 10px;
+        right: 10px;
+        height: 60px;
         background: var(--surface-strong);
-        border-top: 1px solid var(--border);
-        box-shadow: 0 -4px 18px rgba(70, 52, 38, 0.08);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px rgba(70, 52, 38, 0.16);
+        backdrop-filter: blur(12px) saturate(1.05);
         z-index: 100;
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
     /* Toast stack: above the bottom nav */
     .appShell__toastStack {
-        bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(84px + env(safe-area-inset-bottom, 0px));
         top: auto;
         right: 10px;
     }

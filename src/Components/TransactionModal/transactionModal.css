@@ -1,12 +1,1 @@
-﻿.transaction-modal {
-    width: 90%;
-    max-width: 500px;
-}
-
-@media (max-width: 767px) {
-    .transaction-modal {
-        width: 100%;
-        max-width: none;
-        border-radius: 16px 16px 0 0;
-    }
-}
+﻿

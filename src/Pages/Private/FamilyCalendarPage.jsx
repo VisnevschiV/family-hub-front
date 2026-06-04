@@ -10,6 +10,8 @@ import { fetchCurrentPersona } from "../../api/persona.js";
 import NoFamilyBanner from "../../Components/NoFamilyBanner.jsx";
 import AddButton from "../../Components/AddButton.jsx";
 import SegmentedControl from "../../Components/SegmentedControl.jsx";
+import UniversalModal from "../../Components/UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalField, ModalHeader } from "../../Components/UniversalModal/ModalPrimitives.jsx";
 import {
     getFamilyPeriodMonth,
     getPeriodMonth,
@@ -1197,165 +1199,158 @@ function FamilyCalendarPage() {
             </section>
 
             {createModalOpen ? (
-                <div className="calendarModalOverlay" role="dialog" aria-modal="true">
-                    <div className="calendarModalCard">
-                        <div className="calendarModalHeader">
-                            <div>
-                                <h2 className="calendarModalTitle">
-                                    {editingEventId ? "Edit event" : "Create new event"}
-                                </h2>
-                                <p className="calendarModalSubtitle text-medium">
-                                    {editingEventId
-                                        ? "Update title, description, and date/time."
-                                        : "Date is set from your selected day. Add title, details, and time."}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                className="calendarModalClose"
-                                onClick={closeCreateModal}
-                                aria-label="Close"
-                            >
-                                ×
-                            </button>
-                        </div>
+                <UniversalModal
+                    isOpen={createModalOpen}
+                    onClose={closeCreateModal}
+                    overlayClassName="calendarModalOverlay universalModal__addOverlay"
+                    dialogClassName="calendarModalCard universalModal__addSurface"
+                >
+                    <ModalHeader
+                        title={editingEventId ? "Edit event" : "Create new event"}
+                        subtitle={editingEventId
+                            ? "Update title, description, and date/time."
+                            : "Date is set from your selected day. Add title, details, and time."}
+                        onClose={closeCreateModal}
+                        className="calendarModalHeader"
+                        titleClassName="calendarModalTitle"
+                        subtitleClassName="calendarModalSubtitle text-medium"
+                        closeButtonClassName="calendarModalClose"
+                    />
 
-                        <form className="calendarModalBody" onSubmit={handleCreateEvent}>
-                            <label className="calendarModalField">
-                                <span>Title</span>
+                    <form className="calendarModalBody universalModal__body" onSubmit={handleCreateEvent}>
+                        <ModalField label="Title" className="calendarModalField">
+                            <input
+                                className="universalModal__input"
+                                type="text"
+                                value={eventTitle}
+                                onChange={(event) => setEventTitle(event.target.value)}
+                                placeholder="Birthday dinner"
+                                maxLength={120}
+                                required
+                                autoFocus
+                            />
+                        </ModalField>
+
+                        <ModalField label="Description" className="calendarModalField">
+                            <textarea
+                                className="universalModal__textarea"
+                                value={eventDescription}
+                                onChange={(event) => setEventDescription(event.target.value)}
+                                placeholder="Bring dessert and candles"
+                                maxLength={500}
+                                rows={3}
+                                required
+                            />
+                        </ModalField>
+
+                        {editingEventId ? (
+                            <ModalField label="Date and time" className="calendarModalField">
                                 <input
-                                    type="text"
-                                    value={eventTitle}
-                                    onChange={(event) => setEventTitle(event.target.value)}
-                                    placeholder="Birthday dinner"
-                                    maxLength={120}
-                                    required
-                                    autoFocus
-                                />
-                            </label>
-
-                            <label className="calendarModalField">
-                                <span>Description</span>
-                                <textarea
-                                    value={eventDescription}
-                                    onChange={(event) => setEventDescription(event.target.value)}
-                                    placeholder="Bring dessert and candles"
-                                    maxLength={500}
-                                    rows={3}
+                                    className="universalModal__input"
+                                    type="datetime-local"
+                                    value={eventDateTime}
+                                    onChange={(event) => setEventDateTime(event.target.value)}
                                     required
                                 />
-                            </label>
+                            </ModalField>
+                        ) : (
+                            <>
+                                <ModalField label="Date" className="calendarModalField">
+                                    <input className="universalModal__input" type="text" value={selectedDateLabel} readOnly />
+                                </ModalField>
 
-                            {editingEventId ? (
-                                <label className="calendarModalField">
-                                    <span>Date and time</span>
+                                <ModalField label="Time" className="calendarModalField">
                                     <input
-                                        type="datetime-local"
+                                        className="universalModal__input"
+                                        type="time"
                                         value={eventDateTime}
                                         onChange={(event) => setEventDateTime(event.target.value)}
                                         required
                                     />
-                                </label>
-                            ) : (
-                                <>
-                                    <label className="calendarModalField">
-                                        <span>Date</span>
-                                        <input type="text" value={selectedDateLabel} readOnly />
-                                    </label>
+                                </ModalField>
+                            </>
+                        )}
 
-                                    <label className="calendarModalField">
-                                        <span>Time</span>
-                                        <input
-                                            type="time"
-                                            value={eventDateTime}
-                                            onChange={(event) => setEventDateTime(event.target.value)}
-                                            required
-                                        />
-                                    </label>
-                                </>
-                            )}
+                        <div className="calendarModalField universalModal__field">
+                            <span className="universalModal__fieldLabel">Participants</span>
+                            <button
+                                type="button"
+                                className="calendarParticipants__trigger"
+                                onClick={() =>
+                                    setParticipantsDropdownOpen((current) => !current)
+                                }
+                            >
+                                {selectedParticipantLabels}
+                            </button>
 
-                            <div className="calendarModalField">
-                                <span>Participants</span>
+                            {participantsDropdownOpen ? (
+                                <div className="calendarParticipants__menu">
+                                    {familyMembers.length === 0 ? (
+                                        <p className="calendarParticipants__empty text-medium">
+                                            No family members available
+                                        </p>
+                                    ) : (
+                                        familyMembers.map((member) => {
+                                            const isSelected = selectedParticipantIds.includes(member.id);
+
+                                            return (
+                                                <label
+                                                    key={member.id}
+                                                    className="calendarParticipants__option"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => toggleParticipant(member.id)}
+                                                    />
+                                                    <span>{member.name}</span>
+                                                </label>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            ) : null}
+                        </div>
+
+                        <ModalActions className="calendarModalActions universalModal__addActions">
+                            {editingEventId ? (
                                 <button
                                     type="button"
-                                    className="calendarParticipants__trigger"
-                                    onClick={() =>
-                                        setParticipantsDropdownOpen((current) => !current)
-                                    }
+                                    className="calendarModalButton calendarModalButton--danger universalModal__button universalModal__button--danger"
+                                    onClick={handleDeleteEvent}
                                 >
-                                    {selectedParticipantLabels}
+                                    Delete
                                 </button>
-
-                                {participantsDropdownOpen ? (
-                                    <div className="calendarParticipants__menu">
-                                        {familyMembers.length === 0 ? (
-                                            <p className="calendarParticipants__empty text-medium">
-                                                No family members available
-                                            </p>
-                                        ) : (
-                                            familyMembers.map((member) => {
-                                                const isSelected = selectedParticipantIds.includes(member.id);
-
-                                                return (
-                                                    <label
-                                                        key={member.id}
-                                                        className="calendarParticipants__option"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isSelected}
-                                                            onChange={() => toggleParticipant(member.id)}
-                                                        />
-                                                        <span>{member.name}</span>
-                                                    </label>
-                                                );
-                                            })
-                                        )}
-                                    </div>
-                                ) : null}
-                            </div>
-
-                            <div className="calendarModalActions">
-                                {editingEventId ? (
-                                    <button
-                                        type="button"
-                                        className="calendarModalButton calendarModalButton--danger"
-                                        onClick={handleDeleteEvent}
-                                    >
-                                        Delete
-                                    </button>
-                                ) : null}
-                                {!editingEventId ? (
-                                    <button
-                                        type="button"
-                                        className="calendarModalButton calendarModalButton--period"
-                                        onClick={handleStartPeriodForSelectedDay}
-                                        disabled={startingPeriod}
-                                    >
-                                        {startingPeriod
-                                            ? periodCurrentlyOpen
-                                                ? "Stopping..."
-                                                : "Starting..."
-                                            : periodCurrentlyOpen
-                                                ? "Stop period"
-                                                : "Start period"}
-                                    </button>
-                                ) : null}
+                            ) : null}
+                            {!editingEventId ? (
                                 <button
                                     type="button"
-                                    className="calendarModalButton calendarModalButton--ghost"
-                                    onClick={closeCreateModal}
+                                    className="calendarModalButton calendarModalButton--period universalModal__button"
+                                    onClick={handleStartPeriodForSelectedDay}
+                                    disabled={startingPeriod}
                                 >
-                                    Cancel
+                                    {startingPeriod
+                                        ? periodCurrentlyOpen
+                                            ? "Stopping..."
+                                            : "Starting..."
+                                        : periodCurrentlyOpen
+                                            ? "Stop period"
+                                            : "Start period"}
                                 </button>
-                                <button type="submit" className="calendarModalButton">
-                                    {editingEventId ? "Save changes" : "Save event"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                            ) : null}
+                            <button
+                                type="button"
+                                className="btn-secondary medium universalModal__button universalModal__button--ghost"
+                                onClick={closeCreateModal}
+                            >
+                                Cancel
+                            </button>
+                            <button type="submit" className="addButton medium universalModal__button">
+                                {editingEventId ? "Save changes" : "Save event"}
+                            </button>
+                        </ModalActions>
+                    </form>
+                </UniversalModal>
             ) : null}
         </div>
     );

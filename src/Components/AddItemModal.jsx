@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import SegmentedControl from "./SegmentedControl.jsx";
+import UniversalModal from "./UniversalModal/UniversalModal.jsx";
+import { ModalActions, ModalField, ModalHeader } from "./UniversalModal/ModalPrimitives.jsx";
 import "./AddItemModal/addItemModal.css";
 
 const COMMON_CURRENCIES = [
@@ -79,130 +81,135 @@ export default function AddItemModal({
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content addItem-modal" onClick={(event) => event.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Add</h2>
-                    <button className="close-button" onClick={onClose} disabled={isLoading}>
-                        ×
-                    </button>
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            overlayClassName="modal-overlay universalModal__addOverlay"
+            dialogClassName="modal-content addItem-modal universalModal__addSurface"
+        >
+            <ModalHeader
+                title="Add"
+                subtitle="Choose what you want to add and complete the form."
+                onClose={onClose}
+                className="modal-header"
+                subtitleClassName="text-medium"
+                closeButtonClassName="close-button"
+            />
+
+            <form className="universalModal__body" onSubmit={handleSubmit}>
+                <div className={`addItem-modal__toggleRow ${isLoading ? "addItem-modal__toggleRow--disabled" : ""}`}>
+                    <SegmentedControl
+                        options={["Budget", "Transaction"]}
+                        value={itemType === "budget" ? "Budget" : "Transaction"}
+                        onChange={(value) => {
+                            if (isLoading) return;
+                            setItemType(value === "Budget" ? "budget" : "transaction");
+                        }}
+                    />
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className={`addItem-modal__toggleRow ${isLoading ? "addItem-modal__toggleRow--disabled" : ""}`}>
+                {itemType === "transaction" && (
+                    <div className={`addItem-modal__toggleRow addItem-modal__toggleRow--spaced addItem-modal__toggleRow--flow addItem-modal__toggleRow--flow-${flowType} ${isLoading ? "addItem-modal__toggleRow--disabled" : ""}`}>
                         <SegmentedControl
-                            options={["Budget", "Transaction"]}
-                            value={itemType === "budget" ? "Budget" : "Transaction"}
+                            options={["Expense", "Income"]}
+                            value={flowType === "expense" ? "Expense" : "Income"}
                             onChange={(value) => {
                                 if (isLoading) return;
-                                setItemType(value === "Budget" ? "budget" : "transaction");
+                                setFlowType(value === "Expense" ? "expense" : "income");
                             }}
                         />
                     </div>
+                )}
 
-                    {itemType === "transaction" && (
-                        <div className={`addItem-modal__toggleRow addItem-modal__toggleRow--spaced addItem-modal__toggleRow--flow addItem-modal__toggleRow--flow-${flowType} ${isLoading ? "addItem-modal__toggleRow--disabled" : ""}`}>
-                            <SegmentedControl
-                                options={["Expense", "Income"]}
-                                value={flowType === "expense" ? "Expense" : "Income"}
-                                onChange={(value) => {
-                                    if (isLoading) return;
-                                    setFlowType(value === "Expense" ? "expense" : "income");
-                                }}
+                {itemType === "budget" ? (
+                    <>
+                        <ModalField label="Budget Name" htmlFor="add-budget-name" className="form-group">
+                            <input
+                                className="universalModal__input"
+                                id="add-budget-name"
+                                type="text"
+                                value={name}
+                                onChange={(event) => setName(event.target.value)}
+                                placeholder="e.g., Emergency Fund"
+                                disabled={isLoading}
+                                autoFocus
                             />
-                        </div>
-                    )}
+                        </ModalField>
 
-                    {itemType === "budget" ? (
-                        <>
-                            <div className="form-group">
-                                <label htmlFor="add-budget-name">Budget Name</label>
+                        <ModalField label="Currency" htmlFor="add-budget-currency" className="form-group">
+                            <select
+                                className="universalModal__select"
+                                id="add-budget-currency"
+                                value={currencyISOCode}
+                                onChange={(event) => setCurrencyISOCode(event.target.value)}
+                                disabled={isLoading}
+                            >
+                                {COMMON_CURRENCIES.map((currency) => (
+                                    <option key={currency.code} value={currency.code}>
+                                        {currency.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </ModalField>
+                    </>
+                ) : (
+                    <>
+                        <ModalField label="Description" htmlFor="add-transaction-description" className="form-group">
+                            <input
+                                className="universalModal__input"
+                                id="add-transaction-description"
+                                type="text"
+                                value={description}
+                                onChange={(event) => setDescription(event.target.value)}
+                                placeholder="e.g., Grocery shopping"
+                                disabled={isLoading}
+                                autoFocus
+                            />
+                        </ModalField>
+
+                        <div className="form-row">
+                            <ModalField label="Amount" htmlFor="add-transaction-amount" className="form-group">
                                 <input
-                                    id="add-budget-name"
-                                    type="text"
-                                    value={name}
-                                    onChange={(event) => setName(event.target.value)}
-                                    placeholder="e.g., Emergency Fund"
+                                    className="universalModal__input"
+                                    id="add-transaction-amount"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={amount}
+                                    onChange={(event) => setAmount(event.target.value)}
+                                    placeholder="0.00"
                                     disabled={isLoading}
-                                    autoFocus
                                 />
-                            </div>
+                            </ModalField>
 
-                            <div className="form-group">
-                                <label htmlFor="add-budget-currency">Currency</label>
+                            <ModalField label="Currency" htmlFor="add-transaction-currency" className="form-group">
                                 <select
-                                    id="add-budget-currency"
+                                    className="universalModal__select"
+                                    id="add-transaction-currency"
                                     value={currencyISOCode}
                                     onChange={(event) => setCurrencyISOCode(event.target.value)}
                                     disabled={isLoading}
                                 >
                                     {COMMON_CURRENCIES.map((currency) => (
                                         <option key={currency.code} value={currency.code}>
-                                            {currency.label}
+                                            {currency.code}
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="form-group">
-                                <label htmlFor="add-transaction-description">Description</label>
-                                <input
-                                    id="add-transaction-description"
-                                    type="text"
-                                    value={description}
-                                    onChange={(event) => setDescription(event.target.value)}
-                                    placeholder="e.g., Grocery shopping"
-                                    disabled={isLoading}
-                                    autoFocus
-                                />
-                            </div>
+                            </ModalField>
+                        </div>
+                    </>
+                )}
 
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="add-transaction-amount">Amount</label>
-                                    <input
-                                        id="add-transaction-amount"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={amount}
-                                        onChange={(event) => setAmount(event.target.value)}
-                                        placeholder="0.00"
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="add-transaction-currency">Currency</label>
-                                    <select
-                                        id="add-transaction-currency"
-                                        value={currencyISOCode}
-                                        onChange={(event) => setCurrencyISOCode(event.target.value)}
-                                        disabled={isLoading}
-                                    >
-                                        {COMMON_CURRENCIES.map((currency) => (
-                                            <option key={currency.code} value={currency.code}>
-                                                {currency.code}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    <div className="modal-buttons">
-                        <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium">
-                            Cancel
-                        </button>
-                        <button type="submit" disabled={isLoading} className="btn-primary medium">
-                            {isLoading ? "Saving..." : "Add"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <ModalActions className="modal-buttons universalModal__addActions">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="btn-secondary medium universalModal__button universalModal__button--ghost">
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={isLoading} className="addButton medium universalModal__button">
+                        {isLoading ? "Saving..." : "Add"}
+                    </button>
+                </ModalActions>
+            </form>
+        </UniversalModal>
     );
 }
