@@ -38,31 +38,33 @@
     /* Main: offset for top bar + bottom nav */
     .appShell__main {
         padding-top: 56px;
-        padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     }
 
     /* Bottom nav bar */
     .appShell__bottomNav {
         display: flex;
         flex-direction: row;
-        align-items: stretch;
+        align-items: center;
+        justify-content: center;
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: calc(60px + env(safe-area-inset-bottom, 0px));
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        left: 10px;
+        right: 10px;
+        height: 60px;
         background: var(--surface-strong);
-        border-top: 1px solid var(--border);
-        box-shadow: 0 -4px 18px rgba(70, 52, 38, 0.08);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px rgba(70, 52, 38, 0.16);
+        backdrop-filter: blur(12px) saturate(1.05);
         z-index: 100;
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
 
     /* Toast stack: above the bottom nav */
     .appShell__toastStack {
-        bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(84px + env(safe-area-inset-bottom, 0px));
         top: auto;
         right: 10px;
     }
