@@ -534,3 +534,108 @@
     box-shadow: 0 0 0 2px rgba(201, 75, 115, 0.12);
     font-family: inherit;
 }
+
+.todoList--celebrating {
+    animation: todoList-celebratePulse 0.9s ease-out;
+}
+
+.todoList__completeModal {
+    position: relative;
+    overflow: hidden;
+}
+
+.todoList__completeModalBody {
+    position: relative;
+    gap: 16px;
+}
+
+.todoList__completeModalName {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.todoList__completeConfirmBtn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.todoList__completeConfirmBtn--celebrating {
+    animation: todoList-completeButtonPulse 0.6s ease-in-out 2;
+}
+
+.todoList__completionConfetti {
+    pointer-events: none;
+    position: absolute;
+    inset: -8px;
+}
+
+.todoList__completionConfettiPiece {
+    position: absolute;
+    left: calc(8% + (var(--confetti-index) * 7%));
+    top: 62%;
+    width: 8px;
+    height: 12px;
+    border-radius: 999px;
+    background: hsl(calc(22 + (var(--confetti-index) * 12)), 72%, 58%);
+    opacity: 0;
+    animation: todoList-confettiPop 0.95s ease-out forwards;
+    animation-delay: calc(var(--confetti-index) * 30ms);
+}
+
+@keyframes todoList-celebratePulse {
+    0% {
+        box-shadow: var(--shadow);
+    }
+
+    50% {
+        box-shadow: 0 16px 34px rgba(180, 101, 65, 0.3);
+    }
+
+    100% {
+        box-shadow: var(--shadow);
+    }
+}
+
+@keyframes todoList-completeButtonPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.06);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes todoList-confettiPop {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(calc((var(--confetti-index) - 5) * 3px), -78px, 0) rotate(calc((var(--confetti-index) - 6) * 16deg));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .todoList--celebrating,
+    .todoList__completeConfirmBtn--celebrating,
+    .todoList__completionConfettiPiece {
+        animation: none !important;
+    }
+}

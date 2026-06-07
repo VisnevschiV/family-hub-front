@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AddButton from "./AddButton";
 import AddMilestoneModal from "./TodoList/AddMilestoneModal";
+import CompleteListModal from "./TodoList/CompleteListModal";
 import "./TodoList/todoList.css";
 import "./TodoList/todoListdesktop.css";
 import "./TodoList/todoListmobile.css";
@@ -16,6 +17,7 @@ export default function TodoList({
     onDeleteTask,
     onToggleTask,
     onRequestRename,
+    onCompleteList,
     onDeleteList,
     onEditTask,
 }) {
@@ -34,9 +36,13 @@ export default function TodoList({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [editingText, setEditingText] = useState("");
+    const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [isCompletingList, setIsCompletingList] = useState(false);
+    const [showCompletionReward, setShowCompletionReward] = useState(false);
     const menuRef = useRef(null);
     const editLongPressTimerRef = useRef(null);
     const touchHoldTimerRef = useRef(null);
+    const previousCompletionPercentRef = useRef(0);
     const touchGestureRef = useRef({
         active: false,
         id: null,
@@ -52,6 +58,7 @@ export default function TodoList({
     const completionPercent = totalCount > 0
         ? Math.round((doneCount / totalCount) * 100)
         : 0;
+    const pendingCount = Math.max(totalCount - doneCount, 0);
     const isCollapsed = typeof collapsed === "boolean" ? collapsed : internalIsCollapsed;
 
     const visibleItems = useMemo(() => {
@@ -153,6 +160,23 @@ export default function TodoList({
     }, [isCollapsed]);
 
     useEffect(() => {
+        if (totalCount === 0) {
+            previousCompletionPercentRef.current = 0;
+            return;
+        }
+
+        const previousPercent = previousCompletionPercentRef.current;
+        const reachedFullCompletion = completionPercent === 100 && previousPercent < 100;
+
+        if (reachedFullCompletion) {
+            setIsCompleteModalOpen(true);
+            setIsMenuOpen(false);
+        }
+
+        previousCompletionPercentRef.current = completionPercent;
+    }, [completionPercent, totalCount]);
+
+    useEffect(() => {
         if (editingTaskId) {
             clearEditLongPressTimer();
         }
@@ -168,6 +192,37 @@ export default function TodoList({
         );
         if (!confirmed) return;
         onDeleteList(listId);
+    }
+
+    function handleCompleteList() {
+        setIsCompleteModalOpen(true);
+        setIsMenuOpen(false);
+    }
+
+    function closeCompleteModal() {
+        if (isCompletingList) return;
+        setIsCompleteModalOpen(false);
+    }
+
+    async function confirmCompleteList() {
+        if (isCompletingList) return;
+
+        setIsCompletingList(true);
+        setShowCompletionReward(true);
+
+        try {
+            await new Promise((resolve) => {
+                window.setTimeout(resolve, 900);
+            });
+
+            if (typeof onCompleteList === "function") {
+                await onCompleteList(listId);
+            }
+        } finally {
+            setIsCompletingList(false);
+            setShowCompletionReward(false);
+            setIsCompleteModalOpen(false);
+        }
     }
 
     const EDIT_LONG_PRESS_MS = 420;
@@ -379,7 +434,9 @@ export default function TodoList({
     }
 
     return (
-        <section className={`todoList ${!isCollapsed ? "todoList--expanded" : ""} ${isMenuOpen ? "todoList--menuOpen" : ""}`.trim()}>
+        <section
+            className={`todoList ${!isCollapsed ? "todoList--expanded" : ""} ${isMenuOpen ? "todoList--menuOpen" : ""} ${showCompletionReward ? "todoList--celebrating" : ""}`.trim()}
+        >
             <header
                 className="todoList__header"
                 role="button"
@@ -465,6 +522,18 @@ export default function TodoList({
 
                                 <button
                                     type="button"
+                                    className="todoList__menuItem"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        handleCompleteList();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    Complete
+                                </button>
+
+                                <button
+                                    type="button"
                                     className="todoList__menuItem todoList__menuItem--danger"
                                     role="menuitem"
                                     onClick={() => {
@@ -486,8 +555,8 @@ export default function TodoList({
             >
                 <div className="todoList__bodyInner">
                     <div className="todoList__milestonesRow">
-                        <div className="todoList__milestonesTitle">Milestones</div>
-                        <AddButton onClick={openAdd} ariaLabel="Add milestone">
+                        <div className="todoList__milestonesTitle">Tasks</div>
+                        <AddButton onClick={openAdd} ariaLabel="Add task">
                             + Add
                         </AddButton>
                     </div>
@@ -566,7 +635,7 @@ export default function TodoList({
                                             type="button"
                                             className="todoList__taskActionBtn"
                                             onClick={() => startInlineEdit(item)}
-                                            aria-label="Modify milestone"
+                                            aria-label="Modify task"
                                             title="Modify"
                                         >
                                             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -580,7 +649,7 @@ export default function TodoList({
                                             type="button"
                                             className="todoList__taskActionBtn todoList__taskActionBtn--danger"
                                             onClick={() => handleDeleteItem(item.id)}
-                                            aria-label="Delete milestone"
+                                            aria-label="Delete task"
                                             title="Delete"
                                         >
                                             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -605,6 +674,19 @@ export default function TodoList({
                 onSubmit={submitAdd}
                 value={newText}
                 onChange={setNewText}
+            />
+
+            <CompleteListModal
+                isOpen={isCompleteModalOpen}
+                title={title}
+                completionPercent={completionPercent}
+                doneCount={doneCount}
+                totalCount={totalCount}
+                pendingCount={pendingCount}
+                isSubmitting={isCompletingList}
+                isCelebrating={showCompletionReward}
+                onCancel={closeCompleteModal}
+                onConfirm={confirmCompleteList}
             />
         </section>
     );

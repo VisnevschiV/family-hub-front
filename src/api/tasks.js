@@ -152,6 +152,49 @@ export async function deleteTaskList(listID) {
     }
 }
 
+export async function completeTaskList(listID) {
+    const requestUrl = buildApiUrl(`/tasks/lists/${encodeURIComponent(listID)}/complete`);
+    const response = await apiFetch(
+        `/tasks/lists/${encodeURIComponent(listID)}/complete`,
+        {
+            method: "PATCH",
+        }
+    );
+
+    if (!response.ok) {
+        logTaskError("completeTaskList:response", {
+            requestMethod: "PATCH",
+            requestUrl,
+            responseUrl: response.url,
+            status: response.status,
+            statusText: response.statusText,
+            redirected: response.redirected,
+            allow: response.headers.get("allow"),
+        });
+
+        let errorMessage = `Failed to complete list: ${response.status}`;
+        try {
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                errorMessage = data.error || data.message || errorMessage;
+            } else {
+                const text = await response.text();
+                if (text) errorMessage = text;
+            }
+        } catch {
+            // Ignore parse errors, keep default message.
+        }
+        throw new Error(errorMessage);
+    }
+
+    try {
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
 export async function updateTaskListName(id, newName, participantIds = []) {
     const normalizedParticipantIds = Array.isArray(participantIds)
         ? participantIds
