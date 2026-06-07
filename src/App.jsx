@@ -31,6 +31,24 @@ function App() {
         checkAuth();
     }, []);
 
+    useEffect(() => {
+        function handleAuthLogin() {
+            setIsAuthenticated(true);
+        }
+
+        function handleAuthLogout() {
+            setIsAuthenticated(false);
+        }
+
+        window.addEventListener("auth:login", handleAuthLogin);
+        window.addEventListener("auth:logout", handleAuthLogout);
+
+        return () => {
+            window.removeEventListener("auth:login", handleAuthLogin);
+            window.removeEventListener("auth:logout", handleAuthLogout);
+        };
+    }, []);
+
     if (isAuthenticated === null) {
         // Loading
         return (

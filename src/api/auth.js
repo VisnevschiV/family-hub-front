@@ -1,6 +1,6 @@
 // src/api/auth.js
 
-import { apiFetch } from "./client.js";
+import { apiFetch, notifyAuthSuccess } from "./client.js";
 
 const DEBUG_AUTH = true;
 
@@ -199,6 +199,7 @@ export async function tryLogin(email, password) {
     }
 
     if (typeof window !== "undefined") {
+        notifyAuthSuccess();
         window.dispatchEvent(new Event("auth:login"));
     }
 

@@ -7,6 +7,7 @@ import SegmentedControl from "../../Components/SegmentedControl.jsx";
 import { getFamilyMembers } from "../../api/families.js";
 import { fetchCurrentPersona } from "../../api/persona.js";
 import {
+    completeTaskList,
     createTask,
     createTaskList,
     deleteTask,
@@ -126,10 +127,17 @@ export default function TodoListsPage() {
     }
 
     function resolveBackendTaskDone(task) {
-        if (typeof task.done === "boolean") return task.done;
         if (typeof task.completed === "boolean") return task.completed;
+        if (typeof task.done === "boolean") return task.done;
         if (typeof task.isDone === "boolean") return task.isDone;
         if (typeof task.isCompleted === "boolean") return task.isCompleted;
+        return false;
+    }
+
+    function resolveBackendListCompleted(list) {
+        if (typeof list?.completed === "boolean") return list.completed;
+        if (typeof list?.taskList?.completed === "boolean") return list.taskList.completed;
+        if (typeof list?.isCompleted === "boolean") return list.isCompleted;
         return false;
     }
 
@@ -209,6 +217,7 @@ export default function TodoListsPage() {
                     list.title ||
                     list.taskListName ||
                     "Untitled list",
+                completed: resolveBackendListCompleted(list),
                 participantIds,
                 items: mapBackendTasks(list),
             };
@@ -256,7 +265,7 @@ export default function TodoListsPage() {
             .join(", ");
     }, [familyMembers, selectedParticipantIds]);
 
-    const visibleLists = useMemo(() => {
+    const participantFilteredLists = useMemo(() => {
         return lists.filter((list) => {
             const participantCount = Array.isArray(list.participantIds)
                 ? list.participantIds.length
@@ -270,16 +279,22 @@ export default function TodoListsPage() {
         });
     }, [lists, todoFilter]);
 
+    const visibleLists = useMemo(() => {
+        return participantFilteredLists.filter((list) => !list.completed);
+    }, [participantFilteredLists]);
+
     const overallData = useMemo(() => {
-        const allGoals = visibleLists.flatMap((list) =>
+        const totalGoals = participantFilteredLists.length;
+        const goalsCompleted = participantFilteredLists.filter((goal) => goal.completed).length;
+        const activeGoals = totalGoals - goalsCompleted;
+
+        const allTasks = participantFilteredLists.flatMap((list) =>
             Array.isArray(list.items) ? list.items : []
         );
-
-        const goalsCompleted = allGoals.filter((goal) => goal.done).length;
-        const activeGoals = allGoals.length - goalsCompleted;
+        const completedTasks = allTasks.filter((task) => task.done).length;
         const progressPercent =
-            allGoals.length > 0
-                ? Math.round((goalsCompleted / allGoals.length) * 100)
+            allTasks.length > 0
+                ? Math.round((completedTasks / allTasks.length) * 100)
                 : 0;
 
         return {
@@ -287,7 +302,7 @@ export default function TodoListsPage() {
             activeGoals,
             progressPercent,
         };
-    }, [visibleLists]);
+    }, [participantFilteredLists]);
 
     async function handleSubmitListName(name) {
         const title = name.trim();
@@ -356,6 +371,32 @@ export default function TodoListsPage() {
         }
     }
 
+    async function handleCompleteList(listId) {
+        const targetList = lists.find((list) => list.id === listId);
+        const backendId = targetList?.backendId;
+
+        if (!backendId) {
+            console.error("Missing backend list ID for complete", {
+                listId,
+                targetList,
+            });
+            return;
+        }
+
+        try {
+            await completeTaskList(backendId);
+            setLists((prev) =>
+                prev.map((list) =>
+                    list.id === listId ? { ...list, completed: true } : list
+                )
+            );
+
+            setOpenListId((current) => (current === listId ? null : current));
+        } catch (err) {
+            console.error(err.message || "Failed to complete list");
+        }
+    }
+
     function handleUpdateItems(listId, nextItems) {
         setLists((prev) =>
             prev.map((list) =>
@@ -416,15 +457,10 @@ export default function TodoListsPage() {
             return;
         }
 
-        const nextCompleted = !targetTask.done;
+        const previousCompleted = !!targetTask.done;
+        const nextCompleted = !previousCompleted;
 
-        await updateTask(
-            backendListId,
-            backendTaskId,
-            targetTask.text,
-            nextCompleted
-        );
-
+        // Local-first: reflect the toggle immediately, then sync with backend.
         setLists((prev) =>
             prev.map((list) => {
                 if (list.id !== listId) return list;
@@ -437,6 +473,31 @@ export default function TodoListsPage() {
                 };
             })
         );
+
+        try {
+            await updateTask(
+                backendListId,
+                backendTaskId,
+                targetTask.text,
+                nextCompleted
+            );
+        } catch (err) {
+            // Roll back if persistence fails.
+            setLists((prev) =>
+                prev.map((list) => {
+                    if (list.id !== listId) return list;
+
+                    return {
+                        ...list,
+                        items: list.items.map((item) =>
+                            item.id === taskId ? { ...item, done: previousCompleted } : item
+                        ),
+                    };
+                })
+            );
+
+            console.error(err.message || "Failed to toggle task");
+        }
     }
 
     async function handleAddTask(listId, taskName) {
@@ -563,6 +624,7 @@ export default function TodoListsPage() {
                         onDeleteTask={handleDeleteTask}
                         onToggleTask={handleToggleTask}
                         onRequestRename={openRenameListModal}
+                        onCompleteList={handleCompleteList}
                         onDeleteList={handleDeleteList}
                         onEditTask={handleEditTask}
                     />

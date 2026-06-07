@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "./config.js";
 
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const AUTH_FAILURE_STATUSES = new Set([401, 403]);
 
 let refreshPromise = null;
 let authFailureHandled = false;
@@ -62,6 +63,10 @@ function handleAuthFailure() {
     }
 }
 
+function isAuthFailureStatus(status) {
+    return AUTH_FAILURE_STATUSES.has(status);
+}
+
 async function refreshSession() {
     if (refreshPromise) return refreshPromise;
 
@@ -110,7 +115,12 @@ export async function apiFetch(path, init = {}, options = {}) {
 
     const response = await performFetch(path, init);
 
-    if (response.status !== 401) {
+    if (response.ok) {
+        authFailureHandled = false;
+        return response;
+    }
+
+    if (!isAuthFailureStatus(response.status)) {
         return response;
     }
 
@@ -124,7 +134,19 @@ export async function apiFetch(path, init = {}, options = {}) {
         return response;
     }
 
-    return performFetch(path, init);
+    const retriedResponse = await performFetch(path, init);
+
+    if (isAuthFailureStatus(retriedResponse.status)) {
+        handleAuthFailure();
+    } else if (retriedResponse.ok) {
+        authFailureHandled = false;
+    }
+
+    return retriedResponse;
+}
+
+export function notifyAuthSuccess() {
+    authFailureHandled = false;
 }
 
 export function buildApiUrl(path) {
