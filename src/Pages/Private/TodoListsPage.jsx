@@ -288,7 +288,9 @@ export default function TodoListsPage() {
         const goalsCompleted = participantFilteredLists.filter((goal) => goal.completed).length;
         const activeGoals = totalGoals - goalsCompleted;
 
-        const allTasks = participantFilteredLists.flatMap((list) =>
+
+
+        const allTasks = participantFilteredLists.filter((list) => !list.completed).flatMap((list) =>
             Array.isArray(list.items) ? list.items : []
         );
         const completedTasks = allTasks.filter((task) => task.done).length;
