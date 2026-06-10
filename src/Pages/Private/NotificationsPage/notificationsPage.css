@@ -2,65 +2,6 @@
     gap: 14px;
 }
 
-.notificationsPage__pushCard {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(138, 90, 68, 0.12), rgba(246, 241, 235, 0.9));
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.notificationsPage__pushContent {
-    display: grid;
-    gap: 6px;
-}
-
-.notificationsPage__pushEyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-}
-
-.notificationsPage__pushTitle {
-    margin: 0;
-    font-size: 18px;
-}
-
-.notificationsPage__pushText {
-    margin: 0;
-    color: var(--text);
-}
-
-.notificationsPage__pushActions {
-    display: grid;
-    gap: 8px;
-    justify-items: end;
-}
-
-.notificationsPage__pushButton {
-    border: 1px solid rgba(138, 90, 68, 0.28);
-    background: var(--surface);
-    color: var(--text);
-    border-radius: 999px;
-    padding: 10px 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.notificationsPage__pushButton:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
-.notificationsPage__pushMeta {
-    margin: 0;
-    color: var(--text-muted);
-}
-
 .notificationsPage__error {
     margin: 0;
     background: var(--color-notifications-error-bg);

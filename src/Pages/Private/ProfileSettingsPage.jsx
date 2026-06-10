@@ -11,6 +11,13 @@ import "./ProfilePage/profilePage.css";
 import "./ProfilePage/profilePagedesktop.css";
 import "./ProfilePage/profilePagemobile.css";
 
+import {
+    getPushSubscriptionState,
+    subscribeToPushNotifications,
+    unsubscribeFromPushNotifications,
+} from "../../api/pushNotifications.js";
+import SegmentedControl from "../../Components/SegmentedControl.jsx";
+
 const emptyForm = {
     name: "",
     birthday: "",
@@ -55,10 +62,45 @@ function ProfileSettingsPage() {
     const [personalEditOpen, setPersonalEditOpen] = useState(false);
     const [familyEditOpen, setFamilyEditOpen] = useState(false);
 
+    const [pushState, setPushState] = useState({
+        supported: true,
+        configured: true,
+        permission: "default",
+        subscribed: false,
+    });
+    const [pushLoading, setPushLoading] = useState(true);
+    const [pushBusy, setPushBusy] = useState(false);
+    const [pushError, setPushError] = useState("");
+
+    async function refreshPushState() {
+        const nextState = await getPushSubscriptionState();
+        setPushState(nextState);
+    }
+
     async function handleLogout() {
         await logout();
         navigate("/welcome", { replace: true });
     }
+
+    useEffect(() => {
+        let active = true;
+
+        setPushLoading(true);
+        setPushError("");
+
+        refreshPushState()
+            .catch((err) => {
+                if (!active) return;
+                setPushError(err.message || "Failed to load push notification settings");
+            })
+            .finally(() => {
+                if (active) setPushLoading(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     useEffect(() => {
         let active = true;
@@ -123,6 +165,54 @@ function ProfileSettingsPage() {
             setError(err.message || "Failed to update profile");
         } finally {
             setSaving(false);
+        }
+    }
+
+    function renderPushDescription() {
+        if (!pushState.supported) {
+            return "This browser does not support OS-level push notifications.";
+        }
+
+        if (!pushState.configured) {
+            return "Push notifications are not configured yet. Add a VAPID public key to enable subscriptions.";
+        }
+
+        if (pushState.permission === "denied") {
+            return "Notifications are blocked in this browser. Re-enable them in browser settings to continue.";
+        }
+
+        if (pushState.subscribed) {
+            return "This device is subscribed to OS-level push notifications.";
+        }
+
+        return "Enable push to receive OS-level notifications when the app is closed or in the background.";
+    }
+
+    async function handleEnablePush() {
+        setPushBusy(true);
+        setPushError("");
+
+        try {
+            await subscribeToPushNotifications();
+            await refreshPushState();
+        } catch (err) {
+            setPushError(err.message || "Failed to enable push notifications");
+        } finally {
+            setPushBusy(false);
+        }
+    }
+
+    async function handleDisablePush() {
+        setPushBusy(true);
+        setPushError("");
+
+        try {
+            await unsubscribeFromPushNotifications();
+            await refreshPushState();
+        } catch (err) {
+            setPushError(err.message || "Failed to disable push notifications");
+        } finally {
+            setPushBusy(false);
         }
     }
 
@@ -352,6 +442,33 @@ function ProfileSettingsPage() {
                                 </button>
                             </form>
                         )}
+                    </div>
+                </section>
+
+                <section className="profileSection" aria-live="polite">
+                    <div className="">
+                        <h2 className="settingsSectionTitle">Notifications</h2>
+                    </div>
+                    <div className="profilePanel">
+                        <div className="profileRow">
+                            <div className="profileRow__main">
+                                <span className="profileRow__value">Allow push notifications</span>
+                                <span className="profileRow__label">Permission: {pushLoading ? "Checking" : pushState.permission}</span>
+                            </div>
+                            <span>
+                                <SegmentedControl
+                                    options={["ON", "OFF"]}
+                                    value={pushState.subscribed ? "ON" : "OFF"}
+                                    onChange={(value) => {
+                                        if (value === "ON") {
+                                            handleEnablePush();
+                                        } else {
+                                            handleDisablePush();
+                                        }
+                                    }}
+                                ></SegmentedControl>
+                            </span>
+                        </div>
                     </div>
                 </section>
 
