@@ -5,6 +5,7 @@ function mapMember(rawMember, fallbackIndex) {
         return null;
     }
 
+
     if (typeof rawMember === "string" || typeof rawMember === "number") {
         const numericId = Number(rawMember);
         const value = Number.isInteger(numericId) ? numericId : String(rawMember);
@@ -19,12 +20,7 @@ function mapMember(rawMember, fallbackIndex) {
     }
 
     const id =
-        rawMember.id ||
-        rawMember.ID ||
-        rawMember.personaId ||
-        rawMember.personId ||
-        rawMember.userId ||
-        rawMember.memberId;
+        rawMember.id;
 
     if (id === null || id === undefined) {
         return null;
@@ -35,14 +31,14 @@ function mapMember(rawMember, fallbackIndex) {
 
     const name =
         rawMember.name ||
-        rawMember.fullName ||
-        rawMember.displayName ||
-        rawMember.email ||
         `Member ${fallbackIndex + 1}`;
+
+    const gender = rawMember.gender;
 
     return {
         id: normalizedId,
         name,
+        gender: rawMember.gender || null,
     };
 }
 

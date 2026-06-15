@@ -67,7 +67,7 @@ function isAuthFailureStatus(status) {
     return AUTH_FAILURE_STATUSES.has(status);
 }
 
-async function refreshSession() {
+export async function refreshSession() {
     if (refreshPromise) return refreshPromise;
 
     refreshPromise = (async () => {

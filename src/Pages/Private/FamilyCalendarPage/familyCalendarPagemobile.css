@@ -217,12 +217,27 @@
         width: 100%;
         height: 4px;
         border-radius: 999px;
-        background: var(--gradient-calendar-event-bar);
     }
 
-    .calendarView__cell--period .calendarView__eventItem::before {
+    .male {
+        background: var(--gradient-calendar-event-bar-male);
+    }
+
+    .female {
+        background: var(--gradient-calendar-event-bar-female);
+    }
+
+    .mixed {
+        background: var(--gradient-calendar-event-bar-mixed);
+    }
+
+
+
+    .calendarView__cell--period ::before {
         background: var(--gradient-calendar-event-bar-period);
     }
+
+
 
     .calendarView__eventTime,
     .calendarView__eventTitle,

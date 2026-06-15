@@ -131,12 +131,14 @@ function addMemberNameForDate(targetMap, dateKey, memberName) {
     }
 }
 
-function mapBackendEvents(data) {
+function mapBackendEvents(data, familyMembers = []) {
     const sourceEvents = Array.isArray(data)
         ? data
         : Array.isArray(data?.events)
             ? data.events
             : [];
+
+
 
     return sourceEvents
         .map((eventItem) => {
@@ -158,12 +160,18 @@ function mapBackendEvents(data) {
                 return null;
             }
 
+            console.log(
+                "RAW EVENT:",
+                JSON.stringify(eventItem, null, 2)
+            );
+
             return {
                 id: String(backendId),
                 title: eventItem.title || eventItem.name || "Untitled event",
                 description: eventItem.description || "",
                 participantIds: extractParticipantIds(eventItem),
                 participantNames: extractParticipantNames(eventItem),
+                gender: extractParticipantGenders(eventItem, familyMembers),
                 timestamp: parsedDate.getTime(),
                 dateKey: toDateKey(parsedDate),
                 timeLabel: parsedDate.toLocaleTimeString([], {
@@ -230,7 +238,6 @@ function extractParticipantNames(eventItem) {
                 if (participant === null || participant === undefined) return null;
                 if (typeof participant === "string") return participant;
                 if (typeof participant !== "object") return null;
-
                 return (
                     participant.name ||
                     participant.fullName ||
@@ -247,6 +254,33 @@ function extractParticipantNames(eventItem) {
     }
 
     return [];
+}
+
+function extractParticipantGenders(eventItem, familyMembers) {
+    const participants = eventItem.participants || [];
+
+    let hasMale = false;
+    let hasFemale = false;
+
+    participants.forEach((participantId) => {
+        const member = familyMembers.find(
+            m => Number(m.id) === Number(participantId)
+        );
+
+        if (!member) return;
+
+        if (member.gender === "MALE") {
+            hasMale = true;
+        }
+
+        if (member.gender === "FEMALE") {
+            hasFemale = true;
+        }
+    });
+
+    if (hasMale && !hasFemale) return "male";
+    if (hasFemale && !hasMale) return "female";
+    return "mixed";
 }
 
 function FamilyCalendarPage() {
@@ -303,7 +337,7 @@ function FamilyCalendarPage() {
 
     async function refreshEvents() {
         const data = await getCalendarEvents();
-        setEvents(mapBackendEvents(data));
+        setEvents(mapBackendEvents(data, familyMembers));
     }
 
     useEffect(() => {
@@ -312,8 +346,9 @@ function FamilyCalendarPage() {
         Promise.all([getCalendarEvents(), getFamilyMembers()])
             .then(([eventsData, membersData]) => {
                 if (!active) return;
-                setEvents(mapBackendEvents(eventsData));
                 setFamilyMembers(Array.isArray(membersData) ? membersData : []);
+                setEvents(mapBackendEvents(eventsData, membersData));
+                console.log("[FamilyCalendarPage] family members", membersData);
             })
             .catch((error) => {
                 if (!active) return;
@@ -346,11 +381,11 @@ function FamilyCalendarPage() {
                 ]);
 
                 console.log("[FamilyCalendarPage] family/records/month response", familyMonthData);
-
+                console.log("Family Members for period mapping:", membersData);
                 const membersById = new Map(
                     (Array.isArray(membersData) ? membersData : [])
                         .filter((m) => m?.id != null && m?.name)
-                        .flatMap((m) => [[String(m.id), m.name], [Number(m.id), m.name]])
+                        .flatMap((m) => [[String(m.id), m.name, m.gender], [Number(m.id), m.name, m.gender]])
                 );
 
                 if (!active) return;
@@ -1044,10 +1079,11 @@ function FamilyCalendarPage() {
                                                     {cell.dayEvents.slice(0, 2).map((eventItem) => (
                                                         <div
                                                             key={eventItem.id}
-                                                            className="calendarView__eventItem"
+                                                            className={`calendarView__eventItem ${eventItem.gender}`}
                                                         >
                                                             <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
                                                             <div className="calendarView__eventTitle">{eventItem.title}</div>
+                                                            <div className="calendarView__eventTitle">{eventItem.gender}</div>
                                                             {eventItem.participantNames.length > 0 ? (
                                                                 <div className="calendarView__eventDescription">
                                                                     With: {eventItem.participantNames.join(", ")}

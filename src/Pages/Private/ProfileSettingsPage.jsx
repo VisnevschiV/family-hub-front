@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../api/auth.js";
+import { refreshSession } from "../../api/client.js";
 import { fetchCurrentPersona, updatePersona } from "../../api/persona.js";
 import { createFamily, updateFamilyName, leaveFamily, joinFamily, generateJoinCode } from "../../api/families.js";
 import CreateFamilyModal from "../../Components/CreateFamilyModal.jsx";
@@ -313,6 +314,10 @@ function ProfileSettingsPage() {
         }
     }
 
+    async function handleRefreshToken() {
+        refreshSession();
+    }
+
     const displayName = form.name?.trim() || "No name yet";
     const displayEmail = accountEmail?.trim() || "No email linked";
 
@@ -471,6 +476,8 @@ function ProfileSettingsPage() {
                         </div>
                     </div>
                 </section>
+
+                <button onClick={handleRefreshToken}>Refresh token</button>
 
                 <section className="profileSection">
                     <h2 className="settingsSectionTitle">Family</h2>
