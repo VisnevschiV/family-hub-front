@@ -314,10 +314,6 @@ function ProfileSettingsPage() {
         }
     }
 
-    async function handleRefreshToken() {
-        refreshSession();
-    }
-
     const displayName = form.name?.trim() || "No name yet";
     const displayEmail = accountEmail?.trim() || "No email linked";
 
@@ -477,7 +473,6 @@ function ProfileSettingsPage() {
                     </div>
                 </section>
 
-                <button onClick={handleRefreshToken}>Refresh token</button>
 
                 <section className="profileSection">
                     <h2 className="settingsSectionTitle">Family</h2>

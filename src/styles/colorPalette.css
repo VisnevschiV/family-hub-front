@@ -197,7 +197,7 @@
             rgba(155, 109, 255, 0.14) 0%,
             rgba(201, 75, 115, 0.06) 36%,
             rgba(13, 13, 18, 1) 100%);
-    --gradient-button-primary: linear-gradient(135deg, var(--shared-brand) 0%, var(--shared-brand-soft) 100%);
+    --gradient-button-primary: linear-gradient(135deg, var(--shared-brand-female) 0%, var(--shared-brand-female-soft) 100%);
     --gradient-surface-soft: linear-gradient(155deg, rgba(26, 26, 36, 0.95) 0%, rgba(20, 20, 28, 0.92) 100%);
 
     /* Profile theme */
