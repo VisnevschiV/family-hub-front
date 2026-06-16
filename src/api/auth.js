@@ -15,12 +15,7 @@ function logAuthError(context, details) {
 // Example ping function (if you keep it)
 // export async function pingBackend() { ... existing code ... }
 
-/**
- * REGISTER
- * POST /auth/register
- * Body: { email, password, name, birthday, gender }
- * Success: account created (login happens separately)
- */
+
 export async function tryRegister(email, password, name, birthday, gender) {
     const response = await apiFetch("/auth/register", {
         method: "POST",
@@ -60,7 +55,6 @@ export async function tryRegister(email, password, name, birthday, gender) {
                 status: response.status,
                 statusText: response.statusText,
             });
-            // ignore parse error, keep generic
         }
         throw new Error(errorMessage);
     }
@@ -68,16 +62,11 @@ export async function tryRegister(email, password, name, birthday, gender) {
     try {
         return await response.json();
     } catch {
-        // Some backends return empty body on success; allow that.
         return null;
     }
 }
 
-/**
- * CONFIRM EMAIL
- * POST /auth/confirm
- * Body: { code, email }
- */
+
 export async function tryConfirmEmail(email, code) {
     const normalizedEmail = email.trim();
     const normalizedCode = code.trim();
@@ -135,12 +124,7 @@ export async function tryConfirmEmail(email, code) {
     }
 }
 
-/**
- * LOGIN
- * POST /auth/login
- * Body: { email, password }
- * Success: server sets auth cookies
- */
+
 export async function tryLogin(email, password) {
     const response = await apiFetch("/auth/login", {
         method: "POST",
@@ -186,7 +170,6 @@ export async function tryLogin(email, password) {
                 status: response.status,
                 statusText: response.statusText,
             });
-            // ignore parse error, keep generic
         }
         throw new Error(errorMessage);
     }
@@ -206,10 +189,7 @@ export async function tryLogin(email, password) {
     return result;
 }
 
-/**
- * OPTIONAL: fetch current user
- * GET /auth/me with cookies
- */
+
 export async function fetchCurrentUser() {
     const response = await apiFetch("/auth/me", {
         method: "GET",
@@ -226,7 +206,7 @@ export async function fetchCurrentUser() {
     }
 
     try {
-        return await response.json(); // depends on your backend DTO
+        return await response.json();
     } catch {
         logAuthError("me:invalid-json", {
             status: response.status,
@@ -236,11 +216,7 @@ export async function fetchCurrentUser() {
     }
 }
 
-/**
- * LOGOUT
- * POST /auth/logout
- * Clears the auth token cookie
- */
+
 export async function logout() {
     try {
         await apiFetch("/auth/logout", {

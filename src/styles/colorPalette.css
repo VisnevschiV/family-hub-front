@@ -4,8 +4,17 @@
     --shared-bg-soft: #1d1d2b;
     --shared-white: #ffffff;
     --shared-text-muted-strong: #7c7c92;
-    --shared-brand: #c94b73;
+    --shared-brand-female: #c94b73;
+    --shared-brand-female-soft: #df7a98;
     --shared-brand-soft: #df7a98;
+
+    --shared-brand-mixed: #4bc971;
+    --shared-brand-mixed-soft: #7adf98;
+
+    --shared-brand-male: #4b73c9;
+    --shared-brand-male-soft: #7a98df;
+
+
     --shared-success: #63d98a;
     --shared-white-08: rgba(255, 255, 255, 0.08);
     --shared-white-06: rgba(255, 255, 255, 0.06);
@@ -189,7 +198,7 @@
             rgba(155, 109, 255, 0.14) 0%,
             rgba(201, 75, 115, 0.06) 36%,
             rgba(13, 13, 18, 1) 100%);
-    --gradient-button-primary: linear-gradient(135deg, var(--shared-brand) 0%, var(--shared-brand-soft) 100%);
+    --gradient-button-primary: linear-gradient(135deg, var(--shared-brand-female) 0%, var(--shared-brand-female-soft) 100%);
     --gradient-surface-soft: linear-gradient(155deg, rgba(26, 26, 36, 0.95) 0%, rgba(20, 20, 28, 0.92) 100%);
 
     /* Profile theme */
@@ -281,6 +290,9 @@
     --color-calendar-period-button-bg: #4a2c39;
     --color-calendar-period-button-text: #f3c5d7;
     --color-calendar-period-button-border: #b2728d;
-    --gradient-calendar-event-bar: linear-gradient(90deg, var(--shared-brand) 0%, var(--shared-brand-soft) 100%);
+    --gradient-calendar-event-bar-female: linear-gradient(90deg, var(--shared-brand-female) 0%, var(--shared-brand-female-soft) 100%);
+    --gradient-calendar-event-bar-male: linear-gradient(90deg, var(--shared-brand-male) 0%, var(--shared-brand-male-soft) 100%);
+    --gradient-calendar-event-bar-mixed: linear-gradient(90deg, var(--shared-brand-mixed) 0%, var(--shared-brand-mixed-soft) 100%);
+
     --gradient-calendar-event-bar-period: linear-gradient(90deg, var(--shared-brand-soft) 0%, #f0b4cb 100%);
 }

@@ -4,11 +4,6 @@ import {
     mapIncomingNotificationPayload,
     markNotificationAsRead,
 } from "../../api/notifications.js";
-import {
-    getPushSubscriptionState,
-    subscribeToPushNotifications,
-    unsubscribeFromPushNotifications,
-} from "../../api/pushNotifications.js";
 import "./NotificationsPage/notificationsPage.css";
 import "./NotificationsPage/notificationsPagedesktop.css";
 import "./NotificationsPage/notificationsPagemobile.css";
@@ -97,20 +92,7 @@ export default function NotificationsPage() {
     const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState("");
     const [markingId, setMarkingId] = useState(null);
-    const [pushState, setPushState] = useState({
-        supported: true,
-        configured: true,
-        permission: "default",
-        subscribed: false,
-    });
-    const [pushLoading, setPushLoading] = useState(true);
-    const [pushBusy, setPushBusy] = useState(false);
-    const [pushError, setPushError] = useState("");
 
-    async function refreshPushState() {
-        const nextState = await getPushSubscriptionState();
-        setPushState(nextState);
-    }
 
     async function loadNotifications(nextPage, append) {
         const response = await getNotifications({ page: nextPage, size });
@@ -135,26 +117,6 @@ export default function NotificationsPage() {
             })
             .finally(() => {
                 if (active) setLoading(false);
-            });
-
-        return () => {
-            active = false;
-        };
-    }, []);
-
-    useEffect(() => {
-        let active = true;
-
-        setPushLoading(true);
-        setPushError("");
-
-        refreshPushState()
-            .catch((err) => {
-                if (!active) return;
-                setPushError(err.message || "Failed to load push notification settings");
-            })
-            .finally(() => {
-                if (active) setPushLoading(false);
             });
 
         return () => {
@@ -254,53 +216,6 @@ export default function NotificationsPage() {
         }
     }
 
-    async function handleEnablePush() {
-        setPushBusy(true);
-        setPushError("");
-
-        try {
-            await subscribeToPushNotifications();
-            await refreshPushState();
-        } catch (err) {
-            setPushError(err.message || "Failed to enable push notifications");
-        } finally {
-            setPushBusy(false);
-        }
-    }
-
-    async function handleDisablePush() {
-        setPushBusy(true);
-        setPushError("");
-
-        try {
-            await unsubscribeFromPushNotifications();
-            await refreshPushState();
-        } catch (err) {
-            setPushError(err.message || "Failed to disable push notifications");
-        } finally {
-            setPushBusy(false);
-        }
-    }
-
-    function renderPushDescription() {
-        if (!pushState.supported) {
-            return "This browser does not support OS-level push notifications.";
-        }
-
-        if (!pushState.configured) {
-            return "Push notifications are not configured yet. Add a VAPID public key to enable subscriptions.";
-        }
-
-        if (pushState.permission === "denied") {
-            return "Notifications are blocked in this browser. Re-enable them in browser settings to continue.";
-        }
-
-        if (pushState.subscribed) {
-            return "This device is subscribed to OS-level push notifications.";
-        }
-
-        return "Enable push to receive OS-level notifications when the app is closed or in the background.";
-    }
 
     return (
         <div className="page notificationsPage">
@@ -311,41 +226,7 @@ export default function NotificationsPage() {
                 </p>
             </header>
 
-            <section className="notificationsPage__pushCard" aria-live="polite">
-                <div className="notificationsPage__pushContent">
-                    <p className="notificationsPage__pushEyebrow text-small">Push notifications</p>
-                    <h2 className="notificationsPage__pushTitle">Phone and browser alerts</h2>
-                    <p className="notificationsPage__pushText text-medium">
-                        {pushLoading ? "Checking this device..." : renderPushDescription()}
-                    </p>
-                </div>
-                <div className="notificationsPage__pushActions">
-                    <button
-                        type="button"
-                        className="notificationsPage__pushButton"
-                        onClick={pushState.subscribed ? handleDisablePush : handleEnablePush}
-                        disabled={
-                            pushLoading ||
-                            pushBusy ||
-                            !pushState.supported ||
-                            !pushState.configured ||
-                            pushState.permission === "denied"
-                        }
-                    >
-                        {pushBusy
-                            ? "Saving..."
-                            : pushState.subscribed
-                                ? "Disable push"
-                                : "Enable push"}
-                    </button>
-                    <p className="notificationsPage__pushMeta text-small">
-                        Permission: {pushLoading ? "Checking" : pushState.permission}
-                    </p>
-                </div>
-            </section>
-
             {error && <p className="notificationsPage__error text-medium">{error}</p>}
-            {pushError && <p className="notificationsPage__error text-medium">{pushError}</p>}
 
             <section className="notificationsPage__list" aria-live="polite">
                 {loading && <p className="notificationsPage__empty text-medium">Loading notifications...</p>}
