@@ -292,6 +292,7 @@ function FamilyCalendarPage() {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [eventTitle, setEventTitle] = useState("");
     const [eventDescription, setEventDescription] = useState("");
+    const [eventDateKey, setEventDateKey] = useState(() => toDateKey(new Date()));
     const [eventDateTime, setEventDateTime] = useState("");
     const [familyMembers, setFamilyMembers] = useState([]);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
@@ -306,6 +307,7 @@ function FamilyCalendarPage() {
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
+    const [isCurrentPersonaMale, setIsCurrentPersonaMale] = useState(false);
     const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
     const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
@@ -330,8 +332,14 @@ function FamilyCalendarPage() {
 
     useEffect(() => {
         fetchCurrentPersona()
-            .then((data) => setHasFamily(Boolean(data?.family)))
-            .catch(() => setHasFamily(true));
+            .then((data) => {
+                setHasFamily(Boolean(data?.family));
+                setIsCurrentPersonaMale(String(data?.gender || "").toUpperCase() === "MALE");
+            })
+            .catch(() => {
+                setHasFamily(true);
+                setIsCurrentPersonaMale(false);
+            });
     }, []);
 
     async function refreshEvents() {
@@ -666,6 +674,9 @@ function FamilyCalendarPage() {
         if (hasValidDate) {
             setSelectedDateKey(targetDateKey);
             setVisibleMonth(new Date(year, month - 1, 1));
+            setEventDateKey(targetDateKey);
+        } else {
+            setEventDateKey(toDateKey(new Date()));
         }
 
         setEventDateTime(defaultTime);
@@ -731,6 +742,7 @@ function FamilyCalendarPage() {
 
         setEventTitle(eventItem.title);
         setEventDescription(eventItem.description || "");
+        setEventDateKey(toDateKey(new Date(eventItem.timestamp)));
         setEventDateTime(localValue);
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
@@ -760,14 +772,14 @@ function FamilyCalendarPage() {
 
         const title = eventTitle.trim();
         const description = eventDescription.trim();
-        if (!title || !eventDateTime) return;
+        if (!title || !eventDateTime || (!editingEventId && !eventDateKey)) return;
 
         let parsedDate = null;
 
         if (editingEventId) {
             parsedDate = new Date(eventDateTime);
         } else {
-            const [year, month, day] = selectedDateKey.split("-").map(Number);
+            const [year, month, day] = eventDateKey.split("-").map(Number);
             const [hoursRaw, minutesRaw] = eventDateTime.split(":");
             const hours = Number(hoursRaw);
             const minutes = Number(minutesRaw);
@@ -1093,22 +1105,26 @@ function FamilyCalendarPage() {
             <section ref={itinerarySectionRef} className="calendarItinerary">
                 <div className="calendarItinerary__header">
                     <h2 className="card__title">{selectedDateLabel}</h2>
-                    <button
-                        type="button"
-                        className="calendarItinerary__periodAction"
-                        onClick={handleStartPeriodForSelectedDay}
-                        disabled={startingPeriod || isSelectedDateInFuture}
-                    >
-                        {startingPeriod
-                            ? periodCurrentlyOpen
-                                ? "Stopping..."
-                                : "Starting..."
-                            : periodCurrentlyOpen
-                                ? "Stop period"
-                                : "Start period"}
-                    </button>
+                    {!isCurrentPersonaMale ? (
+                        <button
+                            type="button"
+                            className="calendarItinerary__periodAction"
+                            onClick={handleStartPeriodForSelectedDay}
+                            disabled={startingPeriod || isSelectedDateInFuture}
+                        >
+                            {startingPeriod
+                                ? periodCurrentlyOpen
+                                    ? "Stopping..."
+                                    : "Starting..."
+                                : periodCurrentlyOpen
+                                    ? "Stop period"
+                                    : "Start period"}
+                        </button>
+                    ) : null}
                 </div>
-                <p className="calendarItinerary__periodHint text-medium">{periodActionHint}</p>
+                {!isCurrentPersonaMale ? (
+                    <p className="calendarItinerary__periodHint text-medium">{periodActionHint}</p>
+                ) : null}
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
@@ -1194,7 +1210,7 @@ function FamilyCalendarPage() {
                         title={editingEventId ? "Edit event" : "Create new event"}
                         subtitle={editingEventId
                             ? "Update title, description, and date/time."
-                            : "Date is set from your selected day. Add title, details, and time."}
+                            : "Choose date and time, then add title and details."}
                         onClose={closeCreateModal}
                         className="calendarModalHeader"
                         titleClassName="calendarModalTitle"
@@ -1241,7 +1257,13 @@ function FamilyCalendarPage() {
                         ) : (
                             <>
                                 <ModalField label="Date" className="calendarModalField">
-                                    <input className="universalModal__input" type="text" value={selectedDateLabel} readOnly />
+                                    <input
+                                        className="universalModal__input"
+                                        type="date"
+                                        value={eventDateKey}
+                                        onChange={(event) => setEventDateKey(event.target.value)}
+                                        required
+                                    />
                                 </ModalField>
 
                                 <ModalField label="Time" className="calendarModalField">
