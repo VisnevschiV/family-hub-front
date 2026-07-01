@@ -936,6 +936,23 @@ function FamilyCalendarPage() {
         [familyPeriodNamesByDate, selectedDateKey]
     );
 
+    const isSelectedDateInFuture = useMemo(() => {
+        const todayKey = toDateKey(new Date());
+        return selectedDateKey > todayKey;
+    }, [selectedDateKey]);
+
+    const periodActionHint = useMemo(() => {
+        if (isSelectedDateInFuture) {
+            return "Choose today or a past day to track period status.";
+        }
+
+        if (periodCurrentlyOpen && openPeriodStartDateKey) {
+            return `Open period started on ${openPeriodStartDateKey}.`;
+        }
+
+        return "Track period for the currently selected day.";
+    }, [isSelectedDateInFuture, periodCurrentlyOpen, openPeriodStartDateKey]);
+
     const visibleMonthKey = `${visibleMonth.getFullYear()}-${String(visibleMonth.getMonth() + 1).padStart(2, "0")}`;
 
     if (!hasFamily) {
@@ -1074,7 +1091,24 @@ function FamilyCalendarPage() {
             </div>
 
             <section ref={itinerarySectionRef} className="calendarItinerary">
-                <h2 className="card__title">{selectedDateLabel}</h2>
+                <div className="calendarItinerary__header">
+                    <h2 className="card__title">{selectedDateLabel}</h2>
+                    <button
+                        type="button"
+                        className="calendarItinerary__periodAction"
+                        onClick={handleStartPeriodForSelectedDay}
+                        disabled={startingPeriod || isSelectedDateInFuture}
+                    >
+                        {startingPeriod
+                            ? periodCurrentlyOpen
+                                ? "Stopping..."
+                                : "Starting..."
+                            : periodCurrentlyOpen
+                                ? "Stop period"
+                                : "Start period"}
+                    </button>
+                </div>
+                <p className="calendarItinerary__periodHint text-medium">{periodActionHint}</p>
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
@@ -1271,22 +1305,6 @@ function FamilyCalendarPage() {
                                     onClick={handleDeleteEvent}
                                 >
                                     Delete
-                                </button>
-                            ) : null}
-                            {!editingEventId ? (
-                                <button
-                                    type="button"
-                                    className="calendarModalButton calendarModalButton--period universalModal__button"
-                                    onClick={handleStartPeriodForSelectedDay}
-                                    disabled={startingPeriod}
-                                >
-                                    {startingPeriod
-                                        ? periodCurrentlyOpen
-                                            ? "Stopping..."
-                                            : "Starting..."
-                                        : periodCurrentlyOpen
-                                            ? "Stop period"
-                                            : "Start period"}
                                 </button>
                             ) : null}
                             <button
