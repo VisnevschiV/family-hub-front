@@ -292,6 +292,7 @@ function FamilyCalendarPage() {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [eventTitle, setEventTitle] = useState("");
     const [eventDescription, setEventDescription] = useState("");
+    const [eventDateKey, setEventDateKey] = useState(() => toDateKey(new Date()));
     const [eventDateTime, setEventDateTime] = useState("");
     const [familyMembers, setFamilyMembers] = useState([]);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
@@ -306,7 +307,7 @@ function FamilyCalendarPage() {
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
-    const [monthViewOpen, setMonthViewOpen] = useState(true);
+    const [isCurrentPersonaMale, setIsCurrentPersonaMale] = useState(false);
     const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
     const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
@@ -331,8 +332,14 @@ function FamilyCalendarPage() {
 
     useEffect(() => {
         fetchCurrentPersona()
-            .then((data) => setHasFamily(Boolean(data?.family)))
-            .catch(() => setHasFamily(true));
+            .then((data) => {
+                setHasFamily(Boolean(data?.family));
+                setIsCurrentPersonaMale(String(data?.gender || "").toUpperCase() === "MALE");
+            })
+            .catch(() => {
+                setHasFamily(true);
+                setIsCurrentPersonaMale(false);
+            });
     }, []);
 
     async function refreshEvents() {
@@ -515,13 +522,10 @@ function FamilyCalendarPage() {
         };
     }, [visibleMonth]);
 
-    const monthLabel = useMemo(() => {
-        if (monthViewOpen) {
-            return visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-        }
-        const [sy, sm] = selectedDateKey.split("-").map(Number);
-        return new Date(sy, sm - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
-    }, [visibleMonth, selectedDateKey, monthViewOpen]);
+    const monthLabel = useMemo(
+        () => visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+        [visibleMonth]
+    );
 
     const dayCells = useMemo(() => {
         const year = visibleMonth.getFullYear();
@@ -600,35 +604,6 @@ function FamilyCalendarPage() {
         return cells;
     }, [events, familyPeriodNamesByDate, visibleMonth]);
 
-    const fiveDayCells = useMemo(() => {
-        const [sy, sm, sd] = selectedDateKey.split("-").map(Number);
-        const todayKey = toDateKey(new Date());
-        return [-2, -1, 0, 1, 2].map((offset) => {
-            const date = new Date(sy, sm - 1, sd + offset);
-            const dateKey = toDateKey(date);
-            const dayEvents = events
-                .filter((eventItem) => eventItem.dateKey === dateKey)
-                .sort((a, b) => a.timestamp - b.timestamp);
-            const isCurrentMonth = date.getMonth() === sm - 1;
-            const monthRelation = !isCurrentMonth
-                ? date < new Date(sy, sm - 1, 1)
-                    ? "previous"
-                    : "next"
-                : "current";
-            return {
-                key: `fiveday-${dateKey}`,
-                isCurrentMonth,
-                monthRelation,
-                isPastCurrentMonth: isCurrentMonth && dateKey < todayKey,
-                dayNumber: date.getDate(),
-                dayName: date.toLocaleDateString(undefined, { weekday: "short" }),
-                dateKey,
-                dayEvents,
-                periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
-            };
-        });
-    }, [selectedDateKey, events, familyPeriodNamesByDate]);
-
     function showCurrentMonth() {
         setMonthTransitionDirection("");
         const now = new Date();
@@ -681,17 +656,6 @@ function FamilyCalendarPage() {
         showPreviousMonth();
     }
 
-    function toggleMonthView() {
-        setMonthTransitionDirection("");
-        setMonthViewOpen((prev) => {
-            if (!prev) {
-                const [y, m] = selectedDateKey.split("-").map(Number);
-                setVisibleMonth(new Date(y, m - 1, 1));
-            }
-            return !prev;
-        });
-    }
-
     function openCreateModalForDate(dateKey) {
         const targetDateKey = dateKey || selectedDateKey || toDateKey(new Date());
         const [year, month, day] = targetDateKey.split("-").map(Number);
@@ -710,6 +674,9 @@ function FamilyCalendarPage() {
         if (hasValidDate) {
             setSelectedDateKey(targetDateKey);
             setVisibleMonth(new Date(year, month - 1, 1));
+            setEventDateKey(targetDateKey);
+        } else {
+            setEventDateKey(toDateKey(new Date()));
         }
 
         setEventDateTime(defaultTime);
@@ -775,6 +742,7 @@ function FamilyCalendarPage() {
 
         setEventTitle(eventItem.title);
         setEventDescription(eventItem.description || "");
+        setEventDateKey(toDateKey(new Date(eventItem.timestamp)));
         setEventDateTime(localValue);
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
@@ -804,14 +772,14 @@ function FamilyCalendarPage() {
 
         const title = eventTitle.trim();
         const description = eventDescription.trim();
-        if (!title || !eventDateTime) return;
+        if (!title || !eventDateTime || (!editingEventId && !eventDateKey)) return;
 
         let parsedDate = null;
 
         if (editingEventId) {
             parsedDate = new Date(eventDateTime);
         } else {
-            const [year, month, day] = selectedDateKey.split("-").map(Number);
+            const [year, month, day] = eventDateKey.split("-").map(Number);
             const [hoursRaw, minutesRaw] = eventDateTime.split(":");
             const hours = Number(hoursRaw);
             const minutes = Number(minutesRaw);
@@ -980,6 +948,23 @@ function FamilyCalendarPage() {
         [familyPeriodNamesByDate, selectedDateKey]
     );
 
+    const isSelectedDateInFuture = useMemo(() => {
+        const todayKey = toDateKey(new Date());
+        return selectedDateKey > todayKey;
+    }, [selectedDateKey]);
+
+    const periodActionHint = useMemo(() => {
+        if (isSelectedDateInFuture) {
+            return "Choose today or a past day to track period status.";
+        }
+
+        if (periodCurrentlyOpen && openPeriodStartDateKey) {
+            return `Open period started on ${openPeriodStartDateKey}.`;
+        }
+
+        return "Track period for the currently selected day.";
+    }, [isSelectedDateInFuture, periodCurrentlyOpen, openPeriodStartDateKey]);
+
     const visibleMonthKey = `${visibleMonth.getFullYear()}-${String(visibleMonth.getMonth() + 1).padStart(2, "0")}`;
 
     if (!hasFamily) {
@@ -991,7 +976,7 @@ function FamilyCalendarPage() {
             {calendarError ? <p className="calendarView__error text-medium">{calendarError}</p> : null}
             {calendarNotice ? <p className="calendarView__notice text-medium">{calendarNotice}</p> : null}
 
-            <section className={`calendarView${monthViewOpen ? "" : " calendarView--compact"}`}>
+            <section className="calendarView calendarView--compact">
                 <div className="calendarView__toolbar">
                     <div className="calendarView__monthNav">
                         <button
@@ -1016,137 +1001,96 @@ function FamilyCalendarPage() {
                         <button type="button" className="calendarView__button" onClick={showCurrentMonth}>
                             Today
                         </button>
-                        <button type="button" className={`calendarView__button${monthViewOpen ? " calendarView__button--active" : ""}`} onClick={toggleMonthView} aria-label="Toggle month view">
-                            &#128197;
-                        </button>
                     </div>
                 </div>
 
-                {monthViewOpen ? (
-                    <>
-                        <div className="calendarView__weekHeader" role="row">
-                            {WEEK_DAYS.map((day, dayIndex) => (
-                                <div
-                                    key={day}
-                                    className={`calendarView__weekDay ${dayIndex === 0 || dayIndex === 6 ? "calendarView__weekDay--weekend" : ""}`}
-                                    role="columnheader"
-                                >
-                                    {day}
-                                </div>
-                            ))}
-                        </div>
+
+
+                <div className="calendarView__weekHeader" role="row">
+                    {WEEK_DAYS.map((day, dayIndex) => (
                         <div
-                            key={`${visibleMonthKey}-${monthTransitionDirection || "static"}`}
-                            className={`calendarView__grid${monthTransitionDirection ? ` calendarView__grid--slide-${monthTransitionDirection}` : ""}`}
-                            role="grid"
-                            aria-label={monthLabel}
-                            onTouchStart={handleMonthGridTouchStart}
-                            onTouchEnd={handleMonthGridTouchEnd}
-                            onAnimationEnd={() => setMonthTransitionDirection("")}
+                            key={day}
+                            className={`calendarView__weekDay ${dayIndex === 0 || dayIndex === 6 ? "calendarView__weekDay--weekend" : ""}`}
+                            role="columnheader"
                         >
-                            {dayCells.map((cell, cellIndex) => (
-                                <div
-                                    key={cell.key}
-                                    className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
-                                        } ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
-                                        } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
-                                        } ${cell.monthRelation === "previous" ? "calendarView__cell--pastMonth" : ""
-                                        } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
-                                        } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
-                                        } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
-                                        } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
-                                        }`}
-                                    role="gridcell"
-                                    onClick={cell.dateKey ? () => {
-                                        if (longPressTriggeredRef.current || monthSwipeTriggeredRef.current) {
-                                            longPressTriggeredRef.current = false;
-                                            monthSwipeTriggeredRef.current = false;
-                                            return;
-                                        }
-                                        handleDayCellClick(cell);
-                                    } : undefined}
-                                    onDoubleClick={cell.isCurrentMonth && cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
-                                    onPointerDown={cell.isCurrentMonth && cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
-                                    onPointerUp={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                                    onPointerLeave={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                                    onPointerCancel={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
-                                >
-                                    {cell.dayNumber ? (
-                                        <>
-                                            <span className="calendarView__dayNumber">{cell.dayNumber}</span>
-                                            {cell.isCurrentMonth || cell.dayEvents.length > 0 || (cell.periodMemberNames || []).length > 0 ? (
-                                                <div className="calendarView__events">
-                                                    {cell.dayEvents.slice(0, 2).map((eventItem) => (
-                                                        <div
-                                                            key={eventItem.id}
-                                                            className={`calendarView__eventItem ${eventItem.gender}`}
-                                                        >
-                                                            <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
-                                                            <div className="calendarView__eventTitle">{eventItem.title}</div>
-                                                            <div className="calendarView__eventTitle">{eventItem.gender}</div>
-                                                            {eventItem.participantNames.length > 0 ? (
-                                                                <div className="calendarView__eventDescription">
-                                                                    With: {eventItem.participantNames.join(", ")}
-                                                                </div>
-                                                            ) : null}
-                                                            {eventItem.description ? (
-                                                                <div className="calendarView__eventDescription">
-                                                                    {eventItem.description}
-                                                                </div>
-                                                            ) : null}
+                            {day}
+                        </div>
+                    ))}
+                </div>
+                <div
+                    key={`${visibleMonthKey}-${monthTransitionDirection || "static"}`}
+                    className={`calendarView__grid${monthTransitionDirection ? ` calendarView__grid--slide-${monthTransitionDirection}` : ""}`}
+                    role="grid"
+                    aria-label={monthLabel}
+                    onTouchStart={handleMonthGridTouchStart}
+                    onTouchEnd={handleMonthGridTouchEnd}
+                    onAnimationEnd={() => setMonthTransitionDirection("")}
+                >
+                    {dayCells.map((cell, cellIndex) => (
+                        <div
+                            key={cell.key}
+                            className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
+                                } ${cell.dateKey && cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
+                                } ${cellIndex % 7 === 0 || cellIndex % 7 === 6 ? "calendarView__cell--weekend" : ""
+                                } ${cell.monthRelation === "previous" ? "calendarView__cell--pastMonth" : ""
+                                } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
+                                } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
+                                } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
+                                } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
+                                }`}
+                            role="gridcell"
+                            onClick={cell.dateKey ? () => {
+                                if (longPressTriggeredRef.current || monthSwipeTriggeredRef.current) {
+                                    longPressTriggeredRef.current = false;
+                                    monthSwipeTriggeredRef.current = false;
+                                    return;
+                                }
+                                handleDayCellClick(cell);
+                            } : undefined}
+                            onDoubleClick={cell.isCurrentMonth && cell.dateKey ? () => openCreateModalForDate(cell.dateKey) : undefined}
+                            onPointerDown={cell.isCurrentMonth && cell.dateKey ? (event) => handleCellPointerDown(event, cell) : undefined}
+                            onPointerUp={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerLeave={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                            onPointerCancel={cell.isCurrentMonth && cell.dateKey ? handleCellPointerEnd : undefined}
+                        >
+                            {cell.dayNumber ? (
+                                <>
+                                    <span className="calendarView__dayNumber">{cell.dayNumber}</span>
+                                    {cell.isCurrentMonth || cell.dayEvents.length > 0 || (cell.periodMemberNames || []).length > 0 ? (
+                                        <div className="calendarView__events">
+                                            {cell.dayEvents.slice(0, 2).map((eventItem) => (
+                                                <div
+                                                    key={eventItem.id}
+                                                    className={`calendarView__eventItem ${eventItem.gender}`}
+                                                >
+                                                    <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
+                                                    <div className="calendarView__eventTitle">{eventItem.title}</div>
+                                                    <div className="calendarView__eventTitle">{eventItem.gender}</div>
+                                                    {eventItem.participantNames.length > 0 ? (
+                                                        <div className="calendarView__eventDescription">
+                                                            With: {eventItem.participantNames.join(", ")}
                                                         </div>
-                                                    ))}
-                                                    {cell.dayEvents.length > 2 ? (
-                                                        <div className="calendarView__moreEvents">
-                                                            +{cell.dayEvents.length - 2} more
+                                                    ) : null}
+                                                    {eventItem.description ? (
+                                                        <div className="calendarView__eventDescription">
+                                                            {eventItem.description}
                                                         </div>
                                                     ) : null}
                                                 </div>
+                                            ))}
+                                            {cell.dayEvents.length > 2 ? (
+                                                <div className="calendarView__moreEvents">
+                                                    +{cell.dayEvents.length - 2} more
+                                                </div>
                                             ) : null}
-                                        </>
+                                        </div>
                                     ) : null}
-                                </div>
-                            ))}
+                                </>
+                            ) : null}
                         </div>
-                    </>
-                ) : (
-                    <>
-                        <div className="calendarView__grid calendarView__grid--fiveDay" role="grid" aria-label={monthLabel}>
-                            {fiveDayCells.map((cell) => (
-                                <div
-                                    key={cell.key}
-                                    className={`calendarView__cell ${cell.isCurrentMonth ? "calendarView__cell--current" : "calendarView__cell--empty"
-                                        } ${cell.dateKey === selectedDateKey ? "calendarView__cell--selected" : ""
-                                        } ${cell.monthRelation === "previous" ? "calendarView__cell--pastMonth" : ""
-                                        } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
-                                        } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
-                                        } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
-                                        } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
-                                        }`}
-                                    role="gridcell"
-                                    onClick={() => selectDateAndScroll(cell.dateKey)}
-                                    onDoubleClick={() => openCreateModalForDate(cell.dateKey)}
-                                    onPointerDown={(event) => handleCellPointerDown(event, cell)}
-                                    onPointerUp={handleCellPointerEnd}
-                                    onPointerLeave={handleCellPointerEnd}
-                                    onPointerCancel={handleCellPointerEnd}
-                                >
-                                    <div className="calendarView__compactDay">
-                                        <span className={`calendarView__compactDayName${!cell.isCurrentMonth ? " calendarView__compactDayName--muted" : ""}`}>
-                                            {cell.dayName}
-                                        </span>
-                                        <span className="calendarView__compactDayNumber">{cell.dayNumber}</span>
-                                        <span
-                                            className={`calendarView__eventDot${cell.dayEvents.length > 0 ? " calendarView__eventDot--hasEvents" : ""}`}
-                                            aria-label={cell.dayEvents.length > 0 ? "Has events" : "No events"}
-                                            title={cell.dayEvents.length > 0 ? `${cell.dayEvents.length} event(s)` : "No events"}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
+                    ))}
+                </div>
+
             </section>
 
             <div className="calendarView__actionsRow">
@@ -1159,7 +1103,28 @@ function FamilyCalendarPage() {
             </div>
 
             <section ref={itinerarySectionRef} className="calendarItinerary">
-                <h2 className="card__title">{selectedDateLabel}</h2>
+                <div className="calendarItinerary__header">
+                    <h2 className="card__title">{selectedDateLabel}</h2>
+                    {!isCurrentPersonaMale ? (
+                        <button
+                            type="button"
+                            className="calendarItinerary__periodAction"
+                            onClick={handleStartPeriodForSelectedDay}
+                            disabled={startingPeriod || isSelectedDateInFuture}
+                        >
+                            {startingPeriod
+                                ? periodCurrentlyOpen
+                                    ? "Stopping..."
+                                    : "Starting..."
+                                : periodCurrentlyOpen
+                                    ? "Stop period"
+                                    : "Start period"}
+                        </button>
+                    ) : null}
+                </div>
+                {!isCurrentPersonaMale ? (
+                    <p className="calendarItinerary__periodHint text-medium">{periodActionHint}</p>
+                ) : null}
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
@@ -1245,7 +1210,7 @@ function FamilyCalendarPage() {
                         title={editingEventId ? "Edit event" : "Create new event"}
                         subtitle={editingEventId
                             ? "Update title, description, and date/time."
-                            : "Date is set from your selected day. Add title, details, and time."}
+                            : "Choose date and time, then add title and details."}
                         onClose={closeCreateModal}
                         className="calendarModalHeader"
                         titleClassName="calendarModalTitle"
@@ -1292,7 +1257,13 @@ function FamilyCalendarPage() {
                         ) : (
                             <>
                                 <ModalField label="Date" className="calendarModalField">
-                                    <input className="universalModal__input" type="text" value={selectedDateLabel} readOnly />
+                                    <input
+                                        className="universalModal__input"
+                                        type="date"
+                                        value={eventDateKey}
+                                        onChange={(event) => setEventDateKey(event.target.value)}
+                                        required
+                                    />
                                 </ModalField>
 
                                 <ModalField label="Time" className="calendarModalField">
@@ -1356,22 +1327,6 @@ function FamilyCalendarPage() {
                                     onClick={handleDeleteEvent}
                                 >
                                     Delete
-                                </button>
-                            ) : null}
-                            {!editingEventId ? (
-                                <button
-                                    type="button"
-                                    className="calendarModalButton calendarModalButton--period universalModal__button"
-                                    onClick={handleStartPeriodForSelectedDay}
-                                    disabled={startingPeriod}
-                                >
-                                    {startingPeriod
-                                        ? periodCurrentlyOpen
-                                            ? "Stopping..."
-                                            : "Starting..."
-                                        : periodCurrentlyOpen
-                                            ? "Stop period"
-                                            : "Start period"}
                                 </button>
                             ) : null}
                             <button

@@ -83,6 +83,16 @@
         min-height: 840px;
     }
 
+    .calendarItinerary__header {
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .calendarItinerary__periodAction {
+        width: 100%;
+        text-align: center;
+    }
+
     .calendarItinerary__timelineScaleLabel {
         font-size: 10px;
     }
