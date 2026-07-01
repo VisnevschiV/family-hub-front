@@ -1,10 +1,4 @@
-﻿/* ===================================================
-   TodoList â€” Base styles (shared across all screen sizes)
-   On mobile defaults to full-width; desktop sizing in styledesktop.css
-   =================================================== */
-
-/* ---- Panel ---- */
-.todoList {
+﻿.todoList {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -110,7 +104,7 @@
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--brand) 0%, var(--brand-strong) 100%);
+    background: linear-gradient(90deg, var(--brand-strong) 0%, var(--brand-strong) 100%);
 }
 
 .todoList__headerActions {
@@ -423,8 +417,8 @@
 }
 
 .todoList__checkbox:checked {
-    border-color: var(--brand);
-    background: var(--brand);
+    border-color: var(--brand-strong);
+    background: var(--brand-strong);
 }
 
 .todoList__checkbox:checked::before {
@@ -523,7 +517,6 @@
 
 .todoList__inlineEditInput {
     width: 100%;
-    border: 1px solid var(--brand);
     border-radius: 8px;
     background: var(--surface);
     color: var(--text);
