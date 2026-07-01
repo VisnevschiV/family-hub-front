@@ -1,7 +1,7 @@
 ﻿.addButton {
     background: var(--gradient-button-primary);
     color: var(--text);
-    border: 1px solid var(--brand);
+    border-width: 0px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -20,7 +20,6 @@
 }
 
 .addButton:focus-visible {
-    outline: 2px solid var(--brand);
     outline-offset: 2px;
 }
 

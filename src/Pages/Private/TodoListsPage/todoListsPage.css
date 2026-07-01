@@ -58,7 +58,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: conic-gradient(var(--brand) var(--progress), var(--divider) 0);
+    background: conic-gradient(var(--brand-strong) var(--progress), var(--divider) 0);
     position: relative;
     display: grid;
     place-items: center;
