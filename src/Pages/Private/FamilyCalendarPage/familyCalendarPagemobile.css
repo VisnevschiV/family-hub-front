@@ -83,6 +83,20 @@
         min-height: 840px;
     }
 
+    .calendarItinerary__allDay {
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .calendarItinerary__allDayItem {
+        border-radius: 8px;
+        padding: 7px 8px;
+    }
+
+    .calendarItinerary__allDayItemTitle {
+        font-size: 13px;
+    }
+
     .calendarItinerary__header {
         align-items: stretch;
         gap: 8px;
@@ -98,8 +112,7 @@
     }
 
     .calendarItinerary__timelineEvent {
-        left: 6px;
-        right: 6px;
+        --timeline-event-inset: 6px;
         padding: 5px 6px;
     }
 
@@ -127,6 +140,11 @@
 
     .calendarModalButton {
         min-height: 42px;
+    }
+
+    .calendarModalTimeGrid {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
 
     .calendarParticipants__menu {

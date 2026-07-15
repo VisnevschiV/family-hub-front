@@ -39,7 +39,14 @@ export async function getCalendarEvents() {
     }
 }
 
-export async function createCalendarEvent(title, description, time, participantIds = []) {
+export async function createCalendarEvent(
+    title,
+    description,
+    time,
+    endTime,
+    allDayEvent,
+    participantIds = []
+) {
     const participants = participantIds
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
@@ -49,7 +56,14 @@ export async function createCalendarEvent(title, description, time, participantI
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, description, time, participants }),
+        body: JSON.stringify({
+            title,
+            description,
+            time,
+            endTime,
+            allDayEvent: Boolean(allDayEvent),
+            participants,
+        }),
     });
 
     if (!response.ok) {
@@ -61,7 +75,15 @@ export async function createCalendarEvent(title, description, time, participantI
     }
 }
 
-export async function updateCalendarEvent(eventId, title, description, time, participantIds = []) {
+export async function updateCalendarEvent(
+    eventId,
+    title,
+    description,
+    time,
+    endTime,
+    allDayEvent,
+    participantIds = []
+) {
     const participants = participantIds
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
@@ -71,7 +93,14 @@ export async function updateCalendarEvent(eventId, title, description, time, par
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, description, time, participants }),
+        body: JSON.stringify({
+            title,
+            description,
+            time,
+            endTime,
+            allDayEvent: Boolean(allDayEvent),
+            participants,
+        }),
     });
 
     if (!response.ok) {
