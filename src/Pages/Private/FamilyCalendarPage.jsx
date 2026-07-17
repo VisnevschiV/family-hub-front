@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     createCalendarEvent,
     deleteCalendarEvent,
-    getCalendarEvents,
+    getCalendarOccurrences,
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
@@ -30,6 +30,7 @@ const DAY_HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 const EVENT_BLOCK_MINUTES = 60;
 const MIN_EVENT_BLOCK_MINUTES = 30;
 const DAY_TOTAL_MINUTES = 24 * 60;
+const RECURRENCE_FREQUENCY_OPTIONS = ["NONE", "DAILY", "WEEKLY", "MONTHLY"];
 
 function normalizeBoolean(value) {
     if (typeof value === "boolean") return value;
@@ -165,6 +166,32 @@ function addMemberNameForDate(targetMap, dateKey, memberName) {
     }
 }
 
+function getVisibleMonthOccurrenceRange(monthDate) {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const firstWeekday = firstDayOfMonth.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const displayedCellsCount = firstWeekday + daysInMonth;
+    const trailingDays = displayedCellsCount % 7 === 0 ? 0 : 7 - (displayedCellsCount % 7);
+
+    const start = new Date(year, month, 1 - firstWeekday, 0, 0, 0, 0);
+    const endExclusive = new Date(
+        year,
+        month,
+        1 - firstWeekday + displayedCellsCount + trailingDays,
+        0,
+        0,
+        0,
+        0
+    );
+
+    return {
+        startIso: start.toISOString(),
+        endIso: endExclusive.toISOString(),
+    };
+}
+
 function mapBackendEvents(data, familyMembers = []) {
     const sourceEvents = Array.isArray(data)
         ? data
@@ -177,18 +204,20 @@ function mapBackendEvents(data, familyMembers = []) {
     return sourceEvents
         .map((eventItem) => {
             const backendId =
-                eventItem.id ||
-                eventItem.ID ||
                 eventItem.eventId ||
                 eventItem.eventID ||
+                eventItem.id ||
+                eventItem.ID ||
                 eventItem.uuid;
             const timestampRaw =
+                eventItem.occurrenceStart ||
                 eventItem.time ||
                 eventItem.dateTime ||
                 eventItem.datetime ||
                 eventItem.timestamp ||
                 eventItem.start;
             const endTimestampRaw =
+                eventItem.occurrenceEnd ||
                 eventItem.endTime ||
                 eventItem.endDateTime ||
                 eventItem.endDatetime ||
@@ -196,6 +225,8 @@ function mapBackendEvents(data, familyMembers = []) {
                 eventItem.end;
             const parsedDate = new Date(timestampRaw);
             const parsedEndDate = parseFlexibleDate(endTimestampRaw);
+            const participantIds = extractParticipantIds(eventItem);
+            const participantNames = extractParticipantNames(eventItem);
             const isAllDay = normalizeBoolean(
                 eventItem.allDayEvent ?? eventItem.allDay ?? eventItem.isAllDay ?? eventItem.fullDay
             );
@@ -217,18 +248,14 @@ function mapBackendEvents(data, familyMembers = []) {
                 return null;
             }
 
-            console.log(
-                "RAW EVENT:",
-                JSON.stringify(eventItem, null, 2)
-            );
-
             return {
                 id: String(backendId),
                 title: eventItem.title || eventItem.name || "Untitled event",
                 description: eventItem.description || "",
-                participantIds: extractParticipantIds(eventItem),
-                participantNames: extractParticipantNames(eventItem),
-                gender: extractParticipantGenders(eventItem, familyMembers),
+                participantIds,
+                participantNames,
+                gender: extractParticipantGenders(participantIds, familyMembers),
+                recurrence: extractRecurrence(eventItem),
                 timestamp: parsedDate.getTime(),
                 endTimestamp,
                 allDay: isAllDay,
@@ -250,7 +277,7 @@ function extractParticipantIds(eventItem) {
         eventItem.memberIds ||
         eventItem.assigneeIds;
 
-    if (Array.isArray(candidates)) {
+    if (Array.isArray(candidates) && candidates.every((value) => typeof value !== "object" || value === null)) {
         return candidates
             .map((value) => Number(value))
             .filter((value) => Number.isInteger(value));
@@ -261,6 +288,29 @@ function extractParticipantIds(eventItem) {
 
     if (Array.isArray(participantObjects)) {
         return participantObjects
+            .map((participant) => {
+                if (participant === null || participant === undefined) return null;
+                if (typeof participant === "string" || typeof participant === "number") {
+                    const participantId = Number(participant);
+                    return Number.isInteger(participantId) ? participantId : null;
+                }
+                if (typeof participant !== "object") return null;
+
+                const participantId =
+                    participant.id ||
+                    participant.ID ||
+                    participant.personaId ||
+                    participant.userId ||
+                    participant.memberId;
+
+                const normalizedId = Number(participantId);
+                return Number.isInteger(normalizedId) ? normalizedId : null;
+            })
+            .filter(Boolean);
+    }
+
+    if (Array.isArray(candidates)) {
+        return candidates
             .map((participant) => {
                 if (participant === null || participant === undefined) return null;
                 if (typeof participant === "string" || typeof participant === "number") {
@@ -313,8 +363,8 @@ function extractParticipantNames(eventItem) {
     return [];
 }
 
-function extractParticipantGenders(eventItem, familyMembers) {
-    const participants = eventItem.participants || [];
+function extractParticipantGenders(participantIds, familyMembers) {
+    const participants = Array.isArray(participantIds) ? participantIds : [];
 
     let hasMale = false;
     let hasFemale = false;
@@ -340,6 +390,29 @@ function extractParticipantGenders(eventItem, familyMembers) {
     return "mixed";
 }
 
+function normalizeRecurrenceFrequency(value) {
+    const normalized = String(value || "").trim().toUpperCase();
+    return RECURRENCE_FREQUENCY_OPTIONS.includes(normalized) ? normalized : "NONE";
+}
+
+function extractRecurrence(eventItem) {
+    const recurrence = eventItem?.recurrence || eventItem?.recurrenceRule || eventItem?.repeat || null;
+    const source = recurrence && typeof recurrence === "object" ? recurrence : eventItem;
+
+    const frequency = normalizeRecurrenceFrequency(
+        source?.frequency || source?.type || source?.repeatType || source?.recurrenceFrequency
+    );
+    const interval = Number(source?.interval || source?.every || source?.recurrenceInterval || 1);
+    const untilRaw = source?.until || source?.untilDate || source?.endDate || source?.recurrenceUntil;
+    const untilDate = parseFlexibleDate(untilRaw);
+
+    return {
+        frequency,
+        interval: Number.isInteger(interval) && interval > 0 ? interval : 1,
+        untilDateKey: untilDate ? toDateKey(untilDate) : "",
+    };
+}
+
 function FamilyCalendarPage() {
     const [visibleMonth, setVisibleMonth] = useState(() => {
         const now = new Date();
@@ -353,6 +426,9 @@ function FamilyCalendarPage() {
     const [eventDateTime, setEventDateTime] = useState("");
     const [eventEndTime, setEventEndTime] = useState("");
     const [eventAllDay, setEventAllDay] = useState(false);
+    const [eventRecurrenceFrequency, setEventRecurrenceFrequency] = useState("NONE");
+    const [eventRecurrenceInterval, setEventRecurrenceInterval] = useState("1");
+    const [eventRecurrenceUntilDateKey, setEventRecurrenceUntilDateKey] = useState("");
     const [familyMembers, setFamilyMembers] = useState([]);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
     const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
@@ -401,30 +477,43 @@ function FamilyCalendarPage() {
             });
     }, []);
 
-    async function refreshEvents() {
-        const data = await getCalendarEvents();
+    const refreshEvents = useCallback(async (monthToLoad) => {
+        const targetMonth = monthToLoad || visibleMonth;
+        const { startIso, endIso } = getVisibleMonthOccurrenceRange(targetMonth);
+        const data = await getCalendarOccurrences(startIso, endIso);
         setEvents(mapBackendEvents(data, familyMembers));
-    }
+    }, [familyMembers, visibleMonth]);
 
     useEffect(() => {
         let active = true;
 
-        Promise.all([getCalendarEvents(), getFamilyMembers()])
-            .then(([eventsData, membersData]) => {
+        getFamilyMembers()
+            .then((membersData) => {
                 if (!active) return;
                 setFamilyMembers(Array.isArray(membersData) ? membersData : []);
-                setEvents(mapBackendEvents(eventsData, membersData));
-                console.log("[FamilyCalendarPage] family members", membersData);
             })
             .catch((error) => {
                 if (!active) return;
-                setCalendarError(error.message || "Failed to load calendar data");
+                setCalendarError(error.message || "Failed to load family members");
             });
 
         return () => {
             active = false;
         };
     }, []);
+
+    useEffect(() => {
+        let active = true;
+
+        refreshEvents(visibleMonth).catch((error) => {
+            if (!active) return;
+            setCalendarError(error.message || "Failed to load calendar data");
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [refreshEvents, visibleMonth]);
 
     useEffect(() => {
         let active = true;
@@ -446,8 +535,6 @@ function FamilyCalendarPage() {
                     getFamilyMembers().catch(() => []),
                 ]);
 
-                console.log("[FamilyCalendarPage] family/records/month response", familyMonthData);
-                console.log("Family Members for period mapping:", membersData);
                 const membersById = new Map(
                     (Array.isArray(membersData) ? membersData : [])
                         .filter((m) => m?.id != null && m?.name)
@@ -512,7 +599,6 @@ function FamilyCalendarPage() {
 
                 // --- Family members period mapping via new per-month endpoint ---
                 const familyMonthList = Array.isArray(familyMonthData) ? familyMonthData : [];
-                console.log("[FamilyCalendarPage] family month entries", familyMonthList);
 
                 for (const entry of familyMonthList) {
                     const personaId = entry?.personaId;
@@ -745,6 +831,9 @@ function FamilyCalendarPage() {
         setEventDateTime(defaultStartTime);
         setEventEndTime(defaultEndTime);
         setEventAllDay(false);
+        setEventRecurrenceFrequency("NONE");
+        setEventRecurrenceInterval("1");
+        setEventRecurrenceUntilDateKey("");
         setEventTitle("");
         setEventDescription("");
         setSelectedParticipantIds([]);
@@ -812,6 +901,9 @@ function FamilyCalendarPage() {
         setEventDateTime(toTimeInputValue(startDate));
         setEventEndTime(toTimeInputValue(endDate));
         setEventAllDay(Boolean(eventItem.allDay));
+        setEventRecurrenceFrequency(eventItem.recurrence?.frequency || "NONE");
+        setEventRecurrenceInterval(String(eventItem.recurrence?.interval || 1));
+        setEventRecurrenceUntilDateKey(eventItem.recurrence?.untilDateKey || "");
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
         setEditingEventId(eventItem.id);
@@ -889,6 +981,44 @@ function FamilyCalendarPage() {
 
         const isoTime = parsedDate.toISOString();
         const isoEndTime = parsedEndDate.toISOString();
+        const normalizedFrequency = normalizeRecurrenceFrequency(eventRecurrenceFrequency);
+        const recurrenceInterval = Math.max(1, Number(eventRecurrenceInterval) || 1);
+        let recurrenceUntilIso = null;
+
+        if (normalizedFrequency !== "NONE" && eventRecurrenceUntilDateKey) {
+            const parsedUntilDate = parseFlexibleDate(eventRecurrenceUntilDateKey);
+
+            if (!parsedUntilDate) {
+                setCalendarError("Invalid recurrence end date.");
+                return;
+            }
+
+            const recurrenceEndOfDay = new Date(
+                parsedUntilDate.getFullYear(),
+                parsedUntilDate.getMonth(),
+                parsedUntilDate.getDate(),
+                23,
+                59,
+                59,
+                999
+            );
+
+            if (recurrenceEndOfDay.getTime() < parsedDate.getTime()) {
+                setCalendarError("Recurrence end date cannot be before the event date.");
+                return;
+            }
+
+            recurrenceUntilIso = recurrenceEndOfDay.toISOString();
+        }
+
+        const recurrencePayload =
+            normalizedFrequency === "NONE"
+                ? null
+                : {
+                    frequency: normalizedFrequency,
+                    interval: recurrenceInterval,
+                    ...(recurrenceUntilIso ? { until: recurrenceUntilIso } : {}),
+                };
 
         try {
             setCalendarError("");
@@ -901,7 +1031,8 @@ function FamilyCalendarPage() {
                     isoTime,
                     isoEndTime,
                     eventAllDay,
-                    selectedParticipantIds
+                    selectedParticipantIds,
+                    recurrencePayload
                 );
             } else {
                 await createCalendarEvent(
@@ -910,12 +1041,14 @@ function FamilyCalendarPage() {
                     isoTime,
                     isoEndTime,
                     eventAllDay,
-                    selectedParticipantIds
+                    selectedParticipantIds,
+                    recurrencePayload
                 );
             }
 
-            await refreshEvents();
             const updatedDateKey = toDateKey(parsedDate);
+            const targetMonth = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1);
+            await refreshEvents(targetMonth);
             setVisibleMonth(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
             setSelectedDateKey(updatedDateKey);
             closeCreateModal();
@@ -1489,6 +1622,44 @@ function FamilyCalendarPage() {
                         ) : (
                             <p className="calendarModalHint text-small">This event will be shown as all day.</p>
                         )}
+
+                        <ModalField label="Repeat" className="calendarModalField">
+                            <select
+                                className="universalModal__input"
+                                value={eventRecurrenceFrequency}
+                                onChange={(event) => setEventRecurrenceFrequency(event.target.value)}
+                            >
+                                <option value="NONE">Does not repeat</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                            </select>
+                        </ModalField>
+
+                        {eventRecurrenceFrequency !== "NONE" ? (
+                            <div className="calendarModalTimeGrid">
+                                <ModalField label="Repeat every" className="calendarModalField">
+                                    <input
+                                        className="universalModal__input"
+                                        type="number"
+                                        min="1"
+                                        max="365"
+                                        value={eventRecurrenceInterval}
+                                        onChange={(event) => setEventRecurrenceInterval(event.target.value)}
+                                        required
+                                    />
+                                </ModalField>
+
+                                <ModalField label="Repeat until" className="calendarModalField">
+                                    <input
+                                        className="universalModal__input"
+                                        type="date"
+                                        value={eventRecurrenceUntilDateKey}
+                                        onChange={(event) => setEventRecurrenceUntilDateKey(event.target.value)}
+                                    />
+                                </ModalField>
+                            </div>
+                        ) : null}
 
                         <div className="calendarModalField universalModal__field">
                             <span className="universalModal__fieldLabel">Participants</span>
