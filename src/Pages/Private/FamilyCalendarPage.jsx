@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     createCalendarEvent,
     deleteCalendarEvent,
-    getCalendarEvents,
+    getCalendarOccurrences,
     updateCalendarEvent,
 } from "../../api/calendar.js";
 import { getFamilyMembers } from "../../api/families.js";
@@ -29,6 +29,41 @@ const MONTH_SWIPE_THRESHOLD_PX = 48;
 const DAY_HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 const EVENT_BLOCK_MINUTES = 60;
 const MIN_EVENT_BLOCK_MINUTES = 30;
+const DAY_TOTAL_MINUTES = 24 * 60;
+const RECURRENCE_FREQUENCY_OPTIONS = ["NONE", "DAILY", "WEEKLY", "MONTHLY"];
+
+function normalizeBoolean(value) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
+    if (typeof value === "string") {
+        const normalizedValue = value.trim().toLowerCase();
+        return normalizedValue === "true" || normalizedValue === "1" || normalizedValue === "yes";
+    }
+    return false;
+}
+
+function formatEventTime(date) {
+    return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function toTimeInputValue(date) {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function addMinutes(date, minutes) {
+    return new Date(date.getTime() + minutes * 60000);
+}
+
+function compareCalendarEvents(a, b) {
+    if (a.allDay !== b.allDay) {
+        return a.allDay ? -1 : 1;
+    }
+
+    return a.timestamp - b.timestamp;
+}
 
 function toDateKey(date) {
     const year = date.getFullYear();
@@ -131,6 +166,32 @@ function addMemberNameForDate(targetMap, dateKey, memberName) {
     }
 }
 
+function getVisibleMonthOccurrenceRange(monthDate) {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const firstWeekday = firstDayOfMonth.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const displayedCellsCount = firstWeekday + daysInMonth;
+    const trailingDays = displayedCellsCount % 7 === 0 ? 0 : 7 - (displayedCellsCount % 7);
+
+    const start = new Date(year, month, 1 - firstWeekday, 0, 0, 0, 0);
+    const endExclusive = new Date(
+        year,
+        month,
+        1 - firstWeekday + displayedCellsCount + trailingDays,
+        0,
+        0,
+        0,
+        0
+    );
+
+    return {
+        startIso: start.toISOString(),
+        endIso: endExclusive.toISOString(),
+    };
+}
+
 function mapBackendEvents(data, familyMembers = []) {
     const sourceEvents = Array.isArray(data)
         ? data
@@ -143,41 +204,64 @@ function mapBackendEvents(data, familyMembers = []) {
     return sourceEvents
         .map((eventItem) => {
             const backendId =
-                eventItem.id ||
-                eventItem.ID ||
                 eventItem.eventId ||
                 eventItem.eventID ||
+                eventItem.id ||
+                eventItem.ID ||
                 eventItem.uuid;
             const timestampRaw =
+                eventItem.occurrenceStart ||
                 eventItem.time ||
                 eventItem.dateTime ||
                 eventItem.datetime ||
                 eventItem.timestamp ||
                 eventItem.start;
+            const endTimestampRaw =
+                eventItem.occurrenceEnd ||
+                eventItem.endTime ||
+                eventItem.endDateTime ||
+                eventItem.endDatetime ||
+                eventItem.endTimestamp ||
+                eventItem.end;
             const parsedDate = new Date(timestampRaw);
+            const parsedEndDate = parseFlexibleDate(endTimestampRaw);
+            const participantIds = extractParticipantIds(eventItem);
+            const participantNames = extractParticipantNames(eventItem);
+            const isAllDay = normalizeBoolean(
+                eventItem.allDayEvent ?? eventItem.allDay ?? eventItem.isAllDay ?? eventItem.fullDay
+            );
+            const hasValidEndDate =
+                parsedEndDate instanceof Date &&
+                !Number.isNaN(parsedEndDate.getTime()) &&
+                parsedEndDate.getTime() > parsedDate.getTime();
+            const endTimestamp = hasValidEndDate ? parsedEndDate.getTime() : null;
+
+            const startTimeLabel = formatEventTime(parsedDate);
+            const endTimeLabel = endTimestamp ? formatEventTime(new Date(endTimestamp)) : null;
+            const timeRangeLabel = isAllDay
+                ? "All day"
+                : endTimeLabel
+                    ? `${startTimeLabel} - ${endTimeLabel}`
+                    : startTimeLabel;
 
             if (!backendId || Number.isNaN(parsedDate.getTime())) {
                 return null;
             }
 
-            console.log(
-                "RAW EVENT:",
-                JSON.stringify(eventItem, null, 2)
-            );
-
             return {
                 id: String(backendId),
                 title: eventItem.title || eventItem.name || "Untitled event",
                 description: eventItem.description || "",
-                participantIds: extractParticipantIds(eventItem),
-                participantNames: extractParticipantNames(eventItem),
-                gender: extractParticipantGenders(eventItem, familyMembers),
+                participantIds,
+                participantNames,
+                gender: extractParticipantGenders(participantIds, familyMembers),
+                recurrence: extractRecurrence(eventItem),
                 timestamp: parsedDate.getTime(),
+                endTimestamp,
+                allDay: isAllDay,
                 dateKey: toDateKey(parsedDate),
-                timeLabel: parsedDate.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
+                timeLabel: startTimeLabel,
+                timeRangeLabel,
             };
         })
         .filter(Boolean);
@@ -193,7 +277,7 @@ function extractParticipantIds(eventItem) {
         eventItem.memberIds ||
         eventItem.assigneeIds;
 
-    if (Array.isArray(candidates)) {
+    if (Array.isArray(candidates) && candidates.every((value) => typeof value !== "object" || value === null)) {
         return candidates
             .map((value) => Number(value))
             .filter((value) => Number.isInteger(value));
@@ -204,6 +288,29 @@ function extractParticipantIds(eventItem) {
 
     if (Array.isArray(participantObjects)) {
         return participantObjects
+            .map((participant) => {
+                if (participant === null || participant === undefined) return null;
+                if (typeof participant === "string" || typeof participant === "number") {
+                    const participantId = Number(participant);
+                    return Number.isInteger(participantId) ? participantId : null;
+                }
+                if (typeof participant !== "object") return null;
+
+                const participantId =
+                    participant.id ||
+                    participant.ID ||
+                    participant.personaId ||
+                    participant.userId ||
+                    participant.memberId;
+
+                const normalizedId = Number(participantId);
+                return Number.isInteger(normalizedId) ? normalizedId : null;
+            })
+            .filter(Boolean);
+    }
+
+    if (Array.isArray(candidates)) {
+        return candidates
             .map((participant) => {
                 if (participant === null || participant === undefined) return null;
                 if (typeof participant === "string" || typeof participant === "number") {
@@ -256,8 +363,8 @@ function extractParticipantNames(eventItem) {
     return [];
 }
 
-function extractParticipantGenders(eventItem, familyMembers) {
-    const participants = eventItem.participants || [];
+function extractParticipantGenders(participantIds, familyMembers) {
+    const participants = Array.isArray(participantIds) ? participantIds : [];
 
     let hasMale = false;
     let hasFemale = false;
@@ -283,6 +390,29 @@ function extractParticipantGenders(eventItem, familyMembers) {
     return "mixed";
 }
 
+function normalizeRecurrenceFrequency(value) {
+    const normalized = String(value || "").trim().toUpperCase();
+    return RECURRENCE_FREQUENCY_OPTIONS.includes(normalized) ? normalized : "NONE";
+}
+
+function extractRecurrence(eventItem) {
+    const recurrence = eventItem?.recurrence || eventItem?.recurrenceRule || eventItem?.repeat || null;
+    const source = recurrence && typeof recurrence === "object" ? recurrence : eventItem;
+
+    const frequency = normalizeRecurrenceFrequency(
+        source?.frequency || source?.type || source?.repeatType || source?.recurrenceFrequency
+    );
+    const interval = Number(source?.interval || source?.every || source?.recurrenceInterval || 1);
+    const untilRaw = source?.until || source?.untilDate || source?.endDate || source?.recurrenceUntil;
+    const untilDate = parseFlexibleDate(untilRaw);
+
+    return {
+        frequency,
+        interval: Number.isInteger(interval) && interval > 0 ? interval : 1,
+        untilDateKey: untilDate ? toDateKey(untilDate) : "",
+    };
+}
+
 function FamilyCalendarPage() {
     const [visibleMonth, setVisibleMonth] = useState(() => {
         const now = new Date();
@@ -294,6 +424,11 @@ function FamilyCalendarPage() {
     const [eventDescription, setEventDescription] = useState("");
     const [eventDateKey, setEventDateKey] = useState(() => toDateKey(new Date()));
     const [eventDateTime, setEventDateTime] = useState("");
+    const [eventEndTime, setEventEndTime] = useState("");
+    const [eventAllDay, setEventAllDay] = useState(false);
+    const [eventRecurrenceFrequency, setEventRecurrenceFrequency] = useState("NONE");
+    const [eventRecurrenceInterval, setEventRecurrenceInterval] = useState("1");
+    const [eventRecurrenceUntilDateKey, setEventRecurrenceUntilDateKey] = useState("");
     const [familyMembers, setFamilyMembers] = useState([]);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
     const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
@@ -342,30 +477,43 @@ function FamilyCalendarPage() {
             });
     }, []);
 
-    async function refreshEvents() {
-        const data = await getCalendarEvents();
+    const refreshEvents = useCallback(async (monthToLoad) => {
+        const targetMonth = monthToLoad || visibleMonth;
+        const { startIso, endIso } = getVisibleMonthOccurrenceRange(targetMonth);
+        const data = await getCalendarOccurrences(startIso, endIso);
         setEvents(mapBackendEvents(data, familyMembers));
-    }
+    }, [familyMembers, visibleMonth]);
 
     useEffect(() => {
         let active = true;
 
-        Promise.all([getCalendarEvents(), getFamilyMembers()])
-            .then(([eventsData, membersData]) => {
+        getFamilyMembers()
+            .then((membersData) => {
                 if (!active) return;
                 setFamilyMembers(Array.isArray(membersData) ? membersData : []);
-                setEvents(mapBackendEvents(eventsData, membersData));
-                console.log("[FamilyCalendarPage] family members", membersData);
             })
             .catch((error) => {
                 if (!active) return;
-                setCalendarError(error.message || "Failed to load calendar data");
+                setCalendarError(error.message || "Failed to load family members");
             });
 
         return () => {
             active = false;
         };
     }, []);
+
+    useEffect(() => {
+        let active = true;
+
+        refreshEvents(visibleMonth).catch((error) => {
+            if (!active) return;
+            setCalendarError(error.message || "Failed to load calendar data");
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [refreshEvents, visibleMonth]);
 
     useEffect(() => {
         let active = true;
@@ -387,8 +535,6 @@ function FamilyCalendarPage() {
                     getFamilyMembers().catch(() => []),
                 ]);
 
-                console.log("[FamilyCalendarPage] family/records/month response", familyMonthData);
-                console.log("Family Members for period mapping:", membersData);
                 const membersById = new Map(
                     (Array.isArray(membersData) ? membersData : [])
                         .filter((m) => m?.id != null && m?.name)
@@ -453,7 +599,6 @@ function FamilyCalendarPage() {
 
                 // --- Family members period mapping via new per-month endpoint ---
                 const familyMonthList = Array.isArray(familyMonthData) ? familyMonthData : [];
-                console.log("[FamilyCalendarPage] family month entries", familyMonthList);
 
                 for (const entry of familyMonthList) {
                     const personaId = entry?.personaId;
@@ -544,7 +689,7 @@ function FamilyCalendarPage() {
             const dateKey = toDateKey(adjacentDate);
             const dayEvents = events
                 .filter((eventItem) => eventItem.dateKey === dateKey)
-                .sort((a, b) => a.timestamp - b.timestamp);
+                .sort(compareCalendarEvents);
 
             cells.push({
                 key: `empty-start-${index}`,
@@ -563,7 +708,7 @@ function FamilyCalendarPage() {
             const dateKey = toDateKey(new Date(year, month, day));
             const dayEvents = events
                 .filter((eventItem) => eventItem.dateKey === dateKey)
-                .sort((a, b) => a.timestamp - b.timestamp);
+                .sort(compareCalendarEvents);
 
             cells.push({
                 key: `day-${day}`,
@@ -586,7 +731,7 @@ function FamilyCalendarPage() {
             const dateKey = toDateKey(adjacentDate);
             const dayEvents = events
                 .filter((eventItem) => eventItem.dateKey === dateKey)
-                .sort((a, b) => a.timestamp - b.timestamp);
+                .sort(compareCalendarEvents);
 
             cells.push({
                 key: `empty-end-${index}`,
@@ -669,7 +814,11 @@ function FamilyCalendarPage() {
             day <= 31;
 
         const now = new Date();
-        const defaultTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        const baselineDate = hasValidDate
+            ? new Date(year, month - 1, day, now.getHours(), now.getMinutes(), 0, 0)
+            : new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0, 0);
+        const defaultStartTime = toTimeInputValue(baselineDate);
+        const defaultEndTime = toTimeInputValue(addMinutes(baselineDate, EVENT_BLOCK_MINUTES));
 
         if (hasValidDate) {
             setSelectedDateKey(targetDateKey);
@@ -679,7 +828,12 @@ function FamilyCalendarPage() {
             setEventDateKey(toDateKey(new Date()));
         }
 
-        setEventDateTime(defaultTime);
+        setEventDateTime(defaultStartTime);
+        setEventEndTime(defaultEndTime);
+        setEventAllDay(false);
+        setEventRecurrenceFrequency("NONE");
+        setEventRecurrenceInterval("1");
+        setEventRecurrenceUntilDateKey("");
         setEventTitle("");
         setEventDescription("");
         setSelectedParticipantIds([]);
@@ -736,14 +890,20 @@ function FamilyCalendarPage() {
     }
 
     function openEditModal(eventItem) {
-        const localValue = new Date(eventItem.timestamp - new Date().getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16);
+        const startDate = new Date(eventItem.timestamp);
+        const endDate = eventItem.endTimestamp
+            ? new Date(eventItem.endTimestamp)
+            : addMinutes(startDate, EVENT_BLOCK_MINUTES);
 
         setEventTitle(eventItem.title);
         setEventDescription(eventItem.description || "");
-        setEventDateKey(toDateKey(new Date(eventItem.timestamp)));
-        setEventDateTime(localValue);
+        setEventDateKey(toDateKey(startDate));
+        setEventDateTime(toTimeInputValue(startDate));
+        setEventEndTime(toTimeInputValue(endDate));
+        setEventAllDay(Boolean(eventItem.allDay));
+        setEventRecurrenceFrequency(eventItem.recurrence?.frequency || "NONE");
+        setEventRecurrenceInterval(String(eventItem.recurrence?.interval || 1));
+        setEventRecurrenceUntilDateKey(eventItem.recurrence?.untilDateKey || "");
         setSelectedParticipantIds(Array.isArray(eventItem.participantIds) ? eventItem.participantIds : []);
         setParticipantsDropdownOpen(false);
         setEditingEventId(eventItem.id);
@@ -772,25 +932,23 @@ function FamilyCalendarPage() {
 
         const title = eventTitle.trim();
         const description = eventDescription.trim();
-        if (!title || !eventDateTime || (!editingEventId && !eventDateKey)) return;
+        if (!title || !eventDateKey || (!eventAllDay && !eventDateTime)) return;
+
+        const [year, month, day] = eventDateKey.split("-").map(Number);
+        if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+            return;
+        }
 
         let parsedDate = null;
 
-        if (editingEventId) {
-            parsedDate = new Date(eventDateTime);
+        if (eventAllDay) {
+            parsedDate = new Date(year, month - 1, day, 0, 0, 0, 0);
         } else {
-            const [year, month, day] = eventDateKey.split("-").map(Number);
             const [hoursRaw, minutesRaw] = eventDateTime.split(":");
             const hours = Number(hoursRaw);
             const minutes = Number(minutesRaw);
 
-            if (
-                !Number.isInteger(year) ||
-                !Number.isInteger(month) ||
-                !Number.isInteger(day) ||
-                Number.isNaN(hours) ||
-                Number.isNaN(minutes)
-            ) {
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) {
                 return;
             }
 
@@ -799,7 +957,68 @@ function FamilyCalendarPage() {
 
         if (Number.isNaN(parsedDate.getTime())) return;
 
+        let parsedEndDate = null;
+
+        if (eventAllDay) {
+            parsedEndDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+        } else {
+            const [endHoursRaw, endMinutesRaw] = eventEndTime.split(":");
+            const endHours = Number(endHoursRaw);
+            const endMinutes = Number(endMinutesRaw);
+
+            if (Number.isNaN(endHours) || Number.isNaN(endMinutes)) {
+                return;
+            }
+
+            parsedEndDate = new Date(year, month - 1, day, endHours, endMinutes, 0, 0);
+            if (parsedEndDate.getTime() <= parsedDate.getTime()) {
+                setCalendarError("End time must be later than start time.");
+                return;
+            }
+        }
+
+        if (Number.isNaN(parsedEndDate.getTime())) return;
+
         const isoTime = parsedDate.toISOString();
+        const isoEndTime = parsedEndDate.toISOString();
+        const normalizedFrequency = normalizeRecurrenceFrequency(eventRecurrenceFrequency);
+        const recurrenceInterval = Math.max(1, Number(eventRecurrenceInterval) || 1);
+        let recurrenceUntilIso = null;
+
+        if (normalizedFrequency !== "NONE" && eventRecurrenceUntilDateKey) {
+            const parsedUntilDate = parseFlexibleDate(eventRecurrenceUntilDateKey);
+
+            if (!parsedUntilDate) {
+                setCalendarError("Invalid recurrence end date.");
+                return;
+            }
+
+            const recurrenceEndOfDay = new Date(
+                parsedUntilDate.getFullYear(),
+                parsedUntilDate.getMonth(),
+                parsedUntilDate.getDate(),
+                23,
+                59,
+                59,
+                999
+            );
+
+            if (recurrenceEndOfDay.getTime() < parsedDate.getTime()) {
+                setCalendarError("Recurrence end date cannot be before the event date.");
+                return;
+            }
+
+            recurrenceUntilIso = recurrenceEndOfDay.toISOString();
+        }
+
+        const recurrencePayload =
+            normalizedFrequency === "NONE"
+                ? null
+                : {
+                    frequency: normalizedFrequency,
+                    interval: recurrenceInterval,
+                    ...(recurrenceUntilIso ? { until: recurrenceUntilIso } : {}),
+                };
 
         try {
             setCalendarError("");
@@ -810,14 +1029,26 @@ function FamilyCalendarPage() {
                     title,
                     description,
                     isoTime,
-                    selectedParticipantIds
+                    isoEndTime,
+                    eventAllDay,
+                    selectedParticipantIds,
+                    recurrencePayload
                 );
             } else {
-                await createCalendarEvent(title, description, isoTime, selectedParticipantIds);
+                await createCalendarEvent(
+                    title,
+                    description,
+                    isoTime,
+                    isoEndTime,
+                    eventAllDay,
+                    selectedParticipantIds,
+                    recurrencePayload
+                );
             }
 
-            await refreshEvents();
             const updatedDateKey = toDateKey(parsedDate);
+            const targetMonth = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1);
+            await refreshEvents(targetMonth);
             setVisibleMonth(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
             setSelectedDateKey(updatedDateKey);
             closeCreateModal();
@@ -903,24 +1134,103 @@ function FamilyCalendarPage() {
         () =>
             events
                 .filter((eventItem) => eventItem.dateKey === selectedDateKey)
-                .sort((a, b) => a.timestamp - b.timestamp),
+                .sort(compareCalendarEvents),
         [events, selectedDateKey]
+    );
+
+    const selectedDateAllDayEvents = useMemo(
+        () => selectedDateEvents.filter((eventItem) => eventItem.allDay),
+        [selectedDateEvents]
     );
 
     const selectedDateTimelineEvents = useMemo(() => {
         const minimumHeightPercent = (MIN_EVENT_BLOCK_MINUTES / (24 * 60)) * 100;
+        const timedEvents = selectedDateEvents
+            .filter((eventItem) => !eventItem.allDay)
+            .map((eventItem) => {
+                const startDate = new Date(eventItem.timestamp);
+                const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
 
-        return selectedDateEvents.map((eventItem) => {
-            const timestamp = new Date(eventItem.timestamp);
-            const minutes = timestamp.getHours() * 60 + timestamp.getMinutes();
-            const topPercent = (minutes / (24 * 60)) * 100;
-            const heightPercent = Math.max((EVENT_BLOCK_MINUTES / (24 * 60)) * 100, minimumHeightPercent);
+                const computedEndMinutes = eventItem.endTimestamp
+                    ? Math.round((eventItem.endTimestamp - eventItem.timestamp) / 60000) + startMinutes
+                    : startMinutes + EVENT_BLOCK_MINUTES;
 
-            return {
-                ...eventItem,
-                topPercent,
-                heightPercent,
-            };
+                return {
+                    ...eventItem,
+                    startMinutes,
+                    endMinutes: Math.min(
+                        DAY_TOTAL_MINUTES,
+                        Math.max(startMinutes + MIN_EVENT_BLOCK_MINUTES, computedEndMinutes)
+                    ),
+                };
+            })
+            .sort((a, b) => {
+                if (a.startMinutes !== b.startMinutes) {
+                    return a.startMinutes - b.startMinutes;
+                }
+                return a.endMinutes - b.endMinutes;
+            });
+
+        const overlapGroups = [];
+        let currentGroup = [];
+        let currentGroupEnd = -1;
+
+        timedEvents.forEach((eventItem) => {
+            if (currentGroup.length === 0) {
+                currentGroup = [eventItem];
+                currentGroupEnd = eventItem.endMinutes;
+                return;
+            }
+
+            if (eventItem.startMinutes < currentGroupEnd) {
+                currentGroup.push(eventItem);
+                currentGroupEnd = Math.max(currentGroupEnd, eventItem.endMinutes);
+                return;
+            }
+
+            overlapGroups.push(currentGroup);
+            currentGroup = [eventItem];
+            currentGroupEnd = eventItem.endMinutes;
+        });
+
+        if (currentGroup.length > 0) {
+            overlapGroups.push(currentGroup);
+        }
+
+        return overlapGroups.flatMap((group) => {
+            const laneEndMinutes = [];
+            let maxColumns = 1;
+
+            const positionedEvents = group.map((eventItem) => {
+                let laneIndex = laneEndMinutes.findIndex((laneEnd) => laneEnd <= eventItem.startMinutes);
+
+                if (laneIndex === -1) {
+                    laneIndex = laneEndMinutes.length;
+                    laneEndMinutes.push(eventItem.endMinutes);
+                } else {
+                    laneEndMinutes[laneIndex] = eventItem.endMinutes;
+                }
+
+                maxColumns = Math.max(maxColumns, laneEndMinutes.length);
+
+                return {
+                    ...eventItem,
+                    columnIndex: laneIndex,
+                };
+            });
+
+            return positionedEvents.map((eventItem) => {
+                const topPercent = (eventItem.startMinutes / DAY_TOTAL_MINUTES) * 100;
+                const eventDurationMinutes = eventItem.endMinutes - eventItem.startMinutes;
+                const heightPercent = Math.max((eventDurationMinutes / DAY_TOTAL_MINUTES) * 100, minimumHeightPercent);
+
+                return {
+                    ...eventItem,
+                    groupColumns: maxColumns,
+                    topPercent,
+                    heightPercent,
+                };
+            });
         });
     }, [selectedDateEvents]);
 
@@ -1061,9 +1371,11 @@ function FamilyCalendarPage() {
                                             {cell.dayEvents.slice(0, 2).map((eventItem) => (
                                                 <div
                                                     key={eventItem.id}
-                                                    className={`calendarView__eventItem ${eventItem.gender}`}
+                                                    className={`calendarView__eventItem ${eventItem.gender} ${eventItem.allDay ? "calendarView__eventItem--allDay" : ""}`}
                                                 >
-                                                    <div className="calendarView__eventTime">{eventItem.timeLabel}</div>
+                                                    <div className={`calendarView__eventTime ${eventItem.allDay ? "calendarView__eventTime--allDay" : ""}`}>
+                                                        {eventItem.timeRangeLabel}
+                                                    </div>
                                                     <div className="calendarView__eventTitle">{eventItem.title}</div>
                                                     <div className="calendarView__eventTitle">{eventItem.gender}</div>
                                                     {eventItem.participantNames.length > 0 ? (
@@ -1133,6 +1445,24 @@ function FamilyCalendarPage() {
                         </p>
                     </div>
                 ) : null}
+                {selectedDateAllDayEvents.length > 0 ? (
+                    <div className="calendarItinerary__allDay">
+                        <h3 className="calendarItinerary__allDayTitle">All-day events</h3>
+                        <div className="calendarItinerary__allDayList">
+                            {selectedDateAllDayEvents.map((eventItem) => (
+                                <article key={`all-day-${eventItem.id}`} className="calendarItinerary__allDayItem">
+                                    <p className="calendarItinerary__allDayTime">All day</p>
+                                    <h4 className="calendarItinerary__allDayItemTitle">{eventItem.title}</h4>
+                                    {eventItem.participantNames.length > 0 ? (
+                                        <p className="calendarItinerary__allDayMeta text-small">
+                                            With: {eventItem.participantNames.join(", ")}
+                                        </p>
+                                    ) : null}
+                                </article>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
                 <div className="calendarItinerary__timeline" aria-label="Day timeline from 00:00 to 24:00">
                     <div className="calendarItinerary__timelineScale" aria-hidden="true">
                         {DAY_HOURS.map((hour) => (
@@ -1174,6 +1504,8 @@ function FamilyCalendarPage() {
                                     style={{
                                         top: `${eventItem.topPercent}%`,
                                         height: `${eventItem.heightPercent}%`,
+                                        "--event-column": eventItem.columnIndex,
+                                        "--event-columns": eventItem.groupColumns,
                                     }}
                                     role="button"
                                     tabIndex={0}
@@ -1185,7 +1517,7 @@ function FamilyCalendarPage() {
                                         }
                                     }}
                                 >
-                                    <div className="calendarItinerary__timelineEventTime">{eventItem.timeLabel}</div>
+                                    <div className="calendarItinerary__timelineEventTime">{eventItem.timeRangeLabel}</div>
                                     <h3 className="calendarItinerary__timelineEventTitle">{eventItem.title}</h3>
                                     {eventItem.participantNames.length > 0 ? (
                                         <p className="calendarItinerary__timelineEventMeta text-small">
@@ -1209,8 +1541,8 @@ function FamilyCalendarPage() {
                     <ModalHeader
                         title={editingEventId ? "Edit event" : "Create new event"}
                         subtitle={editingEventId
-                            ? "Update title, description, and date/time."
-                            : "Choose date and time, then add title and details."}
+                            ? "Update title, timing, and participants."
+                            : "Choose date, set all-day or a time range, then add details."}
                         onClose={closeCreateModal}
                         className="calendarModalHeader"
                         titleClassName="calendarModalTitle"
@@ -1244,29 +1576,30 @@ function FamilyCalendarPage() {
                             />
                         </ModalField>
 
-                        {editingEventId ? (
-                            <ModalField label="Date and time" className="calendarModalField">
-                                <input
-                                    className="universalModal__input"
-                                    type="datetime-local"
-                                    value={eventDateTime}
-                                    onChange={(event) => setEventDateTime(event.target.value)}
-                                    required
-                                />
-                            </ModalField>
-                        ) : (
-                            <>
-                                <ModalField label="Date" className="calendarModalField">
-                                    <input
-                                        className="universalModal__input"
-                                        type="date"
-                                        value={eventDateKey}
-                                        onChange={(event) => setEventDateKey(event.target.value)}
-                                        required
-                                    />
-                                </ModalField>
+                        <ModalField label="Date" className="calendarModalField">
+                            <input
+                                className="universalModal__input"
+                                type="date"
+                                value={eventDateKey}
+                                onChange={(event) => setEventDateKey(event.target.value)}
+                                required
+                            />
+                        </ModalField>
 
-                                <ModalField label="Time" className="calendarModalField">
+                        <div className="calendarModalField calendarModalToggleRow universalModal__field">
+                            <label className="calendarModalToggle">
+                                <input
+                                    type="checkbox"
+                                    checked={eventAllDay}
+                                    onChange={(event) => setEventAllDay(event.target.checked)}
+                                />
+                                <span>All day</span>
+                            </label>
+                        </div>
+
+                        {!eventAllDay ? (
+                            <div className="calendarModalTimeGrid">
+                                <ModalField label="Start time" className="calendarModalField">
                                     <input
                                         className="universalModal__input"
                                         type="time"
@@ -1275,8 +1608,58 @@ function FamilyCalendarPage() {
                                         required
                                     />
                                 </ModalField>
-                            </>
+
+                                <ModalField label="End time" className="calendarModalField">
+                                    <input
+                                        className="universalModal__input"
+                                        type="time"
+                                        value={eventEndTime}
+                                        onChange={(event) => setEventEndTime(event.target.value)}
+                                        required
+                                    />
+                                </ModalField>
+                            </div>
+                        ) : (
+                            <p className="calendarModalHint text-small">This event will be shown as all day.</p>
                         )}
+
+                        <ModalField label="Repeat" className="calendarModalField">
+                            <select
+                                className="universalModal__input"
+                                value={eventRecurrenceFrequency}
+                                onChange={(event) => setEventRecurrenceFrequency(event.target.value)}
+                            >
+                                <option value="NONE">Does not repeat</option>
+                                <option value="DAILY">Daily</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                            </select>
+                        </ModalField>
+
+                        {eventRecurrenceFrequency !== "NONE" ? (
+                            <div className="calendarModalTimeGrid">
+                                <ModalField label="Repeat every" className="calendarModalField">
+                                    <input
+                                        className="universalModal__input"
+                                        type="number"
+                                        min="1"
+                                        max="365"
+                                        value={eventRecurrenceInterval}
+                                        onChange={(event) => setEventRecurrenceInterval(event.target.value)}
+                                        required
+                                    />
+                                </ModalField>
+
+                                <ModalField label="Repeat until" className="calendarModalField">
+                                    <input
+                                        className="universalModal__input"
+                                        type="date"
+                                        value={eventRecurrenceUntilDateKey}
+                                        onChange={(event) => setEventRecurrenceUntilDateKey(event.target.value)}
+                                    />
+                                </ModalField>
+                            </div>
+                        ) : null}
 
                         <div className="calendarModalField universalModal__field">
                             <span className="universalModal__fieldLabel">Participants</span>

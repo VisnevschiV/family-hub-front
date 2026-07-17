@@ -420,10 +420,21 @@
     gap: 3px;
 }
 
+.calendarView__eventItem--allDay {
+    border-style: dashed;
+    background: var(--surface-strong);
+}
+
 .calendarView__eventTime {
     font-size: 11px;
     color: var(--text-muted);
     font-weight: 700;
+}
+
+.calendarView__eventTime--allDay {
+    color: var(--brand);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .calendarView__eventTitle {
@@ -535,6 +546,55 @@
     padding: 12px;
 }
 
+.calendarItinerary__allDay {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.calendarItinerary__allDayTitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted-strong);
+}
+
+.calendarItinerary__allDayList {
+    display: grid;
+    gap: 8px;
+}
+
+.calendarItinerary__allDayItem {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-strong);
+    padding: 8px 10px;
+    display: grid;
+    gap: 4px;
+}
+
+.calendarItinerary__allDayTime {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--brand);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.calendarItinerary__allDayItemTitle {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.calendarItinerary__allDayMeta {
+    margin: 0;
+    color: var(--text-muted);
+}
+
 .calendarItinerary__periodTitle {
     margin: 0;
     font-size: 14px;
@@ -616,8 +676,11 @@
 
 .calendarItinerary__timelineEvent {
     position: absolute;
-    left: 10px;
-    right: 10px;
+    --timeline-event-gap: 6px;
+    --timeline-event-inset: 10px;
+    left: calc(var(--timeline-event-inset) + (var(--event-column, 0) * (((100% - (2 * var(--timeline-event-inset))) - ((var(--event-columns, 1) - 1) * var(--timeline-event-gap))) / var(--event-columns, 1) + var(--timeline-event-gap))));
+    width: calc(((100% - (2 * var(--timeline-event-inset))) - ((var(--event-columns, 1) - 1) * var(--timeline-event-gap))) / var(--event-columns, 1));
+    right: auto;
     border: 1px solid var(--color-calendar-timeline-event-border);
     border-radius: 10px;
     background: var(--color-calendar-timeline-event-bg);
@@ -721,6 +784,35 @@
 
 .calendarModalField textarea {
     resize: vertical;
+}
+
+.calendarModalToggleRow {
+    padding-top: 2px;
+}
+
+.calendarModalToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.calendarModalToggle input {
+    width: 16px;
+    height: 16px;
+}
+
+.calendarModalTimeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.calendarModalHint {
+    margin: 0;
+    color: var(--text-muted);
 }
 
 .calendarModalButton--danger {

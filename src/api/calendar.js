@@ -39,17 +39,71 @@ export async function getCalendarEvents() {
     }
 }
 
-export async function createCalendarEvent(title, description, time, participantIds = []) {
+export async function getCalendarOccurrences(startIso, endIso) {
+    const searchParams = new URLSearchParams();
+
+    if (startIso) {
+        searchParams.set("start", startIso);
+    }
+
+    if (endIso) {
+        searchParams.set("end", endIso);
+    }
+
+    const query = searchParams.toString();
+    const endpoint = query ? `/calendar/occurrences?${query}` : "/calendar/occurrences";
+
+    const response = await apiFetch(endpoint, {
+        method: "GET",
+    });
+
+    if (!response.ok) {
+        const errorMessage = await extractErrorMessage(
+            response,
+            `Failed to load calendar occurrences: ${response.status}`
+        );
+        throw new Error(errorMessage);
+    }
+
+    try {
+        return await response.json();
+    } catch {
+        return [];
+    }
+}
+
+export async function createCalendarEvent(
+    title,
+    description,
+    time,
+    endTime,
+    allDayEvent,
+    participantIds = [],
+    recurrence = null
+) {
     const participants = participantIds
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
+
+    const payload = {
+        title,
+        description,
+        time,
+        endTime,
+        allDayEvent: Boolean(allDayEvent),
+        participants,
+    };
+
+    if (recurrence && recurrence.frequency && recurrence.frequency !== "NONE") {
+        payload.recurrence = recurrence;
+    }
 
     const response = await apiFetch("/calendar", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, description, time, participants }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -61,17 +115,39 @@ export async function createCalendarEvent(title, description, time, participantI
     }
 }
 
-export async function updateCalendarEvent(eventId, title, description, time, participantIds = []) {
+export async function updateCalendarEvent(
+    eventId,
+    title,
+    description,
+    time,
+    endTime,
+    allDayEvent,
+    participantIds = [],
+    recurrence = null
+) {
     const participants = participantIds
         .map((id) => Number(id))
         .filter((id) => Number.isInteger(id));
+
+    const payload = {
+        title,
+        description,
+        time,
+        endTime,
+        allDayEvent: Boolean(allDayEvent),
+        participants,
+    };
+
+    if (recurrence && recurrence.frequency && recurrence.frequency !== "NONE") {
+        payload.recurrence = recurrence;
+    }
 
     const response = await apiFetch(`/calendar/${encodeURIComponent(eventId)}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, description, time, participants }),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
