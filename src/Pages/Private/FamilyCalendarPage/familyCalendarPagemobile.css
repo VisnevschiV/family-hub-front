@@ -261,7 +261,7 @@
 
 
 
-    .calendarView__cell--period ::before {
+    .calendarView__cell--period .calendarView__eventItem::before {
         background: var(--gradient-calendar-event-bar-period);
     }
 

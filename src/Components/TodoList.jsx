@@ -10,6 +10,7 @@ export default function TodoList({
     listId,
     title,
     items = [],
+    isCompleted = false,
     collapsed,
     onToggleCollapsed,
     onItemsChange,
@@ -23,8 +24,6 @@ export default function TodoList({
 }) {
 
     const [internalIsCollapsed, setInternalIsCollapsed] = useState(true);
-    const [hideCompleted, setHideCompleted] = useState(false);
-
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [newText, setNewText] = useState("");
 
@@ -62,9 +61,8 @@ export default function TodoList({
     const isCollapsed = typeof collapsed === "boolean" ? collapsed : internalIsCollapsed;
 
     const visibleItems = useMemo(() => {
-        const source = dragOrder || items;
-        return hideCompleted ? source.filter((i) => !i.done) : source;
-    }, [items, hideCompleted, dragOrder]);
+        return dragOrder || items;
+    }, [items, dragOrder]);
 
     function updateItems(nextItemsOrUpdater) {
         const nextItems =
@@ -165,6 +163,11 @@ export default function TodoList({
             return;
         }
 
+        if (isCompleted) {
+            previousCompletionPercentRef.current = completionPercent;
+            return;
+        }
+
         const previousPercent = previousCompletionPercentRef.current;
         const reachedFullCompletion = completionPercent === 100 && previousPercent < 100;
 
@@ -174,7 +177,7 @@ export default function TodoList({
         }
 
         previousCompletionPercentRef.current = completionPercent;
-    }, [completionPercent, totalCount]);
+    }, [completionPercent, totalCount, isCompleted]);
 
     useEffect(() => {
         if (editingTaskId) {
@@ -495,18 +498,6 @@ export default function TodoList({
                                 role="menu"
                                 onClick={(e) => e.stopPropagation()}
                             >
-
-                                <button
-                                    type="button"
-                                    className="todoList__menuItem"
-                                    role="menuitem"
-                                    onClick={() => {
-                                        setHideCompleted((prev) => !prev);
-                                        setIsMenuOpen(false);
-                                    }}
-                                >
-                                    {hideCompleted ? "Show done" : "Hide done"}
-                                </button>
 
                                 <button
                                     type="button"

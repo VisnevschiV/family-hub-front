@@ -31,6 +31,21 @@ export default function TodoListsPage() {
     const NESTED_TASK_ID_KEYS = ["id", "taskId", "todoId", "uuid"];
     const TASK_NAME_KEYS = ["name", "taskName", "title", "text"];
 
+    function normalizeParticipantId(value) {
+        if (value === null || value === undefined || value === "") return null;
+
+        const numericValue = Number(value);
+        return Number.isInteger(numericValue) ? numericValue : String(value);
+    }
+
+    function memberMatchesPersona(member, personaId) {
+        if (!member || personaId === null) return false;
+
+        return [member.id, member.personaId, member.userId, member.memberId]
+            .map(normalizeParticipantId)
+            .some((candidateId) => candidateId === personaId);
+    }
+
     function pickFirstPresentValue(source, keys) {
         if (!source || typeof source !== "object") return null;
 
@@ -47,13 +62,23 @@ export default function TodoListsPage() {
     const [lists, setLists] = useState([]);
     const [familyMembers, setFamilyMembers] = useState([]);
     const [hasFamily, setHasFamily] = useState(true);
+    const [currentPersonaId, setCurrentPersonaId] = useState(null);
     const [todoFilter, setTodoFilter] = useState("Shared");
     const [openListId, setOpenListId] = useState(null);
+    const [showCompletedGoals, setShowCompletedGoals] = useState(false);
 
     useEffect(() => {
         fetchCurrentPersona()
-            .then((data) => setHasFamily(Boolean(data?.family)))
-            .catch(() => setHasFamily(true));
+            .then((data) => {
+                setHasFamily(Boolean(data?.family));
+                setCurrentPersonaId(
+                    normalizeParticipantId(data?.id ?? data?.personaId ?? data?.userId)
+                );
+            })
+            .catch(() => {
+                setHasFamily(true);
+                setCurrentPersonaId(null);
+            });
     }, []);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState([]);
     const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
@@ -64,8 +89,22 @@ export default function TodoListsPage() {
         value: "",
     });
 
+    function getDefaultParticipantIdsForFilter(filter) {
+        if (filter === "Mine" && currentPersonaId !== null) {
+            const currentMember = familyMembers.find((member) =>
+                memberMatchesPersona(member, currentPersonaId)
+            );
+
+            if (currentMember) {
+                return [currentMember.id];
+            }
+        }
+
+        return [];
+    }
+
     function openAddListModal() {
-        setSelectedParticipantIds([]);
+        setSelectedParticipantIds(getDefaultParticipantIdsForFilter(todoFilter));
         setParticipantsDropdownOpen(false);
         setListNameModal({
             isOpen: true,
@@ -280,8 +319,10 @@ export default function TodoListsPage() {
     }, [lists, todoFilter]);
 
     const visibleLists = useMemo(() => {
-        return participantFilteredLists.filter((list) => !list.completed);
-    }, [participantFilteredLists]);
+        return participantFilteredLists.filter((list) =>
+            showCompletedGoals ? list.completed : !list.completed
+        );
+    }, [participantFilteredLists, showCompletedGoals]);
 
     const overallData = useMemo(() => {
         const totalGoals = participantFilteredLists.length;
@@ -576,10 +617,19 @@ export default function TodoListsPage() {
         <div className="page">
             <header className="page__header todoListsPage_header">
                 <div className="todoListsPage_summaryBar" aria-label="Overall goals data">
-                    <div className="todoListsPage_summaryMetric">
+                    <button
+                        type="button"
+                        className={`todoListsPage_summaryMetric todoListsPage_summaryMetricButton${showCompletedGoals ? " todoListsPage_summaryMetricButton--active" : ""}`}
+                        aria-pressed={showCompletedGoals}
+                        aria-label={showCompletedGoals ? "Show uncompleted goals" : "Show completed goals"}
+                        onClick={() => {
+                            setShowCompletedGoals((prev) => !prev);
+                            setOpenListId(null);
+                        }}
+                    >
                         <span className="todoListsPage_summaryLabel">Goals completed</span>
                         <strong className="todoListsPage_summaryValue">{overallData.goalsCompleted}</strong>
-                    </div>
+                    </button>
 
                     <div className="todoListsPage_summaryMetric">
                         <span className="todoListsPage_summaryLabel">Active goals</span>
@@ -617,6 +667,7 @@ export default function TodoListsPage() {
                         listId={list.id}
                         title={list.title}
                         items={list.items}
+                        isCompleted={Boolean(list.completed)}
                         collapsed={openListId !== list.id}
                         onToggleCollapsed={(nextCollapsed) => {
                             setOpenListId(nextCollapsed ? null : list.id);

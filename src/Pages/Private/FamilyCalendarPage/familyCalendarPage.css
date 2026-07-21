@@ -371,7 +371,7 @@
 }
 
 .calendarView__cell--period {
-    border-color: inherit;
+    border-color: var(--border);
     background: transparent;
     box-shadow: none;
 }
