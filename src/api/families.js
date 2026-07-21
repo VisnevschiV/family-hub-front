@@ -33,11 +33,12 @@ function mapMember(rawMember, fallbackIndex) {
         rawMember.name ||
         `Member ${fallbackIndex + 1}`;
 
-    const gender = rawMember.gender;
-
     return {
         id: normalizedId,
         name,
+        personaId: rawMember.personaId ?? rawMember.persona?.id ?? null,
+        userId: rawMember.userId ?? rawMember.user?.id ?? null,
+        memberId: rawMember.memberId ?? null,
         gender: rawMember.gender || null,
     };
 }

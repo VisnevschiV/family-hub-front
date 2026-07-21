@@ -68,19 +68,6 @@ export async function startPeriod(date) {
     return response.json();
 }
 
-export async function stopPeriod(date) {
-    const response = await apiFetch(`${BASE}/stop`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date }),
-    });
-    if (!response.ok) {
-        const message = await parseErrorMessage(response, "Failed to stop period");
-        throw new Error(message);
-    }
-    return response.json();
-}
-
 export async function getPeriodMonth(year, month) {
     const response = await apiFetch(`${BASE}/records/month?year=${year}&month=${month}`);
     if (!response.ok) {

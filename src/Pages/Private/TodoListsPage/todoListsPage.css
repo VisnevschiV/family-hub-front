@@ -25,6 +25,37 @@
     padding: 0 10px;
 }
 
+.todoListsPage_summaryMetricButton {
+    appearance: none;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.todoListsPage_summaryMetricButton:hover {
+    background: transparent;
+    border-color: transparent;
+}
+
+.todoListsPage_summaryMetricButton--active {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.todoListsPage_summaryMetricButton--active .todoListsPage_summaryLabel,
+.todoListsPage_summaryMetricButton--active .todoListsPage_summaryValue {
+    color: var(--shared-brand-female);
+}
+
+.todoListsPage_summaryMetricButton:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: -2px;
+    border-radius: 10px;
+}
+
 .todoListsPage_summaryText {
     display: flex;
     flex-direction: column;

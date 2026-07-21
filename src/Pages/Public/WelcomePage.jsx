@@ -457,9 +457,10 @@ function WelcomePage() {
                             <button
                                 type="button"
                                 className="welcome__miniButton"
-                                onClick={() => setIsPeriodActive((current) => !current)}
+                                onClick={() => setIsPeriodActive(true)}
+                                disabled={isPeriodActive}
                             >
-                                {isPeriodActive ? "Stop" : "Start"}
+                                {isPeriodActive ? "Started" : "Start"}
                             </button>
                         </div>
                         <div className="welcome__periodStatus">

@@ -17,7 +17,6 @@ import {
     getPeriodMonth,
     getPeriodProfile,
     startPeriod,
-    stopPeriod,
 } from "../../api/periodProfile.js";
 import "./FamilyCalendarPage/familyCalendarPage.css";
 import "./FamilyCalendarPage/familyCalendarPagedesktop.css";
@@ -76,6 +75,21 @@ function parseIsoDate(value) {
     if (!value) return null;
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeParticipantId(value) {
+    if (value === null || value === undefined || value === "") return null;
+
+    const numericValue = Number(value);
+    return Number.isInteger(numericValue) ? numericValue : String(value);
+}
+
+function memberMatchesPersona(member, personaId) {
+    if (!member || personaId === null) return false;
+
+    return [member.id, member.personaId, member.userId, member.memberId]
+        .map(normalizeParticipantId)
+        .some((candidateId) => candidateId === personaId);
 }
 
 function parseFlexibleDate(value) {
@@ -443,6 +457,7 @@ function FamilyCalendarPage() {
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
     const [isCurrentPersonaMale, setIsCurrentPersonaMale] = useState(false);
+    const [currentPersonaId, setCurrentPersonaId] = useState(null);
     const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
     const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
@@ -470,10 +485,14 @@ function FamilyCalendarPage() {
             .then((data) => {
                 setHasFamily(Boolean(data?.family));
                 setIsCurrentPersonaMale(String(data?.gender || "").toUpperCase() === "MALE");
+                setCurrentPersonaId(
+                    normalizeParticipantId(data?.id ?? data?.personaId ?? data?.userId)
+                );
             })
             .catch(() => {
                 setHasFamily(true);
                 setIsCurrentPersonaMale(false);
+                setCurrentPersonaId(null);
             });
     }, []);
 
@@ -836,7 +855,7 @@ function FamilyCalendarPage() {
         setEventRecurrenceUntilDateKey("");
         setEventTitle("");
         setEventDescription("");
-        setSelectedParticipantIds([]);
+        setSelectedParticipantIds(getDefaultParticipantIdsForFilter(calendarFilter));
         setParticipantsDropdownOpen(false);
         setEditingEventId(null);
         setCalendarNotice("");
@@ -925,6 +944,27 @@ function FamilyCalendarPage() {
             }
             return [...current, participantId];
         });
+    }
+
+    function getDefaultParticipantIdsForFilter(filter) {
+        if (filter === "Mine" && currentPersonaId !== null) {
+            const currentMember = familyMembers.find((member) =>
+                memberMatchesPersona(member, currentPersonaId)
+            );
+
+            if (currentMember) {
+                return [currentMember.id];
+            }
+        }
+
+        if (filter === "Partner") {
+            const partnerMember = familyMembers.find(
+                (member) => !memberMatchesPersona(member, currentPersonaId)
+            );
+            return partnerMember ? [partnerMember.id] : [];
+        }
+
+        return [];
     }
 
     async function handleCreateEvent(event) {
@@ -1080,14 +1120,8 @@ function FamilyCalendarPage() {
             return;
         }
 
-        if (
-            periodCurrentlyOpen &&
-            openPeriodStartDateKey &&
-            selectedDateKey < openPeriodStartDateKey
-        ) {
-            setCalendarError(
-                `Stop date cannot be before the start date (${openPeriodStartDateKey}).`
-            );
+        if (periodCurrentlyOpen) {
+            setCalendarError("An active period is already open.");
             setCalendarNotice("");
             return;
         }
@@ -1097,23 +1131,16 @@ function FamilyCalendarPage() {
             setCalendarError("");
             setCalendarNotice("");
 
-            if (periodCurrentlyOpen) {
-                await stopPeriod(selectedDateKey);
-                setPeriodCurrentlyOpen(false);
-                setOpenPeriodStartDateKey("");
-                setCalendarNotice(`Period stopped on ${selectedDateKey}.`);
-            } else {
-                await startPeriod(selectedDateKey);
-                setPeriodCurrentlyOpen(true);
-                setOpenPeriodStartDateKey(selectedDateKey);
-                setCalendarNotice(`Period started on ${selectedDateKey}.`);
-            }
+            await startPeriod(selectedDateKey);
+            setPeriodCurrentlyOpen(true);
+            setOpenPeriodStartDateKey(selectedDateKey);
+            setCalendarNotice(`Period started on ${selectedDateKey}.`);
 
             setVisibleMonth(
                 (current) => new Date(current.getFullYear(), current.getMonth(), 1)
             );
         } catch (error) {
-            setCalendarError(error.message || `Failed to ${periodCurrentlyOpen ? "stop" : "start"} period`);
+            setCalendarError(error.message || "Failed to start period");
         } finally {
             setStartingPeriod(false);
         }
@@ -1269,7 +1296,7 @@ function FamilyCalendarPage() {
         }
 
         if (periodCurrentlyOpen && openPeriodStartDateKey) {
-            return `Open period started on ${openPeriodStartDateKey}.`;
+            return `Open period started on ${openPeriodStartDateKey}. Starting another period is disabled until it is closed.`;
         }
 
         return "Track period for the currently selected day.";
@@ -1422,15 +1449,9 @@ function FamilyCalendarPage() {
                             type="button"
                             className="calendarItinerary__periodAction"
                             onClick={handleStartPeriodForSelectedDay}
-                            disabled={startingPeriod || isSelectedDateInFuture}
+                            disabled={startingPeriod || isSelectedDateInFuture || periodCurrentlyOpen}
                         >
-                            {startingPeriod
-                                ? periodCurrentlyOpen
-                                    ? "Stopping..."
-                                    : "Starting..."
-                                : periodCurrentlyOpen
-                                    ? "Stop period"
-                                    : "Start period"}
+                            {startingPeriod ? "Starting..." : "Start period"}
                         </button>
                     ) : null}
                 </div>
