@@ -971,7 +971,7 @@ function FamilyCalendarPage() {
         event.preventDefault();
 
         const title = eventTitle.trim();
-        const description = eventDescription.trim();
+        const description = eventDescription.trim() || null;
         if (!title || !eventDateKey || (!eventAllDay && !eventDateTime)) return;
 
         const [year, month, day] = eventDateKey.split("-").map(Number);
@@ -1593,7 +1593,6 @@ function FamilyCalendarPage() {
                                 placeholder="Bring dessert and candles"
                                 maxLength={500}
                                 rows={3}
-                                required
                             />
                         </ModalField>
 
