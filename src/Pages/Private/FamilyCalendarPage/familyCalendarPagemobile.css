@@ -265,6 +265,11 @@
         background: var(--gradient-calendar-event-bar-period);
     }
 
+    .calendarView__cell--periodPredicted .calendarView__eventItem::before {
+        background: var(--gradient-calendar-event-bar-period);
+        position: relative;
+        z-index: 1;
+    }
 
 
     .calendarView__eventTime,

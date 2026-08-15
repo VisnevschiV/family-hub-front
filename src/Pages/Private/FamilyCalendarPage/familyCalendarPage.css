@@ -234,7 +234,9 @@
 
 .calendarView__grid--fiveDay .calendarView__cell--selected,
 .calendarView__grid--fiveDay .calendarView__cell--period,
-.calendarView__grid--fiveDay .calendarView__cell--familyPeriod {
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod,
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted {
     box-shadow: none;
 }
 
@@ -250,12 +252,97 @@
 .calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayName,
 .calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayNumber,
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
-.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted .calendarView__compactDayNumber {
     color: #d93368;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName--muted {
     color: var(--color-calendar-family-period-muted-text);
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--period,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod {
+    position: relative;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--period .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod .calendarView__compactDayNumber {
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--period::before,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriod::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.18) 12px,
+            rgba(217, 51, 104, 0.18) 18px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted {
+    position: relative;
+    border-style: dashed;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted .calendarView__compactDayNumber,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted .calendarView__compactDayName,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted .calendarView__compactDayNumber {
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted::before,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.15) 12px,
+            rgba(217, 51, 104, 0.15) 15px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
+}
+
+.calendarView__grid--fiveDay .calendarView__cell--periodPredicted::before,
+.calendarView__grid--fiveDay .calendarView__cell--familyPeriodPredicted::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 8px,
+            rgba(217, 51, 104, 0.12) 8px,
+            rgba(217, 51, 104, 0.12) 16px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
 }
 
 .calendarView__grid--fiveDay .calendarView__cell:not(.calendarView__cell--selected) .calendarView__compactDayName {
@@ -371,6 +458,7 @@
 }
 
 .calendarView__cell--period {
+    position: relative;
     border-color: var(--border);
     background: transparent;
     box-shadow: none;
@@ -380,7 +468,32 @@
     background: transparent;
 }
 
+.calendarView__cell--period .calendarView__dayNumber,
+.calendarView__cell--period .calendarView__eventItem,
+.calendarView__cell--period .calendarView__moreEvents {
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__cell--period::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.2) 12px,
+            rgba(217, 51, 104, 0.2) 18px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
+}
+
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod {
+    position: relative;
     background: transparent;
     box-shadow: none;
     color: inherit;
@@ -392,11 +505,114 @@
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__eventDescription,
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__moreEvents {
     color: var(--color-calendar-family-cell-text);
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__cell--familyPeriod::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.12) 12px,
+            rgba(217, 51, 104, 0.12) 18px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
 }
 
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--period .calendarView__dayNumber,
 .calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriod .calendarView__dayNumber {
     color: #d93368;
+}
+
+/* Predicted periods - visual distinction from real periods */
+.calendarView__cell--periodPredicted {
+    position: relative;
+    border-color: var(--border);
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+}
+
+.calendarView__cell--periodPredicted.calendarView__cell--weekend {
+    background: transparent;
+}
+
+.calendarView__cell--periodPredicted .calendarView__dayNumber,
+.calendarView__cell--periodPredicted .calendarView__eventItem,
+.calendarView__cell--periodPredicted .calendarView__moreEvents {
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__cell--periodPredicted::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.15) 12px,
+            rgba(217, 51, 104, 0.15) 15px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
+}
+
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted {
+    position: relative;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+}
+
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted .calendarView__dayNumber,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted .calendarView__eventTime,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted .calendarView__eventTitle,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted .calendarView__eventDescription,
+.calendarView__grid:not(.calendarView__grid--fiveDay) .calendarView__cell--familyPeriodPredicted .calendarView__moreEvents {
+    color: var(--color-calendar-family-cell-text);
+    position: relative;
+    z-index: 1;
+}
+
+.calendarView__cell--familyPeriodPredicted::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 12px,
+            rgba(217, 51, 104, 0.1) 12px,
+            rgba(217, 51, 104, 0.1) 15px);
+    pointer-events: none;
+    border-radius: 0;
+    z-index: 0;
+}
+
+/* Period fade effect - days 3-5 become more transparent */
+.calendarView__cell--periodDay3::before {
+    opacity: 0.5;
+}
+
+.calendarView__cell--periodDay4::before {
+    opacity: 0.3;
+}
+
+.calendarView__cell--periodDay5::before {
+    opacity: 0.1;
 }
 
 .calendarView__dayNumber {
@@ -544,6 +760,11 @@
     border-radius: 12px;
     background: var(--gradient-calendar-period-summary);
     padding: 12px;
+}
+
+.calendarItinerary__periodSummary--predicted {
+    border: 1px dashed var(--color-calendar-period-summary-border);
+    opacity: 0.7;
 }
 
 .calendarItinerary__allDay {
