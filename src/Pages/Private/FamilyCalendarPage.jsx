@@ -13,6 +13,7 @@ import SegmentedControl from "../../Components/SegmentedControl.jsx";
 import UniversalModal from "../../Components/UniversalModal/UniversalModal.jsx";
 import { ModalActions, ModalField, ModalHeader } from "../../Components/UniversalModal/ModalPrimitives.jsx";
 import {
+    deletePeriodRecord,
     getFamilyPeriodMonth,
     getPeriodMonth,
     getPeriodProfile,
@@ -24,6 +25,7 @@ import "./FamilyCalendarPage/familyCalendarPagemobile.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const LONG_PRESS_DURATION_MS = 450;
+const PERIOD_DELETE_HOLD_DURATION_MS = 3000;
 const MONTH_SWIPE_THRESHOLD_PX = 48;
 const DAY_HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 const EVENT_BLOCK_MINUTES = 60;
@@ -178,6 +180,19 @@ function addMemberNameForDate(targetMap, dateKey, memberName) {
     if (!currentNames.includes(memberName)) {
         targetMap.set(dateKey, [...currentNames, memberName]);
     }
+}
+
+function dateRangesOverlap(startDate, endDate, rangeStart, rangeEnd) {
+    return startDate <= endDate && endDate >= rangeStart && startDate <= rangeEnd;
+}
+
+function formatMemberNames(memberNames) {
+    if (!Array.isArray(memberNames) || memberNames.length === 0) return "a family member";
+
+    return new Intl.ListFormat(undefined, {
+        style: "long",
+        type: "conjunction",
+    }).format(memberNames);
 }
 
 function getVisibleMonthOccurrenceRange(monthDate) {
@@ -452,16 +467,25 @@ function FamilyCalendarPage() {
     const [calendarNotice, setCalendarNotice] = useState("");
     const [startingPeriod, setStartingPeriod] = useState(false);
     const [periodDateKeys, setPeriodDateKeys] = useState(new Set());
+    const [periodDaysByDate, setPeriodDaysByDate] = useState(new Map());
+    const [periodRecordIdsByDate, setPeriodRecordIdsByDate] = useState(new Map());
+    const [predictedPeriodDateKeys, setPredictedPeriodDateKeys] = useState(new Set());
     const [familyPeriodNamesByDate, setFamilyPeriodNamesByDate] = useState(new Map());
+    const [familyPredictedPeriodNamesByDate, setFamilyPredictedPeriodNamesByDate] = useState(new Map());
     const [periodCurrentlyOpen, setPeriodCurrentlyOpen] = useState(false);
     const [openPeriodStartDateKey, setOpenPeriodStartDateKey] = useState("");
     const [hasFamily, setHasFamily] = useState(true);
     const [isCurrentPersonaMale, setIsCurrentPersonaMale] = useState(false);
     const [currentPersonaId, setCurrentPersonaId] = useState(null);
+    const [holdingPeriodDelete, setHoldingPeriodDelete] = useState(false);
+    const [deletingPeriodRecord, setDeletingPeriodRecord] = useState(false);
+    const [periodRefreshKey, setPeriodRefreshKey] = useState(0);
     const [monthTransitionDirection, setMonthTransitionDirection] = useState("");
     const [calendarFilter, setCalendarFilter] = useState("Shared");
     const longPressTimerRef = useRef(null);
     const longPressTriggeredRef = useRef(false);
+    const periodDeleteTimerRef = useRef(null);
+    const periodDeleteHoldingRef = useRef(false);
     const monthSwipeStartRef = useRef(null);
     const monthSwipeTriggeredRef = useRef(false);
     const itinerarySectionRef = useRef(null);
@@ -473,9 +497,52 @@ function FamilyCalendarPage() {
         }
     }
 
+    function cancelPeriodDeleteHold() {
+        if (periodDeleteTimerRef.current) {
+            window.clearTimeout(periodDeleteTimerRef.current);
+            periodDeleteTimerRef.current = null;
+        }
+
+        periodDeleteHoldingRef.current = false;
+        setHoldingPeriodDelete(false);
+    }
+
+    async function handleDeletePeriodRecord(recordId) {
+        if (recordId === null || recordId === undefined || deletingPeriodRecord) return;
+
+        setDeletingPeriodRecord(true);
+        setCalendarError("");
+        setCalendarNotice("");
+        try {
+            await deletePeriodRecord(recordId);
+            setCalendarNotice("Period record deleted.");
+            setPeriodRefreshKey((current) => current + 1);
+        } catch (error) {
+            setCalendarError(error.message || "Failed to delete period record");
+        } finally {
+            setDeletingPeriodRecord(false);
+        }
+    }
+
+    function startPeriodDeleteHold(recordId) {
+        if (periodDeleteHoldingRef.current || deletingPeriodRecord || recordId == null) return;
+
+        periodDeleteHoldingRef.current = true;
+        setHoldingPeriodDelete(true);
+        periodDeleteTimerRef.current = window.setTimeout(() => {
+            periodDeleteTimerRef.current = null;
+            periodDeleteHoldingRef.current = false;
+            setHoldingPeriodDelete(false);
+            void handleDeletePeriodRecord(recordId);
+        }, PERIOD_DELETE_HOLD_DURATION_MS);
+    }
+
     useEffect(
         () => () => {
             clearLongPressTimer();
+            if (periodDeleteTimerRef.current) {
+                window.clearTimeout(periodDeleteTimerRef.current);
+            }
         },
         []
     );
@@ -554,17 +621,25 @@ function FamilyCalendarPage() {
                     getFamilyMembers().catch(() => []),
                 ]);
 
-                const membersById = new Map(
-                    (Array.isArray(membersData) ? membersData : [])
-                        .filter((m) => m?.id != null && m?.name)
-                        .flatMap((m) => [[String(m.id), m.name, m.gender], [Number(m.id), m.name, m.gender]])
-                );
+                const membersById = new Map();
+                for (const member of Array.isArray(membersData) ? membersData : []) {
+                    if (!member?.name) continue;
+
+                    for (const id of [member.id, member.personaId, member.userId, member.memberId]) {
+                        if (id === null || id === undefined || id === "") continue;
+                        membersById.set(String(id), member.name);
+                    }
+                }
 
                 if (!active) return;
 
                 const periodLength = Number(profile?.periodLengthDays) || 5;
                 const nextPeriodKeys = new Set();
+                const nextPeriodDaysByDate = new Map();
+                const nextPeriodRecordIdsByDate = new Map();
+                const nextPredictedPeriodKeys = new Set();
                 const nextFamilyPeriodNamesByDate = new Map();
+                const nextFamilyPredictedPeriodNamesByDate = new Map();
 
                 const records = Array.isArray(monthData?.records) ? monthData.records : [];
                 const predictionStart =
@@ -583,19 +658,32 @@ function FamilyCalendarPage() {
                 for (const record of records) {
                     const startDate = parseIsoDate(record?.startDate);
                     if (!startDate) continue;
+                    const recordId = record?.id ?? record?.recordId;
 
                     const endDate = record?.endDate
                         ? parseIsoDate(record.endDate)
                         : addDays(startDate, Math.max(periodLength - 1, 0));
                     if (!endDate) continue;
 
-                    if (endDate < monthStart || startDate > monthEnd) continue;
+                    if (!dateRangesOverlap(startDate, endDate, monthStart, monthEnd)) continue;
 
                     const clampedStart = clampDate(startDate, monthStart, monthEnd);
                     const clampedEnd = clampDate(endDate, monthStart, monthEnd);
 
                     if (clampedStart <= clampedEnd) {
                         addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                        // Track day numbers within period for fade effect
+                        const cursor = new Date(clampedStart);
+                        let dayNum = 1;
+                        while (cursor <= clampedEnd) {
+                            const dateKey = toDateKey(cursor);
+                            nextPeriodDaysByDate.set(dateKey, dayNum);
+                            if (recordId !== null && recordId !== undefined) {
+                                nextPeriodRecordIdsByDate.set(dateKey, recordId);
+                            }
+                            cursor.setDate(cursor.getDate() + 1);
+                            dayNum++;
+                        }
                     }
                 }
 
@@ -605,12 +693,15 @@ function FamilyCalendarPage() {
                             ? parseIsoDate(monthData.prediction.endDate)
                             : addDays(predictionStart, Math.max(periodLength - 1, 0));
 
-                        if (predictionEnd) {
+                        if (
+                            predictionEnd &&
+                            dateRangesOverlap(predictionStart, predictionEnd, monthStart, monthEnd)
+                        ) {
                             const clampedStart = clampDate(predictionStart, monthStart, monthEnd);
                             const clampedEnd = clampDate(predictionEnd, monthStart, monthEnd);
 
                             if (clampedStart <= clampedEnd) {
-                                addRangeToKeySet(nextPeriodKeys, clampedStart, clampedEnd);
+                                addRangeToKeySet(nextPredictedPeriodKeys, clampedStart, clampedEnd);
                             }
                         }
                     }
@@ -621,6 +712,9 @@ function FamilyCalendarPage() {
 
                 for (const entry of familyMonthList) {
                     const personaId = entry?.personaId;
+                    const isCurrentPersona =
+                        normalizeParticipantId(personaId) !== null &&
+                        normalizeParticipantId(personaId) === currentPersonaId;
                     const memberName =
                         (personaId != null
                             ? membersById.get(String(personaId)) || membersById.get(Number(personaId))
@@ -638,13 +732,17 @@ function FamilyCalendarPage() {
                         const endDate = getRecordEndDate(record) ||
                             addDays(startDate, Math.max(Number(entry?.periodLengthDays) || 5, 1) - 1);
 
+                        if (!dateRangesOverlap(startDate, endDate, monthStart, monthEnd)) continue;
+
                         const clampedStart = clampDate(startDate, monthStart, monthEnd);
                         const clampedEnd = clampDate(endDate, monthStart, monthEnd);
                         if (clampedStart > clampedEnd) continue;
 
                         const cursor = new Date(clampedStart);
                         while (cursor <= clampedEnd) {
-                            addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
+                            if (!isCurrentPersona) {
+                                addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
+                            }
                             cursor.setDate(cursor.getDate() + 1);
                         }
                     }
@@ -659,23 +757,35 @@ function FamilyCalendarPage() {
                             parseFlexibleDate(pred?.endDate) ||
                             addDays(predStart, Math.max(Number(entry?.periodLengthDays) || 5, 1) - 1);
 
+                        if (!dateRangesOverlap(predStart, predEnd, monthStart, monthEnd)) continue;
+
                         const clampedStart = clampDate(predStart, monthStart, monthEnd);
                         const clampedEnd = clampDate(predEnd, monthStart, monthEnd);
                         if (clampedStart > clampedEnd) continue;
                         const cursor = new Date(clampedStart);
                         while (cursor <= clampedEnd) {
-                            addMemberNameForDate(nextFamilyPeriodNamesByDate, toDateKey(cursor), memberName);
+                            if (!isCurrentPersona) {
+                                addMemberNameForDate(nextFamilyPredictedPeriodNamesByDate, toDateKey(cursor), memberName);
+                            }
                             cursor.setDate(cursor.getDate() + 1);
                         }
                     }
                 }
 
                 setPeriodDateKeys(nextPeriodKeys);
+                setPeriodDaysByDate(nextPeriodDaysByDate);
+                setPeriodRecordIdsByDate(nextPeriodRecordIdsByDate);
+                setPredictedPeriodDateKeys(nextPredictedPeriodKeys);
                 setFamilyPeriodNamesByDate(nextFamilyPeriodNamesByDate);
+                setFamilyPredictedPeriodNamesByDate(nextFamilyPredictedPeriodNamesByDate);
             } catch {
                 if (!active) return;
                 setPeriodDateKeys(new Set());
+                setPeriodDaysByDate(new Map());
+                setPeriodRecordIdsByDate(new Map());
+                setPredictedPeriodDateKeys(new Set());
                 setFamilyPeriodNamesByDate(new Map());
+                setFamilyPredictedPeriodNamesByDate(new Map());
             }
         }
 
@@ -684,7 +794,7 @@ function FamilyCalendarPage() {
         return () => {
             active = false;
         };
-    }, [visibleMonth]);
+    }, [currentPersonaId, periodRefreshKey, visibleMonth]);
 
     const monthLabel = useMemo(
         () => visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
@@ -720,6 +830,8 @@ function FamilyCalendarPage() {
                 dateKey,
                 dayEvents,
                 periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
+                predictedPeriodMemberNames: familyPredictedPeriodNamesByDate.get(dateKey) || [],
+                periodDay: periodDaysByDate.get(dateKey) || 0,
             });
         }
 
@@ -738,6 +850,8 @@ function FamilyCalendarPage() {
                 dateKey,
                 dayEvents,
                 periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
+                predictedPeriodMemberNames: familyPredictedPeriodNamesByDate.get(dateKey) || [],
+                periodDay: periodDaysByDate.get(dateKey) || 0,
             });
         }
 
@@ -762,11 +876,12 @@ function FamilyCalendarPage() {
                 dateKey,
                 dayEvents,
                 periodMemberNames: familyPeriodNamesByDate.get(dateKey) || [],
+                periodDay: periodDaysByDate.get(dateKey) || 0,
             });
         }
 
         return cells;
-    }, [events, familyPeriodNamesByDate, visibleMonth]);
+    }, [events, familyPeriodNamesByDate, familyPredictedPeriodNamesByDate, periodDaysByDate, visibleMonth]);
 
     function showCurrentMonth() {
         setMonthTransitionDirection("");
@@ -1285,6 +1400,15 @@ function FamilyCalendarPage() {
         [familyPeriodNamesByDate, selectedDateKey]
     );
 
+    const selectedDatePredictedPeriodMembers = useMemo(
+        () => familyPredictedPeriodNamesByDate.get(selectedDateKey) || [],
+        [familyPredictedPeriodNamesByDate, selectedDateKey]
+    );
+
+    const isSelectedDateOwnPeriod = periodDateKeys.has(selectedDateKey);
+    const isSelectedDateOwnPeriodPredicted = predictedPeriodDateKeys.has(selectedDateKey);
+    const selectedDatePeriodRecordId = periodRecordIdsByDate.get(selectedDateKey) ?? null;
+
     const isSelectedDateInFuture = useMemo(() => {
         const todayKey = toDateKey(new Date());
         return selectedDateKey > todayKey;
@@ -1373,7 +1497,10 @@ function FamilyCalendarPage() {
                                 } ${cell.monthRelation === "next" ? "calendarView__cell--nextMonth" : ""
                                 } ${cell.isPastCurrentMonth ? "calendarView__cell--pastCurrentMonth" : ""
                                 } ${cell.dateKey && periodDateKeys.has(cell.dateKey) ? "calendarView__cell--period" : ""
+                                } ${cell.periodDay ? `calendarView__cell--periodDay${cell.periodDay}` : ""
+                                } ${cell.dateKey && predictedPeriodDateKeys.has(cell.dateKey) ? "calendarView__cell--periodPredicted" : ""
                                 } ${(cell.periodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriod" : ""
+                                } ${(cell.predictedPeriodMemberNames || []).length > 0 ? "calendarView__cell--familyPeriodPredicted" : ""
                                 }`}
                             role="gridcell"
                             onClick={cell.dateKey ? () => {
@@ -1458,11 +1585,71 @@ function FamilyCalendarPage() {
                 {!isCurrentPersonaMale ? (
                     <p className="calendarItinerary__periodHint text-medium">{periodActionHint}</p>
                 ) : null}
+                {isSelectedDateOwnPeriod ? (
+                    <div className="calendarItinerary__periodSummary">
+                        <h3 className="calendarItinerary__periodTitle">Your period</h3>
+                        <div className="calendarItinerary__ownPeriodRow">
+                            <p className="calendarItinerary__periodNames text-medium">
+                                You are on your period on this day.
+                            </p>
+                            <button
+                                type="button"
+                                className={`calendarItinerary__periodDelete ${holdingPeriodDelete ? "calendarItinerary__periodDelete--holding" : ""}`}
+                                onPointerDown={() => startPeriodDeleteHold(selectedDatePeriodRecordId)}
+                                onPointerUp={() => cancelPeriodDeleteHold()}
+                                onPointerLeave={() => cancelPeriodDeleteHold()}
+                                onPointerCancel={() => cancelPeriodDeleteHold()}
+                                onKeyDown={(event) => {
+                                    if ((event.key === " " || event.key === "Enter") && !event.repeat) {
+                                        event.preventDefault();
+                                        startPeriodDeleteHold(selectedDatePeriodRecordId);
+                                    }
+                                }}
+                                onKeyUp={(event) => {
+                                    if (event.key === " " || event.key === "Enter") {
+                                        event.preventDefault();
+                                        cancelPeriodDeleteHold();
+                                    }
+                                }}
+                                onClick={(event) => event.preventDefault()}
+                                aria-label="Hold for 3 seconds to delete this period entry"
+                                disabled={deletingPeriodRecord || selectedDatePeriodRecordId === null}
+                            >
+                                <svg
+                                    className="calendarItinerary__periodDeleteRing"
+                                    viewBox="0 0 120 40"
+                                    preserveAspectRatio="none"
+                                    aria-hidden="true"
+                                >
+                                    <rect className="calendarItinerary__periodDeleteRingTrack" x="2" y="2" width="116" height="36" rx="8" pathLength="100" />
+                                    <rect className="calendarItinerary__periodDeleteRingProgress" x="2" y="2" width="116" height="36" rx="8" pathLength="100" />
+                                </svg>
+                                <span>{deletingPeriodRecord ? "Deleting..." : "Delete"}</span>
+                            </button>
+                        </div>
+                    </div>
+                ) : null}
+                {isSelectedDateOwnPeriodPredicted ? (
+                    <div className="calendarItinerary__periodSummary calendarItinerary__periodSummary--predicted">
+                        <h3 className="calendarItinerary__periodTitle">Your period prediction</h3>
+                        <p className="calendarItinerary__periodNames text-medium">
+                            Your period is predicted on this day.
+                        </p>
+                    </div>
+                ) : null}
                 {selectedDatePeriodMembers.length > 0 ? (
                     <div className="calendarItinerary__periodSummary">
                         <h3 className="calendarItinerary__periodTitle">Period tracker</h3>
                         <p className="calendarItinerary__periodNames text-medium">
-                            A family period is tracked on this day.
+                            Period tracked for {formatMemberNames(selectedDatePeriodMembers)} on this day.
+                        </p>
+                    </div>
+                ) : null}
+                {selectedDatePredictedPeriodMembers.length > 0 ? (
+                    <div className="calendarItinerary__periodSummary calendarItinerary__periodSummary--predicted">
+                        <h3 className="calendarItinerary__periodTitle">Period prediction</h3>
+                        <p className="calendarItinerary__periodNames text-medium">
+                            Period predicted for {formatMemberNames(selectedDatePredictedPeriodMembers)} on this day.
                         </p>
                     </div>
                 ) : null}
