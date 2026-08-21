@@ -56,3 +56,7 @@ a {
 button {
   font-family: inherit;
 }
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}

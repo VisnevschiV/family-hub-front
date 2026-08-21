@@ -46,14 +46,14 @@
 }
 
 .appShell__brand:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-shell-hover-bg);
 }
 
 .appShell__logo {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--color-shell-logo-bg);
     display: grid;
     place-items: center;
     font-size: 12px;
@@ -129,7 +129,7 @@
 }
 
 .appShell__navLink:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-shell-hover-bg);
     color: var(--text);
 }
 
@@ -150,8 +150,8 @@
 }
 
 .appShell__navLink.active {
-    background: rgba(201, 75, 115, 0.18);
-    color: #ffffff;
+    background: var(--color-shell-active-bg);
+    color: var(--color-shell-active-text);
 }
 
 /* ---- User link (avatar only on mobile) ---- */
@@ -171,7 +171,7 @@
 }
 
 .appShell__userLink:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-shell-hover-bg);
     border-color: var(--border);
 }
 
@@ -179,8 +179,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.14);
-    color: #ffffff;
+    background: var(--color-shell-avatar-bg);
+    color: var(--color-shell-avatar-text);
     display: grid;
     place-items: center;
     font-size: 11px;
