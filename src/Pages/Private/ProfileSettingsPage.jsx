@@ -18,6 +18,7 @@ import {
     unsubscribeFromPushNotifications,
 } from "../../api/pushNotifications.js";
 import SegmentedControl from "../../Components/SegmentedControl.jsx";
+import { applyTheme, getInitialTheme } from "../../theme.js";
 
 const emptyForm = {
     name: "",
@@ -62,6 +63,7 @@ function ProfileSettingsPage() {
     const [accountEmail, setAccountEmail] = useState("");
     const [personalEditOpen, setPersonalEditOpen] = useState(false);
     const [familyEditOpen, setFamilyEditOpen] = useState(false);
+    const [theme, setTheme] = useState(getInitialTheme);
 
     const [pushState, setPushState] = useState({
         supported: true,
@@ -469,6 +471,26 @@ function ProfileSettingsPage() {
                                     }}
                                 ></SegmentedControl>
                             </span>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="profileSection">
+                    <h2 className="settingsSectionTitle">Appearance</h2>
+                    <div className="profilePanel">
+                        <div className="profileRow">
+                            <div className="profileRow__main">
+                                <span className="profileRow__value">Color theme</span>
+                                <span className="profileRow__label">Choose a bright or dark appearance</span>
+                            </div>
+                            <SegmentedControl
+                                options={["BRIGHT", "DARK"]}
+                                value={theme === "light" ? "BRIGHT" : "DARK"}
+                                onChange={(value) => {
+                                    const nextTheme = value === "BRIGHT" ? "light" : "dark";
+                                    setTheme(applyTheme(nextTheme));
+                                }}
+                            />
                         </div>
                     </div>
                 </section>

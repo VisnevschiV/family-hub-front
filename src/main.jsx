@@ -5,6 +5,9 @@ import './styles/general.css'
 import './styles/globaldesktop.css'
 import './styles/globalmobile.css'
 import App from './App.jsx'
+import { applyTheme, getInitialTheme } from './theme.js'
+
+applyTheme(getInitialTheme(), false)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
