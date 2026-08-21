@@ -829,6 +829,99 @@
     color: var(--color-calendar-period-summary-text);
 }
 
+.calendarItinerary__ownPeriodRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.calendarItinerary__ownPeriodRow .calendarItinerary__periodNames {
+    margin-top: 6px;
+}
+
+.calendarItinerary__periodDelete {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--color-calendar-period-button-bg);
+    color: var(--color-calendar-period-button-text);
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.calendarItinerary__periodDelete:hover {
+    filter: brightness(0.98);
+}
+
+.calendarItinerary__periodDelete:active {
+    transform: scale(0.98);
+}
+
+.calendarItinerary__periodDelete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.calendarItinerary__periodDelete:focus-visible {
+    outline: 2px solid var(--border);
+    outline-offset: 2px;
+}
+
+.calendarItinerary__periodDeleteRing {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.calendarItinerary__periodDeleteRingTrack,
+.calendarItinerary__periodDeleteRingProgress {
+    fill: none;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    transition: stroke-width 0.16s ease;
+}
+
+.calendarItinerary__periodDeleteRingTrack {
+    stroke: var(--color-calendar-period-button-border);
+}
+
+.calendarItinerary__periodDeleteRingProgress {
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+}
+
+.calendarItinerary__periodDelete--holding .calendarItinerary__periodDeleteRingProgress {
+    animation: period-delete-hold 3s linear forwards;
+}
+
+.calendarItinerary__periodDelete--holding .calendarItinerary__periodDeleteRingTrack,
+.calendarItinerary__periodDelete--holding .calendarItinerary__periodDeleteRingProgress {
+    stroke-width: 4;
+}
+
+@keyframes period-delete-hold {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
 .calendarItinerary__timeline {
     display: grid;
     grid-template-columns: 62px minmax(0, 1fr);

@@ -77,6 +77,16 @@ export async function getPeriodMonth(year, month) {
     return response.json();
 }
 
+export async function deletePeriodRecord(recordId) {
+    const response = await apiFetch(`${BASE}/records/${encodeURIComponent(recordId)}`, {
+        method: "DELETE",
+    });
+    if (!response.ok) {
+        const message = await parseErrorMessage(response, "Failed to delete period record");
+        throw new Error(message);
+    }
+}
+
 export async function getFamilyPeriodProfiles() {
     const response = await apiFetch(`${BASE}/family`);
     if (!response.ok) {
