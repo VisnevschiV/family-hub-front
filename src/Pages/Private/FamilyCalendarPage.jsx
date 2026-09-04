@@ -1658,7 +1658,19 @@ function FamilyCalendarPage() {
                         <h3 className="calendarItinerary__allDayTitle">All-day events</h3>
                         <div className="calendarItinerary__allDayList">
                             {selectedDateAllDayEvents.map((eventItem) => (
-                                <article key={`all-day-${eventItem.id}`} className="calendarItinerary__allDayItem">
+                                <article
+                                    key={`all-day-${eventItem.id}`}
+                                    className={`calendarItinerary__allDayItem ${eventItem.gender}`}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => openEditModal(eventItem)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault();
+                                            openEditModal(eventItem);
+                                        }
+                                    }}
+                                >
                                     <p className="calendarItinerary__allDayTime">All day</p>
                                     <h4 className="calendarItinerary__allDayItemTitle">{eventItem.title}</h4>
                                     {eventItem.participantNames.length > 0 ? (
@@ -1708,7 +1720,7 @@ function FamilyCalendarPage() {
                             selectedDateTimelineEvents.map((eventItem) => (
                                 <article
                                     key={eventItem.id}
-                                    className="calendarItinerary__timelineEvent"
+                                    className={`calendarItinerary__timelineEvent ${eventItem.gender}`}
                                     style={{
                                         top: `${eventItem.topPercent}%`,
                                         height: `${eventItem.heightPercent}%`,
