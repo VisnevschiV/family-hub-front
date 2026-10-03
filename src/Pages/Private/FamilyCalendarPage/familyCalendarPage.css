@@ -794,6 +794,12 @@
     padding: 8px 10px;
     display: grid;
     gap: 4px;
+    cursor: pointer;
+}
+
+.calendarItinerary__allDayItem:focus-visible {
+    outline: 2px solid var(--color-calendar-focus-ring);
+    outline-offset: 1px;
 }
 
 .calendarItinerary__allDayTime {
@@ -1003,6 +1009,45 @@
     overflow: hidden;
     min-height: 40px;
     cursor: pointer;
+}
+
+.calendarItinerary__allDayItem.male,
+.calendarItinerary__timelineEvent.male {
+    background: var(--gradient-calendar-event-bar-male);
+}
+
+.calendarItinerary__allDayItem.female,
+.calendarItinerary__timelineEvent.female {
+    background: var(--gradient-calendar-event-bar-female);
+}
+
+.calendarItinerary__allDayItem.mixed,
+.calendarItinerary__timelineEvent.mixed {
+    background: var(--gradient-calendar-event-bar-mixed);
+}
+
+.calendarItinerary__allDayItem.male,
+.calendarItinerary__allDayItem.female,
+.calendarItinerary__allDayItem.mixed,
+.calendarItinerary__timelineEvent.male,
+.calendarItinerary__timelineEvent.female,
+.calendarItinerary__timelineEvent.mixed {
+    color: #fff;
+}
+
+.calendarItinerary__allDayItem.male .calendarItinerary__allDayTime,
+.calendarItinerary__allDayItem.female .calendarItinerary__allDayTime,
+.calendarItinerary__allDayItem.mixed .calendarItinerary__allDayTime,
+.calendarItinerary__allDayItem.male .calendarItinerary__allDayMeta,
+.calendarItinerary__allDayItem.female .calendarItinerary__allDayMeta,
+.calendarItinerary__allDayItem.mixed .calendarItinerary__allDayMeta,
+.calendarItinerary__timelineEvent.male .calendarItinerary__timelineEventTime,
+.calendarItinerary__timelineEvent.female .calendarItinerary__timelineEventTime,
+.calendarItinerary__timelineEvent.mixed .calendarItinerary__timelineEventTime,
+.calendarItinerary__timelineEvent.male .calendarItinerary__timelineEventMeta,
+.calendarItinerary__timelineEvent.female .calendarItinerary__timelineEventMeta,
+.calendarItinerary__timelineEvent.mixed .calendarItinerary__timelineEventMeta {
+    color: inherit;
 }
 
 .calendarItinerary__timelineEvent:focus-visible {
