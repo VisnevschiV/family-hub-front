@@ -33,6 +33,7 @@ export default function TodoList({
     const [touchHoldId, setTouchHoldId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [hideDoneTasks, setHideDoneTasks] = useState(false);
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [editingText, setEditingText] = useState("");
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
@@ -61,8 +62,9 @@ export default function TodoList({
     const isCollapsed = typeof collapsed === "boolean" ? collapsed : internalIsCollapsed;
 
     const visibleItems = useMemo(() => {
-        return dragOrder || items;
-    }, [items, dragOrder]);
+        const orderedItems = dragOrder || items;
+        return hideDoneTasks ? orderedItems.filter((item) => !item.done) : orderedItems;
+    }, [items, dragOrder, hideDoneTasks]);
 
     function updateItems(nextItemsOrUpdater) {
         const nextItems =
@@ -348,6 +350,8 @@ export default function TodoList({
     }
 
     function handleItemPointerDown(e, itemId) {
+        // Let controls handle their own clicks without starting a row drag.
+        if (e.target.closest("input, button")) return;
         if (editingTaskId || deletingId) return;
         if (e.button != null && e.button !== 0) return;
 
@@ -497,6 +501,7 @@ export default function TodoList({
                                 className="todoList__menu"
                                 role="menu"
                                 onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}
                             >
 
                                 <button
@@ -509,6 +514,18 @@ export default function TodoList({
                                     }}
                                 >
                                     Modify
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="todoList__menuItem"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setHideDoneTasks((hidden) => !hidden);
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    {hideDoneTasks ? "Show done tasks" : "Hide done tasks"}
                                 </button>
 
                                 <button
